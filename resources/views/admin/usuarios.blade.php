@@ -129,54 +129,49 @@
                         </tr>
                       </thead>
                       <tbody id="usersTableBody">
+                        @forelse ($usuarios as $usuario)
                         <tr>
                           <td>
-                            <i
-                              data-feather="user"
-                              class="me-1 tittle-color"></i>Laura Martínez
+                            <i data-feather="user"
+                              class="me-1 
+                            @if($usuario->rol === 'Administrador') tittle-color
+                            @elseif($usuario->rol === 'Contador') text-success
+                            @else text-warning @endif">
+                            </i>
+                            {{ $usuario->nombre_completo }}
                           </td>
-                          <td>laura.martinez@gym.com</td>
+                          <td>{{ $usuario->correo }}</td>
                           <td>
-                            <span class="badge tittle-color">Administrador</span>
+                            @if($usuario->rol === 'Administrador')
+                            <span class="badge tittle-color">{{ $usuario->rol }}</span>
+                            @elseif($usuario->rol === 'Contador')
+                            <span class="badge bg-success">{{ $usuario->rol }}</span>
+                            @else
+                            <span class="badge bg-warning text-dark">{{ $usuario->rol }}</span>
+                            @endif
                           </td>
                           <td class="text-end">
                             <button
                               class="btn btn-sm btn-outline-light me-1 editRole"
                               data-bs-toggle="modal"
-                              data-bs-target="#addEditUserModal">
+                              data-bs-target="#addEditUserModal"
+                              data-id="{{ $usuario->id }}">
                               <i data-feather="edit"></i>
                             </button>
                             <button
                               class="btn btn-sm btn-outline-danger deleteRole"
                               data-bs-toggle="modal"
-                              data-bs-target="#deleteUserModal">
+                              data-bs-target="#deleteUserModal"
+                              data-id="{{ $usuario->id }}">
                               <i data-feather="trash-2"></i>
                             </button>
                           </td>
                         </tr>
+                        @empty
                         <tr>
-                          <td>
-                            <i
-                              data-feather="user"
-                              class="me-1 text-warning"></i>Juan Pérez
-                          </td>
-                          <td>juan.perez@gym.com</td>
-                          <td><span class="badge">Entrenador</span></td>
-                          <td class="text-end">
-                            <button
-                              class="btn btn-sm btn-outline-light me-1 editRole"
-                              data-bs-toggle="modal"
-                              data-bs-target="#addEditUserModal">
-                              <i data-feather="edit"></i>
-                            </button>
-                            <button
-                              class="btn btn-sm btn-outline-danger deleteRole"
-                              data-bs-toggle="modal"
-                              data-bs-target="#deleteUserModal">
-                              <i data-feather="trash-2"></i>
-                            </button>
-                          </td>
+                          <td colspan="4" class="text-muted text-center">No hay usuarios registrados</td>
                         </tr>
+                        @endforelse
                       </tbody>
                     </table>
                   </div>
@@ -251,7 +246,7 @@
         </div>
       </div>
 
-      <!-- Modal Agregar / Editar Usuario -->
+      <!-- Modal Agregar usuario -->
       <div
         class="modal fade"
         id="addEditUserModal"
@@ -288,6 +283,20 @@
                     name="nombre_completo"
                     placeholder="Ej. Laura Martínez"
                     required />
+                </div>
+                <div class="text-center mb-3">
+                  <img
+                    id="previewUserImage"
+                    src="{{ asset('storage/usuarios/default.png') }}"
+                    alt="Foto de perfil"
+                    class="rounded-circle border border-secondary"
+                    width="100"
+                    height="100" />
+                </div>
+
+                <div class="mb-3">
+                  <label for="userPhoto" class="form-label text-white">Foto de perfil</label>
+                  <input type="file" class="form-control text-white border-0" id="userPhoto" name="foto" accept="image/*" />
                 </div>
 
                 <div class="mb-3">
@@ -361,16 +370,6 @@
                     name="password_confirmation"
                     placeholder="********"
                     required />
-                </div>
-
-                <div class="mb-3">
-                  <label for="userPhoto" class="form-label text-white">Foto</label>
-                  <input
-                    type="file"
-                    class="form-control text-white border-0"
-                    id="userPhoto"
-                    name="foto"
-                    accept="image/*" />
                 </div>
               </div>
 
@@ -466,19 +465,7 @@
             });
           }
         });
-        // Toggle visibilidad de la contraseña
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('userPassword');
-        const eyeIcon = document.getElementById('eyeIcon');
-
-        togglePassword.addEventListener('click', () => {
-          const isPassword = passwordInput.type === 'password';
-          passwordInput.type = isPassword ? 'text' : 'password';
-
-          // Cambiar ícono (requiere feather icons ya cargados)
-          eyeIcon.setAttribute('data-feather', isPassword ? 'eye-off' : 'eye');
-          feather.replace();
-        });
+       
       </script>
 
 
@@ -522,6 +509,10 @@
       </div>
     </div>
   </div>
-  <script src="../js/app.js" defer></script>
+  <script src="../js/app.js"></script>
+  <script src="{{ asset('js/modaluser.js') }}"></script>
+  <script>
+    const BASE_URL = "{{ url('/') }}";
+  </script>
 </body>
 @endsection
