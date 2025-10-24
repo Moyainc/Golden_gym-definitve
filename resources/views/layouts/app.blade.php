@@ -7,7 +7,7 @@
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta
         name="description"
         content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5" />
@@ -15,7 +15,7 @@
     <meta
         name="keywords"
         content="Golden Gym, gimnasio, administración, panel, membresías, clientes, ventas, dashboard, Bootstrap 5, AdminKit" />
-    <meta name="description"content="Panel de administración de Golden Gym. Gestiona clientes, membresías, ventas y métricas del gimnasio de manera rápida y segura." />
+    <meta name="description" content="Panel de administración de Golden Gym. Gestiona clientes, membresías, ventas y métricas del gimnasio de manera rápida y segura." />
 
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link rel="shortcut icon" href="../img/icons/golden_gym.png" />

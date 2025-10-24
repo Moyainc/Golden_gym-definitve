@@ -15,6 +15,7 @@ class Usuario extends Authenticatable
         'nombre_completo',
         'correo',
         'cedula',
+        'telefono',
         'foto',
         'rol',
         'password',

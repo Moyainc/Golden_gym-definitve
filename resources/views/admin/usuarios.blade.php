@@ -3,6 +3,7 @@
 
 @section('content')
 
+
 <body>
   <div class="wrapper">
     <div class="main">
@@ -33,79 +34,60 @@
 
           <div class="row g-3">
             <!-- Roles -->
+
             <div class="col-lg-4">
               <div class="card border-0 shadow-sm">
+                <!-- Encabezado -->
                 <div
                   class="card-header border-bottom border-secondary d-flex justify-content-between align-items-center">
                   <h6 class="mb-0 tittle-color">
-                    <i data-feather="shield" class="me-1"></i>Roles
+                    <i data-feather="shield" class="me-1"></i> Roles del sistema
                   </h6>
-                  <small class="text-muted">Gestión rápida</small>
+                  <small class="text-muted">Información general</small>
                 </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label class="form-label text-white mb-1">Crear nuevo rol</label>
-                    <div class="d-flex gap-2">
-                      <input
-                        id="newRoleName"
-                        class="form-control form-control-sm text-white border-0"
-                        placeholder="Nombre del rol, ej. Recepción" />
-                      <input
-                        id="newRoleDescription"
-                        class="form-control form-control-sm text-white border-0"
-                        placeholder="Descripción del rol" />
-                      <button
-                        id="btnCreateRole"
-                        class="btn btn-sm btn-outline-warning tittle-color">
-                        Crear
-                      </button>
-                    </div>
+
+                <!-- Cuerpo -->
+                <div class="card-body text-white">
+                  <p class="text-muted small mb-4">
+                    A continuación se describen los roles disponibles en el sistema y las funciones asociadas a cada uno.
+                  </p>
+
+                  <!-- Rol: Administrador -->
+                  <div class="mb-4 p-3 border rounded border-secondary">
+                    <h6 class="text-warning mb-2">
+                      <i data-feather="user-check" class="me-1"></i> Administrador
+                    </h6>
+                    <p class="mb-0 text-light small">
+                      Tiene acceso total al sistema: puede crear, editar y eliminar usuarios, gestionar roles y acceder a
+                      todos los módulos sin restricciones.
+                    </p>
                   </div>
 
-                  <hr class="border-secondary" />
-                  <ul
-                    id="rolesList"
-                    class="list-group list-group-flush small">
-                    <li
-                      class="list-group-item text-white d-flex justify-content-between align-items-center animation-item">
-                      Administrador
-                      <div>
-                        <button
-                          class="btn btn-sm btn-outline-light me-1 editRole"
-                          data-bs-toggle="modal"
-                          data-bs-target="#addEditRoleModal">
-                          <i data-feather="edit"></i>
-                        </button>
-                        <button
-                          class="btn btn-sm btn-outline-danger deleteRole"
-                          data-bs-toggle="modal"
-                          data-bs-target="#deleteUserModal">
-                          <i data-feather="trash-2"></i>
-                        </button>
-                      </div>
-                    </li>
-                    <li
-                      class="list-group-item text-white d-flex justify-content-between align-items-center animation-item">
-                      Entrenador
-                      <div>
-                        <button
-                          class="btn btn-sm btn-outline-light me-1 editRole"
-                          data-bs-toggle="modal"
-                          data-bs-target="#addEditRoleModal">
-                          <i data-feather="edit"></i>
-                        </button>
-                        <button
-                          class="btn btn-sm btn-outline-danger deleteRole"
-                          data-bs-toggle="modal"
-                          data-bs-target="#deleteUserModal">
-                          <i data-feather="trash-2"></i>
-                        </button>
-                      </div>
-                    </li>
-                  </ul>
+                  <!-- Rol: Recepcionista -->
+                  <div class="mb-4 p-3 border rounded border-secondary">
+                    <h6 class="text-warning mb-2">
+                      <i data-feather="clipboard" class="me-1"></i> Recepcionista
+                    </h6>
+                    <p class="mb-0 text-light small">
+                      Registra visitantes y maneja la atención al cliente. Tiene permisos limitados para visualizar
+                      información básica y registrar datos en el sistema.
+                    </p>
+                  </div>
+
+                  <!-- Rol: Contador -->
+                  <div class="p-3 border rounded border-secondary">
+                    <h6 class="text-warning mb-2">
+                      <i data-feather="file-text" class="me-1"></i> Contador
+                    </h6>
+                    <p class="mb-0 text-light small">
+                      Gestiona la parte contable y financiera. Puede acceder a reportes económicos, registrar transacciones
+                      y consultar estadísticas financieras.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
+
 
             <!-- Usuarios -->
             <div class="col-lg-8">
@@ -133,7 +115,7 @@
                         <tr>
                           <td>
                             <i data-feather="user"
-                              class="me-1 
+                              class="me-1
                             @if($usuario->rol === 'Administrador') tittle-color
                             @elseif($usuario->rol === 'Contador') text-success
                             @else text-warning @endif">
@@ -182,70 +164,6 @@
         </div>
       </main>
 
-      <!-- Modal Agregar / Editar Rol -->
-      <div
-        class="modal fade"
-        id="addEditRoleModal"
-        tabindex="-1"
-        aria-labelledby="addEditRoleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content bg-dark border-0 shadow-lg">
-            <!-- Encabezado -->
-            <div class="modal-header border-secondary">
-              <h5 class="modal-title tittle-color" id="addEditRoleModalLabel">
-                <i data-feather="shield" class="me-1"></i> Nuevo rol
-              </h5>
-              <button
-                type="button"
-                class="btn-close btn-close-white"
-                data-bs-dismiss="modal"
-                aria-label="Cerrar"></button>
-            </div>
-
-            <!-- Cuerpo -->
-            <div class="modal-body">
-              <form id="formAddEditRole">
-                <input type="hidden" id="roleId" />
-
-                <div class="mb-3">
-                  <label for="roleName" class="form-label text-white">Nombre del rol</label>
-                  <input
-                    type="text"
-                    class="form-control text-white border-0"
-                    id="roleName"
-                    placeholder="Ej. Recepción"
-                    required />
-                </div>
-
-                <div class="mb-3">
-                  <label for="roleDescription" class="form-label text-white">Descripción</label>
-                  <textarea
-                    class="form-control text-white border-0"
-                    id="roleDescription"
-                    rows="3"
-                    placeholder="Descripción del rol"></textarea>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal">
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                form="formAddEditRole"
-                class="btn btn-warning tittle-color">
-                <i data-feather="save" class="me-1"></i> Guardar rol
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- Modal Agregar usuario -->
       <div
         class="modal fade"
@@ -262,65 +180,87 @@
               <button
                 type="button"
                 class="btn-close btn-close-white"
-                data-bs-dismiss="modal"></button>
+                data-bs-dismiss="modal"
+                aria-label="Cerrar"></button>
             </div>
 
-            <form
-              id="formAddEditUser"
-              method="POST"
-              action="{{ route('admin.usuarios.store') }}"
-              enctype="multipart/form-data">
+            <form id="formAddEditUser" method="POST" action="{{ route('admin.usuarios.store') }}" enctype="multipart/form-data">
+
               @csrf
+
               <div class="modal-body">
                 <input type="hidden" id="userId" name="id" />
 
-                <div class="mb-3">
-                  <label for="userName" class="form-label text-white">Nombre completo</label>
-                  <input
-                    type="text"
-                    class="form-control text-white border-0"
-                    id="userName"
-                    name="nombre_completo"
-                    placeholder="Ej. Laura Martínez"
-                    required />
+                <!-- Nombre y Cédula -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="userName" class="form-label text-white">Nombre completo</label>
+                    <input
+                      type="text"
+                      class="form-control text-white border-0"
+                      id="userName"
+                      name="nombre_completo"
+                      placeholder="Ej. Laura Martínez"
+                      required />
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="userCedula" class="form-label text-white">Cédula</label>
+                    <input
+                      type="text"
+                      class="form-control text-white border-0"
+                      id="userCedula"
+                      name="cedula"
+                      placeholder="Ej. 123456789"
+                      required />
+                  </div>
                 </div>
+
+                <!-- Foto de perfil -->
                 <div class="text-center mb-3">
                   <img
                     id="previewUserImage"
                     src="{{ asset('storage/usuarios/default.png') }}"
                     alt="Foto de perfil"
-                    class="rounded-circle border border-secondary"
+                    class="rounded-circle border border-secondary mb-2"
                     width="100"
                     height="100" />
+                  <div>
+                    <label for="userPhoto" class="form-label text-white">Foto de perfil</label>
+                    <input
+                      type="file"
+                      class="form-control text-white border-0"
+                      id="userPhoto"
+                      name="foto"
+                      accept="image/*" />
+                  </div>
                 </div>
 
-                <div class="mb-3">
-                  <label for="userPhoto" class="form-label text-white">Foto de perfil</label>
-                  <input type="file" class="form-control text-white border-0" id="userPhoto" name="foto" accept="image/*" />
+                <!-- Correo y Teléfono -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="userEmail" class="form-label text-white">Correo electrónico</label>
+                    <input
+                      type="email"
+                      class="form-control text-white border-0"
+                      id="userEmail"
+                      name="correo"
+                      placeholder="usuario@correo.com"
+                      required />
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="userPhone" class="form-label text-white">Teléfono</label>
+                    <input
+                      type="text"
+                      class="form-control text-white border-0"
+                      id="userPhone"
+                      name="telefono"
+                      placeholder="Ej. 3101234567" />
+                  </div>
                 </div>
 
-                <div class="mb-3">
-                  <label for="userCedula" class="form-label text-white">Cédula</label>
-                  <input
-                    type="text"
-                    class="form-control text-white border-0"
-                    id="userCedula"
-                    name="cedula"
-                    placeholder="Ej. 123456789"
-                    required />
-                </div>
-
-                <div class="mb-3">
-                  <label for="userEmail" class="form-label text-white">Correo electrónico</label>
-                  <input
-                    type="email"
-                    class="form-control text-white border-0"
-                    id="userEmail"
-                    name="correo"
-                    placeholder="usuario@correo.com"
-                    required />
-                </div>
-
+                <!-- Rol -->
                 <div class="mb-3">
                   <label for="userRole" class="form-label text-white">Rol</label>
                   <select
@@ -335,41 +275,42 @@
                   </select>
                 </div>
 
-                <div class="mb-3 position-relative">
-                  <label class="form-label text-white">Contraseña</label>
-                  <div class="input-group">
+                <!-- Contraseña y Confirmar Contraseña -->
+                <div class="row mb-3">
+                  <div class="col-md-6 position-relative">
+                    <label class="form-label text-white">Contraseña</label>
+                    <div class="input-group">
+                      <input
+                        type="password"
+                        name="password"
+                        id="userPassword"
+                        class="form-control text-white border-0"
+                        placeholder="********"
+                        required />
+                      <button
+                        class="btn btn-outline-secondary"
+                        type="button"
+                        id="togglePassword"
+                        tabindex="-1">
+                        <i data-feather="eye" id="eyeIcon"></i>
+                      </button>
+                    </div>
+                    <small class="text-secondary d-block mt-1">
+                      Mínimo <strong>8 caracteres</strong>, una <strong>mayúscula</strong>,
+                      un <strong>número</strong> y un <strong>símbolo</strong>.
+                    </small>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="userPasswordConfirmation" class="form-label text-white">Confirmar contraseña</label>
                     <input
                       type="password"
-                      name="password"
-                      id="userPassword"
                       class="form-control text-white border-0"
+                      id="userPasswordConfirmation"
+                      name="password_confirmation"
                       placeholder="********"
                       required />
-                    <button
-                      class="btn btn-outline-secondary"
-                      type="button"
-                      id="togglePassword"
-                      tabindex="-1">
-                      <i data-feather="eye" id="eyeIcon"></i>
-                    </button>
                   </div>
-                  <small class="text-secondary d-block mt-1">
-                    La contraseña debe tener al menos <strong>8 caracteres</strong>,
-                    una <strong>mayúscula</strong>, un <strong>número</strong> y un
-                    <strong>símbolo</strong>.
-                  </small>
-                </div>
-
-
-                <div class="mb-3">
-                  <label for="userPasswordConfirmation" class="form-label text-white">Confirmar contraseña</label>
-                  <input
-                    type="password"
-                    class="form-control text-white border-0"
-                    id="userPasswordConfirmation"
-                    name="password_confirmation"
-                    placeholder="********"
-                    required />
                 </div>
               </div>
 
@@ -388,85 +329,6 @@
           </div>
         </div>
       </div>
-      <!-- Alerta usuario -->
-      <script>
-        document.getElementById('formAddEditUser').addEventListener('submit', async function(e) {
-          e.preventDefault();
-
-          const form = this;
-          const formData = new FormData(form);
-
-          try {
-            const response = await fetch(form.action, {
-              method: 'POST',
-              body: formData,
-              headers: {
-                'X-CSRF-TOKEN': form.querySelector('input[name="_token"]').value,
-                'Accept': 'application/json'
-              }
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-
-              Swal.fire({
-                icon: 'success',
-                title: '¡Usuario registrado!',
-                text: data.message || 'El usuario fue registrado correctamente.',
-                timer: 2500,
-                iconColor: '#fcb92c',
-                showConfirmButton: false
-              });
-
-              // Cerrar el modal
-              const modal = bootstrap.Modal.getInstance(document.getElementById('addEditUserModal'));
-              modal.hide();
-
-              // Limpiar el formulario
-              form.reset();
-
-              // Opcional: recargar tabla o página
-              // location.reload();
-            } else if (response.status === 422) {
-              const errorData = await response.json();
-
-              if (errorData.errors && Object.keys(errorData.errors).length > 0) {
-                const primerCampo = Object.keys(errorData.errors)[0];
-                const mensajes = errorData.errors[primerCampo];
-                const primerMensaje = Array.isArray(mensajes) ? mensajes[0] : mensajes;
-
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Error de validación',
-                  text: primerMensaje || 'Ocurrió un error de validación.',
-                  confirmButtonColor: '#222E3C',
-                  iconColor: '#fcb92c',
-                  confirmButtonText: 'Entendido'
-                });
-              } else {
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Error de validación',
-                  text: 'Por favor revisa los campos del formulario.',
-                  confirmButtonColor: '#222E3C',
-                  iconColor: '#fcb92c'
-                });
-              }
-            }
-
-          } catch (error) {
-            console.error(error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error del servidor',
-              text: 'Ocurrió un problema al procesar la solicitud.',
-              confirmButtonColor: '#222E3C',
-              iconColor: '#fcb92c'
-            });
-          }
-        });
-       
-      </script>
 
 
       <!-- Modal Eliminar Usuario -->

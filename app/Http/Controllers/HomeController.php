@@ -77,79 +77,58 @@ class HomeController extends Controller
     }
     public function store(Request $request)
     {
-        // 🔹 Validar los datos recibidos
-        $validator = Validator::make($request->all(), [
-            'nombre_completo' => 'required|string|max:150',
-            'correo' => 'required|email|unique:usuarios,correo',
-            'cedula' => 'required|string|max:20|unique:usuarios,cedula',
-            'rol' => 'required|in:Administrador,Contador,Recepcionista',
-            'password' => [
-                'required',
-                'confirmed',
-                Password::min(8)
-                    ->mixedCase()
-                    ->letters()
-                    ->numbers()
-                    ->symbols()
-            ],
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ], [
-            // 🔹 Mensajes personalizados
-            'nombre_completo.required' => 'El nombre completo es obligatorio. ',
-            'correo.required' => 'El correo electrónico es obligatorio. ',
-            'correo.email' => 'Debe ingresar un correo válido. ',
-            'correo.unique' => 'El correo ya está registrado. ',
-            'cedula.required' => 'La cédula es obligatoria. ',
-            'cedula.unique' => 'La cédula ya está registrada. ',
-            'rol.required' => 'Debe seleccionar un rol.',
-            'password.required' => 'Debe ingresar una contraseña. ',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.mixed' => 'La contraseña debe incluir mayúsculas y minúsculas.',
-            'password.letters' => 'La contraseña debe contener al menos una letra.',
-            'password.numbers' => 'La contraseña debe incluir al menos un número.',
-            'password.symbols' => 'La contraseña debe incluir al menos un carácter especial.',
-            'password.confirmed' => 'Las contraseñas no coinciden.',
-            'foto.image' => 'El archivo debe ser una imagen (JPG, JPEG o PNG). ',
-            'foto.max' => 'La imagen no debe superar los 2MB. ',
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'nombre_completo' => 'required|string|max:150',
+                'correo' => 'required|email|unique:usuarios,correo',
+                'cedula' => 'required|string|max:20|unique:usuarios,cedula',
+                'rol' => 'required|in:Administrador,Contador,Recepcionista',
+                'password' => [
+                    'required',
+                    'confirmed',
+                    Password::min(8)
+                        ->mixedCase()
+                        ->letters()
+                        ->numbers()
+                        ->symbols()
+                ],
+                'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            ]);
 
-        // 🔹 Si hay errores, responder con JSON si la petición es AJAX
-        if ($validator->fails()) {
-            if ($request->expectsJson()) {
+            if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
-            return back()->withErrors($validator)->withInput();
-        }
 
-        // 🔹 Subir la foto si existe
-        $fotoPath = null;
-        if ($request->hasFile('foto')) {
-            $fotoPath = $request->file('foto')->store('usuarios/fotos', 'public');
-        }
+            $fotoPath = null;
+            if ($request->hasFile('foto')) {
+                $fotoPath = $request->file('foto')->store('usuarios/fotos', 'public');
+            }
 
-        // 🔹 Crear el usuario
-        $usuario = Usuario::create([
-            'nombre_completo' => $request->nombre_completo,
-            'correo' => $request->correo,
-            'cedula' => $request->cedula,
-            'rol' => $request->rol,
-            'password' => Hash::make($request->password),
-            'foto' => $fotoPath,
-        ]);
+            $usuario = Usuario::create([
+                'nombre_completo' => $request->nombre_completo,
+                'correo' => $request->correo,
+                'cedula' => $request->cedula,
+                'telefono' => $request->telefono,
+                'rol' => $request->rol,
+                'password' => Hash::make($request->password),
+                'foto' => $fotoPath,
+            ]);
 
-        // 🔹 Responder según el tipo de solicitud
-        if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Usuario registrado correctamente.',
                 'usuario' => $usuario,
             ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'linea' => $e->getLine(),
+            ], 500);
         }
-
-        return redirect()->route('admin.usuarios.index')
-            ->with('success', 'Usuario registrado correctamente.');
     }
-    public function edit($id)
+
+    public function editUsuario($id)
     {
         $usuario = \App\Models\Usuario::findOrFail($id);
 
@@ -159,13 +138,14 @@ class HomeController extends Controller
             'nombre_completo' => $usuario->nombre_completo,
             'correo' => $usuario->correo,
             'rol' => $usuario->rol,
+            'telefono' => $usuario->telefono,
             'cedula' => $usuario->cedula,
             'foto' => $usuario->foto
                 ? asset('storage/' . $usuario->foto)
                 : asset('storage/usuarios/default.png'),
         ]);
     }
-    public function update(Request $request, $id)
+    public function updateUsuario(Request $request, $id)
     {
         $usuario = \App\Models\Usuario::findOrFail($id);
 
@@ -173,6 +153,7 @@ class HomeController extends Controller
             'nombre_completo' => 'required|string|max:255',
             'correo' => 'required|email|unique:usuarios,correo,' . $id,
             'rol' => 'required|string',
+            'telefono' => 'nullable|string|max:10',
             'cedula' => 'required|string|max:20|unique:usuarios,cedula,' . $id,
             'foto' => 'nullable|image|max:2048',
         ]);
@@ -180,6 +161,7 @@ class HomeController extends Controller
         $usuario->nombre_completo = $request->nombre_completo;
         $usuario->correo = $request->correo;
         $usuario->rol = $request->rol;
+        $usuario->telefono = $request->telefono;
         $usuario->cedula = $request->cedula;
 
         if ($request->hasFile('foto')) {
