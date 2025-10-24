@@ -144,9 +144,11 @@
                               class="btn btn-sm btn-outline-danger deleteRole"
                               data-bs-toggle="modal"
                               data-bs-target="#deleteUserModal"
-                              data-id="{{ $usuario->id }}">
+                              data-id="{{ $usuario->id }}"
+                              data-name="{{ $usuario->nombre_completo }}">
                               <i data-feather="trash-2"></i>
                             </button>
+
                           </td>
                         </tr>
                         @empty
@@ -287,7 +289,7 @@
                         name="password"
                         id="userPassword"
                         class="form-control text-white border-0"
-                        placeholder="********"/>
+                        placeholder="********" />
                       <button
                         class="btn btn-outline-secondary"
                         type="button"
@@ -362,13 +364,14 @@
                 data-bs-dismiss="modal">
                 Cancelar
               </button>
-              <button type="button" class="btn btn-danger">
+              <button type="button" class="btn btn-danger" id="confirmDeleteUser">
                 <i data-feather="trash-2" class="me-1"></i> Eliminar
               </button>
             </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
   <script src="../js/app.js"></script>

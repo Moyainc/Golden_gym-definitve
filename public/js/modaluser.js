@@ -195,4 +195,65 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 🧹 Limpiar formulario al cerrar modal
     modal.addEventListener("hidden.bs.modal", () => resetForm("nuevo"));
+
+    
+
+
+    const deleteModal = document.getElementById("deleteUserModal");
+    const deleteUserName = document.getElementById("deleteUserName");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteUser");
+    let selectedUserId = null;
+
+    // Abrir modal de eliminar
+    document.querySelectorAll(".deleteRole").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            selectedUserId = btn.dataset.id;
+            const name = btn.dataset.name;
+            deleteUserName.textContent = name;
+
+            const bsModal = new bootstrap.Modal(deleteModal);
+            bsModal.show();
+        });
+    });
+
+    // Confirmar eliminación
+    confirmDeleteBtn.addEventListener("click", async () => {
+        if (!selectedUserId) return;
+
+        try {
+            const response = await fetch(`/admin/usuarios/${selectedUserId}`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": document.querySelector(
+                        'meta[name="csrf-token"]'
+                    ).content,
+                },
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Usuario eliminado",
+                    text: result.message,
+                    confirmButtonColor: "#f8b400",
+                }).then(() => {
+                    const bsModal = bootstrap.Modal.getInstance(deleteModal);
+                    bsModal.hide();
+                    location.reload();
+                });
+            } else {
+                throw new Error(result?.message || "Error al eliminar usuario");
+            }
+        } catch (error) {
+            console.error("❌ Error al eliminar usuario:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Ocurrió un error al eliminar el usuario.",
+                confirmButtonColor: "#e63946",
+            });
+        }
+    });
 });

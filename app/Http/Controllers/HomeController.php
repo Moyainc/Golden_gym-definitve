@@ -180,4 +180,28 @@ class HomeController extends Controller
             'message' => 'Usuario actualizado correctamente',
         ]);
     }
+
+    public function destroyUsuario($id)
+    {
+        try {
+            $user = Usuario::findOrFail($id);
+
+            // Si tiene foto distinta a la default, eliminar archivo
+            if ($user->foto && $user->foto !== 'usuarios/default.png') {
+                Storage::delete('public/' . $user->foto);
+            }
+
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'El usuario ha sido eliminado correctamente.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudo eliminar el usuario.'
+            ], 500);
+        }
+    }
 }
