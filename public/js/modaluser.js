@@ -8,17 +8,39 @@ document.addEventListener("DOMContentLoaded", () => {
     const eyeIcon = document.getElementById("eyeIcon");
     const modalTitle = document.getElementById("addEditUserModalLabel");
     const saveButton = form.querySelector("button[type='submit']");
-
     const DEFAULT_IMG = "{{ asset('storage/usuarios/default.png') }}";
 
+    // Campos de contraseña
+    const passwordGroup = document.querySelectorAll(".row.mb-3")[2]; // bloque de contraseñas
+    let changePasswordBtn = null;
+
     // 🔄 Restablecer formulario
-    const resetForm = () => {
+    const resetForm = (mode = "nuevo") => {
         form.reset();
         previewImg.src = DEFAULT_IMG;
-        modalTitle.innerHTML = `<i data-feather="user-plus" class="me-1"></i> Nuevo usuario`;
-        saveButton.innerHTML = `<i data-feather="save" class="me-1"></i> Guardar usuario`;
         feather.replace();
+
+        // Ocultar campos de contraseña y quitar botón "Cambiar contraseña"
+        passwordGroup.classList.add("d-none");
+        passwordGroup.classList.remove("d-flex");
+        if (changePasswordBtn) {
+            changePasswordBtn.remove();
+            changePasswordBtn = null;
+        }
+
+        if (mode === "nuevo") {
+            modalTitle.innerHTML = `<i data-feather="user-plus" class="me-1"></i> Nuevo usuario`;
+            saveButton.innerHTML = `<i data-feather="save" class="me-1"></i> Guardar usuario`;
+            form.action = "{{ route('admin.usuarios.store') }}";
+
+            form.action = form.dataset.url;
+
+            // Mostrar campos de contraseña en fila
+            passwordGroup.classList.remove("d-none");
+            passwordGroup.classList.add("d-flex");
+        }
     };
+
 
     // 📸 Vista previa imagen
     fileInput?.addEventListener("change", (e) => {
@@ -40,24 +62,90 @@ document.addEventListener("DOMContentLoaded", () => {
         feather.replace();
     });
 
-    // 🚀 Envío del formulario por AJAX
+    // ✏️ Modo edición
+    document.querySelectorAll(".editRole").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const userId = btn.dataset.id;
+            resetForm("editar");
+
+            try {
+                const response = await fetch(`/admin/usuarios/${userId}/edit`);
+                if (!response.ok)
+                    throw new Error(
+                        "No se pudieron cargar los datos del usuario."
+                    );
+
+                const data = await response.json();
+
+                // 🧩 Rellenar los campos
+                document.getElementById("userId").value = data.id;
+                document.getElementById("userName").value =
+                    data.nombre_completo;
+                document.getElementById("userCedula").value = data.cedula;
+                document.getElementById("userEmail").value = data.correo;
+                document.getElementById("userPhone").value =
+                    data.telefono || "";
+                document.getElementById("userRole").value = data.rol;
+                previewImg.src = data.foto
+                    ? `/storage/${data.foto}`
+                    : DEFAULT_IMG;
+
+                // ⚙️ Ajustes del modal
+                modalTitle.innerHTML = `<i data-feather="edit" class="me-1"></i> Editar usuario`;
+                saveButton.innerHTML = `<i data-feather="save" class="me-1"></i> Actualizar usuario`;
+                form.action = `/admin/usuarios/${userId}`;
+                passwordGroup.style.display = "none"; // ocultar contraseñas
+
+                // 🔁 Botón "Cambiar contraseña"
+                changePasswordBtn = document.createElement("button");
+                changePasswordBtn.type = "button";
+                changePasswordBtn.className = "btn btn-outline-warning mb-3";
+                changePasswordBtn.innerHTML = `<i data-feather="lock"></i> Cambiar contraseña`;
+                passwordGroup.parentElement.insertBefore(
+                    changePasswordBtn,
+                    passwordGroup
+                );
+
+                feather.replace();
+
+                changePasswordBtn.addEventListener("click", () => {
+                    passwordGroup.classList.remove("d-none");
+                    passwordGroup.classList.add("d-flex"); // mantener fila
+                    changePasswordBtn.remove();
+                    changePasswordBtn = null;
+                });
+            } catch (error) {
+                console.error("❌ Error al cargar usuario:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "No se pudieron cargar los datos del usuario.",
+                    confirmButtonColor: "#e63946",
+                });
+            }
+        });
+    });
+
+    // 🚀 Envío del formulario (crear o editar)
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const formData = new FormData(form);
+        const userId = document.getElementById("userId").value;
+        const isEdit = !!userId;
 
         try {
             const response = await fetch(form.action, {
-                method: "POST",
+                method: isEdit ? "POST" : "POST",
                 body: formData,
                 headers: {
                     "X-CSRF-TOKEN": document.querySelector(
                         'meta[name="csrf-token"]'
                     ).content,
+                    "X-HTTP-Method-Override": isEdit ? "PUT" : "POST",
                 },
             });
 
-            // Intentar convertir a JSON solo si la respuesta tiene contenido
             let result;
             try {
                 result = await response.json();
@@ -68,7 +156,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (response.ok && result?.success) {
                 Swal.fire({
                     icon: "success",
-                    title: "Usuario registrado",
+                    title: isEdit
+                        ? "Usuario actualizado"
+                        : "Usuario registrado",
                     text: result.message,
                     confirmButtonColor: "#f8b400",
                 }).then(() => {
@@ -78,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     location.reload();
                 });
             } else if (response.status === 422 && result?.errors) {
-                // ⚠️ Mostrar errores de validación
                 const errores = Object.values(result.errors)
                     .map((e) => e.join("\n"))
                     .join("\n\n");
@@ -90,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             } else {
                 throw new Error(
-                    result?.message || "Error al registrar el usuario"
+                    result?.message || "Error al procesar el formulario."
                 );
             }
         } catch (error) {
@@ -98,12 +187,12 @@ document.addEventListener("DOMContentLoaded", () => {
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Ocurrió un error inesperado al registrar el usuario.",
+                text: "Ocurrió un error inesperado al procesar el formulario.",
                 confirmButtonColor: "#e63946",
             });
         }
     });
 
     // 🧹 Limpiar formulario al cerrar modal
-    modal.addEventListener("hidden.bs.modal", resetForm);
+    modal.addEventListener("hidden.bs.modal", () => resetForm("nuevo"));
 });

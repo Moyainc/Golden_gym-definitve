@@ -184,7 +184,9 @@
                 aria-label="Cerrar"></button>
             </div>
 
-            <form id="formAddEditUser" method="POST" action="{{ route('admin.usuarios.store') }}" enctype="multipart/form-data">
+            <form id="formAddEditUser" method="POST"
+              data-url="{{ route('admin.usuarios.store') }}"
+              enctype="multipart/form-data">
 
               @csrf
 
@@ -276,7 +278,7 @@
                 </div>
 
                 <!-- Contraseña y Confirmar Contraseña -->
-                <div class="row mb-3">
+                <div class="row mb-3" id="passwordFields">
                   <div class="col-md-6 position-relative">
                     <label class="form-label text-white">Contraseña</label>
                     <div class="input-group">
@@ -285,8 +287,7 @@
                         name="password"
                         id="userPassword"
                         class="form-control text-white border-0"
-                        placeholder="********"
-                        required />
+                        placeholder="********"/>
                       <button
                         class="btn btn-outline-secondary"
                         type="button"
@@ -308,8 +309,7 @@
                       class="form-control text-white border-0"
                       id="userPasswordConfirmation"
                       name="password_confirmation"
-                      placeholder="********"
-                      required />
+                      placeholder="********" />
                   </div>
                 </div>
               </div>

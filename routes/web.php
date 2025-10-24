@@ -18,5 +18,5 @@ Route::get('admin/ventas/vender', [HomeController::class, 'vender'])->name('admi
 Route::get('admin/ventas/lista-ventas', [HomeController::class, 'lista_ventas'])->name('admin.lista_ventas');
 Route::post('/admin/usuarios', [HomeController::class, 'store'])->name('admin.usuarios.store');
 Route::get('/admin/usuarios/{id}/edit', [HomeController::class, 'editUsuario'])->name('admin.usuarios.edit');
-Route::put('/admin/usuarios/{id}', [HomeController::class, 'update'])->name('admin.usuarios.update');
+Route::put('/admin/usuarios/{id}', [HomeController::class, 'updateUsuario'])->name('admin.usuarios.update');
 Route::delete('/admin/usuarios/{id}', [HomeController::class, 'destroy'])->name('admin.usuarios.destroy');
