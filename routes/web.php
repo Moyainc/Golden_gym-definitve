@@ -22,3 +22,4 @@ Route::get('/admin/usuarios/{id}/edit', [HomeController::class, 'editUsuario'])-
 Route::put('/admin/usuarios/{id}', [HomeController::class, 'updateUsuario'])->name('admin.usuarios.update');
 Route::delete('/admin/usuarios/{id}', [HomeController::class, 'destroyUsuario'])->name('admin.usuarios.destroy');
 Route::post('sign-up', [HomeController::class, 'registerUsuario'])->name('usuario.register');
+Route::post('sign-in', [HomeController::class, 'loginUsuario'])->name('usuario.login');

@@ -256,4 +256,43 @@ class HomeController extends Controller
             ], 500);
         }
     }
+
+    public function loginUsuario(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'correo' => 'required|email|exists:usuarios,correo',
+            'password' => 'required|string',
+        ], [
+            'correo.required' => 'El correo es obligatorio.',
+            'correo.email' => 'El correo debe ser válido.',
+            'correo.exists' => 'No se encontró este correo en la base de datos.',
+            'password.required' => 'La contraseña es obligatoria.'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $credentials = [
+            'correo' => $request->correo,
+            'password' => $request->password,
+        ];
+
+        if (Auth::attempt($credentials, $request->has('remember'))) {
+            $request->session()->regenerate();
+            return response()->json([
+                'success' => true,
+                'message' => 'Inicio de sesión exitoso',
+                'redirect' => route('dashboard') // Ajusta a tu ruta interna
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Correo o contraseña incorrectos.'
+        ], 401);
+    }
 }

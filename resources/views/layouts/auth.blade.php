@@ -18,12 +18,12 @@
     <main class="grow">
         @yield('content')
 
-        <footer class="text-center py-4 small text-muted">
-            &copy; {{ date('Y') }} Golden Gym. Todos los derechos reservados.
-        </footer>
+
     </main>
 
-    <!-- Footer -->
+    <footer class="text-center py-4 small text-muted">
+        &copy; {{ date('Y') }} Golden Gym. Todos los derechos reservados.
+    </footer>
 
 
 </body>

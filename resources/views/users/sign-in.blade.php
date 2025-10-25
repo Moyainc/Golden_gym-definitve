@@ -1,110 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <meta
-      name="description"
-      content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5"
-    />
-    <meta name="author" content="AdminKit" />
-    <meta
-      name="keywords"
-      content="adminkit, bootstrap, bootstrap 5, admin, dashboard, template, responsive, css, sass, html, theme, front-end, ui kit, web"
-    />
+@extends('layouts.auth')
+@section('title', 'Iniciar Sesion - Golden Gym')
 
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link rel="shortcut icon" href="img/icons/icon-48x48.png" />
+@section('content')
 
+<body>
 
-    <title>Sign In | AdminKit Demo</title>
+  <main class="d-flex align-items-center py-3">
+    <div class="container d-flex flex-column">
+      <div class="row">
+        <div
+          class="col-sm-10 col-md-8 col-lg-6 col-xl-5 mx-auto d-table">
+          <div class="d-table-cell align-middle">
+            <a class="sidebar-brand">
+              <img src="../img/icons/golden_gym.png" class="sidebar-logo" />
+            </a>
+            <div class="text-center mt-4">
+              <h1 class="text-light h2">Bienvenido de nuevo!</h1>
+              <p class="medium">Inicie sesion con su cuenta para continuar</p>
+            </div>
 
-    <link href="../css/app.css" rel="stylesheet" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+            <div class="card">
+              <div class="card-body">
+                <div class="m-sm-3">
+                  <form id="loginForm" method="POST" action="{{ route('usuario.login') }}">
+                    @csrf
+                    <div class="mb-3">
+                      <label class="form-label">Correo</label>
+                      <input
+                        class="form-control form-control-lg"
+                        type="email"
+                        name="correo"
+                        placeholder="Ingrese su correo"
+                        required />
+                    </div>
 
-  <body>
+                    <div class="mb-3">
+                      <label class="form-label">Contraseña</label>
+                      <input
+                        class="form-control form-control-lg"
+                        type="password"
+                        name="password"
+                        placeholder="Ingrese su contraseña"
+                        required />
+                    </div>
 
-    <main class="d-flex w-100">
-      <div class="container d-flex flex-column">
-        <div class="row vh-100">
-          <div
-            class="col-sm-10 col-md-8 col-lg-6 col-xl-5 mx-auto d-table h-100"
-          >
-            <div class="d-table-cell align-middle">
-              <a class="sidebar-brand">
-                <img src="../img/icons/golden_gym.png" class="sidebar-logo" />
-              </a>
-              <div class="text-center mt-4">
-                <h1 class="text-light h2">Bienvenido de nuevo!</h1>
-                <p class="medium">Inicie sesion con su cuenta para continuar</p>
-              </div>
+                    <div class="form-check align-items-center mb-3">
+                      <input
+                        id="rememberMe"
+                        type="checkbox"
+                        class="form-check-input text-black"
+                        name="remember"
+                        checked />
+                      <label class="form-check-label text-small" for="rememberMe">Recordar</label>
+                    </div>
 
-              <div class="card">
-                <div class="card-body">
-                  <div class="m-sm-3">
-                    <form>
-                      <div class="mb-3">
-                        <label class="form-label">Correo</label>
-                        <input
-                          class="form-control form-control-lg"
-                          type="email"
-                          name="email"
-                          placeholder="Ingrese su correo"
-                        />
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label">Contraseña</label>
-                        <input
-                          class="form-control form-control-lg"
-                          type="password"
-                          name="password"
-                          placeholder="Ingrese su contraseña"
-                        />
-                      </div>
-                      <div>
-                        <div class="form-check align-items-center">
-                          <input
-                            id="customControlInline"
-                            type="checkbox"
-                            class="form-check-input text-black"
-                            value="remember-me"
-                            name="remember-me"
-                            checked
-                          />
-                          <label
-                            class="form-check-label text-small"
-                            for="customControlInline"
-                            >Recordar</label
-                          >
-                        </div>
-                      </div>
-                      <div class="d-grid gap-2 mt-3">
-                        <a href="index.html" class="btn btn-lg btn-primary"
-                          >Sign in</a
-                        >
-                      </div>
-                    </form>
-                  </div>
+                    <div class="d-grid gap-2 mt-3">
+                      <button type="submit" class="btn btn-md btn-primary text-black">Iniciar sesión</button>
+                    </div>
+                  </form>
+
                 </div>
               </div>
-              <div class="text-center mb-3">
-                No tienes una cuenta?
-                <a class="tittle-color" href="{{ route('user.register') }}">Registrar</a>
-              </div>
+            </div>
+            <div class="text-center mb-3">
+              No tienes una cuenta?
+              <a class="tittle-color" href="{{ route('user.register') }}">Registrar</a>
             </div>
           </div>
         </div>
       </div>
-    </main>
+    </div>
+  </main>
 
-    <script src="../js/app.js"></script>
-  </body>
-</html>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{{ asset('js/inicio.js') }}"></script>
+</body>
+
+@endsection
