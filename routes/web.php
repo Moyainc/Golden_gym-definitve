@@ -11,8 +11,8 @@ Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin
 Route::get('admin/membresias', [HomeController::class, 'membresias'])->name('admin.membresias');
 Route::get('admin/productos', [HomeController::    class, 'productos'])->name('admin.productos');
 Route::get('admin/profile', [HomeController::class, 'profile'])->name('admin.profile');
-Route::get('admin/sign-in', [HomeController::class, 'login'])->name('admin.login');
-Route::get('admin/sign-up', [HomeController::class, 'register'])->name('admin.register');
+Route::get('sign-in', [HomeController::class, 'login'])->name('user.login');
+Route::get('sign-up', [HomeController::class, 'register'])->name('user.register');
 Route::get('admin/usuarios', [HomeController::class, 'usuarios'])->name('admin.usuarios');
 Route::get('admin/ventas/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen_ventas');
 Route::get('admin/ventas/vender', [HomeController::class, 'vender'])->name('admin.vender');
@@ -21,3 +21,4 @@ Route::post('/admin/usuarios', [HomeController::class, 'store'])->name('admin.us
 Route::get('/admin/usuarios/{id}/edit', [HomeController::class, 'editUsuario'])->name('admin.usuarios.edit');
 Route::put('/admin/usuarios/{id}', [HomeController::class, 'updateUsuario'])->name('admin.usuarios.update');
 Route::delete('/admin/usuarios/{id}', [HomeController::class, 'destroyUsuario'])->name('admin.usuarios.destroy');
+Route::post('sign-up', [HomeController::class, 'registerUsuario'])->name('usuario.register');

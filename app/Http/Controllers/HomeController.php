@@ -49,11 +49,11 @@ class HomeController extends Controller
     }
     public function login()
     {
-        return view('admin/sign-in');
+        return view('users/sign-in');
     }
     public function register()
     {
-        return view('admin/sign-up');
+        return view('users/sign-up');
     }
     public function usuarios()
     {
@@ -205,6 +205,54 @@ class HomeController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'No se pudo eliminar el usuario.'
+            ], 500);
+        }
+    }
+
+    public function registerUsuario(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'nombre_completo' => 'required|string|max:150',
+                'correo' => 'required|email|unique:usuarios,correo',
+                'cedula' => 'nullable|string|max:20|unique:usuarios,cedula',
+                'telefono' => 'required|string|max:15',
+                'password' => [
+                    'required',
+                    'confirmed',
+                    Password::min(8)
+                        ->mixedCase()
+                        ->letters()
+                        ->numbers()
+                        ->symbols()
+                ],
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $usuario = Usuario::create([
+                'nombre_completo' => $request->nombre_completo,
+                'correo' => $request->correo,
+                'cedula' => $request->cedula,
+                'telefono' => $request->telefono,
+                'rol' => 'Usuario', // siempre Usuario
+                'password' => Hash::make($request->password),
+                'foto' => 'usuarios/default.png',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cuenta creada correctamente.',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error inesperado: ' . $e->getMessage(),
             ], 500);
         }
     }

@@ -3,10 +3,9 @@
 
 @section('content')
 
-
 <body>
 
-  <main class="d-flex min-vh-100">
+  <main class="d-flex vh-100">
     <div class="container d-flex align-items-center">
       <div class="row justify-content-center gap-5">
 
@@ -15,12 +14,14 @@
           <img src="{{ asset('img/icons/golden_gym.png') }}" class="img-fluid mb-4" alt="Golden Gym">
         </div>
 
+
         <!-- Lado derecho: formulario -->
         <div class="col-sm-10 col-md-8 col-lg-5">
           <div class="d-flex flex-column justify-content-center h-100">
 
+
             <div class="text-center mb-4">
-              <h1 class="text-warning h2 mb-3">¡Bienvenido Administrador!</h1>
+              <h1 class="tittle-color h2 mb-3">¡Bienvenido Administrador!</h1>
               <p class="medium mb-4">
                 Con tu cuenta podrás gestionar usuarios, revisar registros y controlar todas las operaciones del gimnasio de manera segura y eficiente.
               </p>
@@ -28,7 +29,9 @@
 
             <div class="card shadow-lg">
               <div class="card-body">
-                <form id="registerForm">
+                <form id="registerForm" method="POST" action="{{ route('usuario.register') }}" enctype="multipart/form-data">
+
+                  @csrf
                   <h3 class="text-center text-white mb-4">Crea tu cuenta</h3>
 
                   <!-- Nombre y correo en línea -->
@@ -78,7 +81,12 @@
 
             <!-- Link a login -->
             <div class="text-center pt-2">
-              ¿Ya tienes una cuenta? <a href="" class="tittle-color">Inicia sesión</a>
+              ¿Ya tienes una cuenta? <a href="{{ route('user.login') }}" class="tittle-color">Inicia sesión</a>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+              <a href="{{ route('inicio') }}" class="btn btn-outline-warning btn-md shadow-sm">
+                <i data-feather="home" class="me-1"></i> Ir al inicio
+              </a>
             </div>
 
           </div>
@@ -89,10 +97,10 @@
   </main>
 
 
+  <script>
+    const loginUrl = "{{ route('user.login') }}";
+  </script>
+  <script src="{{ asset('js/inicio.js') }}"></script>
 
-
-  <script src="../js/app.js"></script>
 </body>
-
-</html>
 @endsection

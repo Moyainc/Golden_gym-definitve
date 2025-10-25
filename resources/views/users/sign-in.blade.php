@@ -96,8 +96,8 @@
                 </div>
               </div>
               <div class="text-center mb-3">
-                Don't have an account?
-                <a class="tittle-color" href="pages-sign-up.html">Sign up</a>
+                No tienes una cuenta?
+                <a class="tittle-color" href="{{ route('user.register') }}">Registrar</a>
               </div>
             </div>
           </div>
