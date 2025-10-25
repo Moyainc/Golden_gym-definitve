@@ -51,6 +51,10 @@ class HomeController extends Controller
     {
         return view('admin/sign-in');
     }
+    public function register()
+    {
+        return view('admin/sign-up');
+    }
     public function usuarios()
     {
         // Obtener todos los usuarios más recientes primero

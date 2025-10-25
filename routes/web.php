@@ -12,6 +12,7 @@ Route::get('admin/membresias', [HomeController::class, 'membresias'])->name('adm
 Route::get('admin/productos', [HomeController::    class, 'productos'])->name('admin.productos');
 Route::get('admin/profile', [HomeController::class, 'profile'])->name('admin.profile');
 Route::get('admin/sign-in', [HomeController::class, 'login'])->name('admin.login');
+Route::get('admin/sign-up', [HomeController::class, 'register'])->name('admin.register');
 Route::get('admin/usuarios', [HomeController::class, 'usuarios'])->name('admin.usuarios');
 Route::get('admin/ventas/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen_ventas');
 Route::get('admin/ventas/vender', [HomeController::class, 'vender'])->name('admin.vender');
