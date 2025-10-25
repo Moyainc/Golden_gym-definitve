@@ -15,7 +15,7 @@
               <img src="../img/icons/golden_gym.png" class="sidebar-logo" />
             </a>
             <div class="text-center mt-4">
-              <h1 class="text-light h2">Bienvenido de nuevo!</h1>
+              <h1 class="text-light fw-bolder h2">Bienvenido de nuevo!</h1>
               <p class="medium">Inicie sesion con su cuenta para continuar</p>
             </div>
 
@@ -24,6 +24,7 @@
                 <div class="m-sm-3">
                   <form id="loginForm" method="POST" action="{{ route('usuario.login') }}">
                     @csrf
+                    
                     <div class="mb-3">
                       <label class="form-label">Correo</label>
                       <input

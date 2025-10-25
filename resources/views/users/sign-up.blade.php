@@ -21,7 +21,7 @@
 
 
             <div class="text-center mb-4">
-              <h1 class="tittle-color h2 mb-3">¡Bienvenido Administrador!</h1>
+              <h1 class="tittle-color fw-bolder h2 mb-3">¡Bienvenido Administrador!</h1>
               <p class="medium mb-4">
                 Con tu cuenta podrás gestionar usuarios, revisar registros y controlar todas las operaciones del gimnasio de manera segura y eficiente.
               </p>
@@ -30,8 +30,8 @@
             <div class="card shadow-lg">
               <div class="card-body">
                 <form id="registerForm" method="POST" action="{{ route('usuario.register') }}" enctype="multipart/form-data">
-
                   @csrf
+
                   <h3 class="text-center text-white mb-4">Crea tu cuenta</h3>
 
                   <!-- Nombre y correo en línea -->
