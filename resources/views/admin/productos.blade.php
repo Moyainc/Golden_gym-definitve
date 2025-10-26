@@ -108,112 +108,58 @@
           </div>
 
           <!-- TABLA -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div
-              class="card-header d-flex justify-content-between align-items-center border-0">
-              <h5 class="text-warning mb-0">
-                <i data-feather="list" class="me-1"></i>Listado de Productos
-              </h5>
+          <div class="row g-4">
+            <!-- Tabla Productos -->
+            <div class="col-lg-8">
+              <div class="card border-0 shadow-sm mb-4 table-card">
+                <div class="card-header d-flex justify-content-between align-items-center border-0 py-4 px-3">
+                  <h5 class="text-warning mb-0">
+                    <i data-feather="list" class="me-1"></i>Listado de Productos
+                  </h5>
+                </div>
+                <div class="card-body table-responsive py-2 px-3">
+                  <table class="table table-hover table-sm mb-0">
+                    <thead class="text-warning border-secondary">
+                      <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Stock</th>
+                        <th>Precio</th>
+                        <th>Ventas</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="productTable" class="text-light">
+                      <!-- JS inserta filas aquí -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-            <div class="card-body table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="text-warning border-secondary">
-                  <tr>
-                    <th>ID</th>
-                    <th>Producto</th>
-                    <th>Categoría</th>
-                    <th>Stock</th>
-                    <th>Precio</th>
-                    <th>Ventas</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="productTable" class="text-light">
-                  <tr>
-                    <td>#001</td>
-                    <td>Proteína Whey Gold</td>
-                    <td>Proteínas</td>
-                    <td>
-                      <span class="badge text-black bg-success">45</span>
-                    </td>
-                    <td>$150.000</td>
-                    <td>23</td>
-                    <td>
-                      <span class="badge text-black bg-success">Activo</span>
-                    </td>
-                    <td>
-                      <button
-                        class="btn btn-sm btn-outline-light me-1 edit-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#productModal"
-                        data-mode="edit">
-                        <i data-feather="edit"></i>
-                      </button>
-                      <button
-                        class="btn btn-sm btn-outline-danger delete-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteProductModal">
-                        <i data-feather="trash-2"></i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>#002</td>
-                    <td>Guantes de Entrenamiento</td>
-                    <td>Accesorios</td>
-                    <td>
-                      <span class="badge text-black bg-warning">8</span>
-                    </td>
-                    <td>$60.000</td>
-                    <td>12</td>
-                    <td>
-                      <span class="badge text-black bg-warning">Bajo Stock</span>
-                    </td>
-                    <td>
-                      <button
-                        class="btn btn-sm btn-outline-light me-1 edit-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#productModal"
-                        data-mode="edit">
-                        <i data-feather="edit"></i>
-                      </button>
-                      <button
-                        class="btn btn-sm btn-outline-danger delete-btn"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteProductModal">
-                        <i data-feather="trash-2"></i>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
 
-          <!-- LISTADO DE CATEGORÍAS -->
-          <div class="card border-0 shadow-sm mb-4">
-            <div
-              class="card-header d-flex justify-content-between align-items-center border-0">
-              <h5 class="text-warning mb-0">
-                <i data-feather="folder" class="me-1"></i>Listado de
-                Categorías
-              </h5>
-            </div>
-            <div class="card-body table-responsive">
-              <table class="table table-hover align-middle mb-0">
-                <thead class="text-warning border-secondary">
-                  <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody id="categoryTable" class="text-light">
-                  <!-- Aquí el JS insertará las filas dinámicamente -->
-                </tbody>
-              </table>
+            <!-- Tabla Categorías -->
+            <div class="col-lg-4">
+              <div class="card border-0 shadow-sm mb-4 table-card">
+                <div class="card-header d-flex justify-content-between align-items-center border-0 py-4 px-3">
+                  <h5 class="text-warning mb-0">
+                    <i data-feather="folder" class="me-1"></i>Listado de Categorías
+                  </h5>
+                </div>
+                <div class="card-body table-responsive py-2 px-3">
+                  <table class="table table-hover table-sm mb-0">
+                    <thead class="text-warning border-secondary">
+                      <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="categoryTable" class="text-light">
+                      <!-- JS inserta filas aquí -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
         </div>

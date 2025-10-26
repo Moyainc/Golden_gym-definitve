@@ -1,177 +1,43 @@
-// CATEGORIASSSS
-
-//guardar Categorias
 document.addEventListener("DOMContentLoaded", () => {
-    document
-        .getElementById("saveCategoryBtn")
-        .addEventListener("click", async (e) => {
-            e.preventDefault();
+    const categoryTable = document.getElementById("categoryTable");
+    const newCategoryForm = document.getElementById("newCategoryForm");
+    const saveCategoryBtn = document.getElementById("saveCategoryBtn");
+    const deleteCategoryModalEl = document.getElementById(
+        "deleteCategoryModal"
+    );
+    const deleteCategoryModal = new bootstrap.Modal(deleteCategoryModalEl);
+    const newCategoryModalEl = document.getElementById("newCategoryModal");
+    const newCategoryModal = new bootstrap.Modal(newCategoryModalEl);
+    let editingCategoryId = null; // null = crear, si tiene valor = editar
+    let categoryIdToDelete = null;
 
-            const form = document.getElementById("newCategoryForm");
-            const formData = new FormData(form);
+    newCategoryModalEl.addEventListener("show.bs.modal", (event) => {
+        const triggerButton = event.relatedTarget; // botón que abrió el modal
+        if (!triggerButton.classList.contains("edit-category-btn")) {
+            // Si NO es un botón de editar, es "crear"
+            editingCategoryId = null;
 
-            try {
-                const csrfToken = document
-                    .querySelector('meta[name="csrf-token"]')
-                    .getAttribute("content");
+            // Limpiar formulario
+            newCategoryForm.reset();
 
-                const response = await fetch("/admin/categorias", {
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content"),
-                    },
-                    body: formData,
-                });
+            // Cambiar título y botón a "Guardar"
+            const modalTitle = newCategoryModalEl.querySelector(".modal-title");
+            modalTitle.textContent = "Nueva Categoría";
 
-                const data = await response.json();
+            saveCategoryBtn.innerHTML = `<i data-feather="save" class="me-1"></i>Guardar`;
 
-                if (response.ok) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "¡Éxito!",
-                        text: data.message,
-                        confirmButtonColor: "#ffc107",
-                    });
-                    form.reset();
-                    // Aquí puedes refrescar la lista de categorías si tienes una tabla
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: data.message || "No se pudo crear la categoría.",
-                    });
-                }
-            } catch (error) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Hubo un problema al conectar con el servidor.",
-                });
-            }
-        });
+            if (typeof feather !== "undefined") feather.replace();
+        }
+    });
 
-    //Editar Categoria
-
-    document
-        .getElementById("updateCategoryBtn")
-        ?.addEventListener("click", async (e) => {
-            e.preventDefault();
-
-            const id = document.getElementById("editCategoryId").value;
-            const form = document.getElementById("editCategoryForm");
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch(`/admin/categorias/${id}`, {
-                    method: "POST", // Laravel no acepta PUT con FormData directo
-                    headers: {
-                        "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                        "X-HTTP-Method-Override": "PUT",
-                    },
-                    body: formData,
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "¡Actualizado!",
-                        text: data.message,
-                        confirmButtonColor: "#ffc107",
-                    });
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text:
-                            data.message ||
-                            "No se pudo actualizar la categoría.",
-                    });
-                }
-            } catch (error) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Error de conexión con el servidor.",
-                });
-            }
-
-            //Eliminar Categoria
-            btn.addEventListener("click", async () => {
-                const id = btn.dataset.id;
-
-                const confirm = await Swal.fire({
-                    title: "¿Eliminar categoría?",
-                    text: "Esta acción no se puede deshacer.",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Sí, eliminar",
-                    cancelButtonText: "Cancelar",
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#6c757d",
-                });
-
-                if (confirm.isConfirmed) {
-                    try {
-                        const response = await fetch(
-                            `/admin/categorias/${id}`,
-                            {
-                                method: "POST",
-                                headers: {
-                                    "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                                    "X-HTTP-Method-Override": "DELETE",
-                                },
-                            }
-                        );
-
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Eliminado",
-                                text: data.message,
-                                confirmButtonColor: "#ffc107",
-                            });
-                            // Aquí podrías remover la fila de la tabla sin recargar
-                        } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Error",
-                                text:
-                                    data.message ||
-                                    "No se pudo eliminar la categoría.",
-                            });
-                        }
-                    } catch (error) {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "Error al conectar con el servidor.",
-                        });
-                    }
-                }
-            });
-
-            //Enviar lista de categorias
-
-            document.addEventListener("DOMContentLoaded", () => {
-                const categoryTable = document.getElementById("categoryTable");
-                const saveCategoryBtn =
-                    document.getElementById("saveCategoryBtn");
-                const form = document.getElementById("newCategoryForm");
-
-                // 🔹 Función para renderizar las categorías en la tabla
-                const renderCategories = (categorias) => {
-                    categoryTable.innerHTML = ""; // limpiar tabla
-
-                    categorias.forEach((cat) => {
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                <td>#C${String(cat.id).padStart(3, "0")}</td>
+    // ---------------------------
+    // Función para renderizar la tabla
+    // ---------------------------
+    const renderCategories = (categorias) => {
+        categoryTable.innerHTML = "";
+        categorias.forEach((cat) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
                 <td>${cat.nombre}</td>
                 <td>${cat.descripcion ?? "—"}</td>
                 <td>
@@ -188,171 +54,229 @@ document.addEventListener("DOMContentLoaded", () => {
                     <button
                         class="btn btn-sm btn-outline-danger delete-category-btn"
                         data-id="${cat.id}"
+                        data-nombre="${cat.nombre}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteCategoryModal"
                     >
                         <i data-feather="trash-2"></i>
                     </button>
                 </td>
             `;
-                        categoryTable.appendChild(row);
-                    });
+            categoryTable.appendChild(row);
+        });
 
-                    // Volver a dibujar los íconos de Feather
-                    if (typeof feather !== "undefined") {
-                        feather.replace();
-                    }
+        if (typeof feather !== "undefined") feather.replace();
+        attachEditEvents();
+        attachDeleteEvents();
+    };
 
-                    // Activar eventos para los botones eliminar (cuando los tengas implementados)
-                    // attachDeleteEvents();
-                };
+    // ---------------------------
+    // Cargar categorías desde backend
+    // ---------------------------
+    const loadCategories = async () => {
+        try {
+            const response = await fetch("/admin/categorias/list");
+            const data = await response.json();
+            renderCategories(data);
+        } catch (error) {
+            console.error("Error cargando categorías:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "No se pudieron cargar las categorías.",
+            });
+        }
+    };
 
-                // 🔹 Cargar categorías desde el backend
-                const loadCategories = async () => {
-                    try {
-                        const response = await fetch("/admin/categorias/list");
-                        const data = await response.json();
-                        renderCategories(data);
-                    } catch (error) {
-                        console.error("Error cargando categorías:", error);
-                    }
-                };
+    // ---------------------------
+    // Editar categoría
+    // ---------------------------
+    const attachEditEvents = () => {
+        document.querySelectorAll(".edit-category-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                editingCategoryId = btn.dataset.id;
+                const name = btn.dataset.nombre;
+                const description = btn.dataset.descripcion;
 
-                // 🔹 Guardar nueva categoría
-                saveCategoryBtn.addEventListener("click", async (e) => {
-                    e.preventDefault();
+                document.getElementById("categoryName").value = name;
+                document.getElementById("categoryDescription").value =
+                    description;
 
-                    const formData = new FormData(form);
+                const modalTitle = document.querySelector(
+                    "#newCategoryModal .modal-title"
+                );
+                modalTitle.textContent = `Editar Categoría`;
 
-                    // Agregar manualmente los campos del formulario si no tienen 'name'
-                    const nombre = document
-                        .getElementById("categoryName")
-                        .value.trim();
-                    const descripcion = document
-                        .getElementById("categoryDescription")
-                        .value.trim();
-                    formData.set("nombre", nombre);
-                    formData.set("descripcion", descripcion);
+                saveCategoryBtn.innerHTML = `<i data-feather="edit" class="me-1"></i>Actualizar`;
 
-                    try {
-                        const csrfToken = document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content");
+                if (typeof feather !== "undefined") feather.replace();
+            });
+        });
+    };
 
-                        const response = await fetch("/admin/categorias", {
+    // ---------------------------
+    // Crear o actualizar categoría
+    // ---------------------------
+    saveCategoryBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(newCategoryForm);
+        formData.set(
+            "nombre",
+            document.getElementById("categoryName").value.trim()
+        );
+        formData.set(
+            "descripcion",
+            document.getElementById("categoryDescription").value.trim()
+        );
+
+        try {
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
+
+            let url = "/admin/categorias";
+            let method = "POST";
+
+            if (editingCategoryId) {
+                url = `/admin/categorias/${editingCategoryId}`;
+                method = "POST"; // Laravel usa POST + _method
+                formData.append("_method", "PUT");
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { "X-CSRF-TOKEN": csrfToken },
+                body: formData,
+            });
+
+            const data = await response.json().catch(() => ({}));
+
+            if (response.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: "¡Éxito!",
+                    text: editingCategoryId
+                        ? data.message || "Categoría actualizada exitosamente."
+                        : data.message || "Categoría creada exitosamente.",
+                    confirmButtonColor: "#ffc107",
+                });
+
+                newCategoryForm.reset();
+                const modal = bootstrap.Modal.getInstance(
+                    document.getElementById("newCategoryModal")
+                );
+                modal.hide();
+
+                // Reset modal a modo "crear"
+                editingCategoryId = null;
+                const modalTitle = document.querySelector(
+                    "#newCategoryModal .modal-title"
+                );
+                modalTitle.textContent = "Nueva Categoría";
+                saveCategoryBtn.innerHTML = `<i data-feather="save" class="me-1"></i>Guardar`;
+
+                await loadCategories();
+            } else if (response.status === 422) {
+                const firstError =
+                    data.errors?.nombre?.[0] ||
+                    data.message ||
+                    "Error de validación.";
+                Swal.fire({
+                    icon: "warning",
+                    title: "Validación",
+                    text: firstError,
+                    confirmButtonColor: "#ffc107",
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: data.message || "No se pudo guardar la categoría.",
+                });
+            }
+        } catch (error) {
+            console.error("Error al guardar la categoría:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Hubo un problema al conectar con el servidor.",
+            });
+        }
+    });
+
+    // ---------------------------
+    // Eliminar categoría
+    // ---------------------------
+    const attachDeleteEvents = () => {
+        document.querySelectorAll(".delete-category-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                categoryIdToDelete = btn.dataset.id;
+                const categoryName = btn.dataset.nombre;
+
+                const modalBody = document.querySelector(
+                    "#deleteCategoryModal .modal-body"
+                );
+                modalBody.textContent = `¿Deseas eliminar la categoría "${categoryName}"?`;
+            });
+        });
+
+        document
+            .querySelector("#deleteCategoryModal .btn-danger")
+            .addEventListener("click", async () => {
+                if (!categoryIdToDelete) return;
+
+                const csrfToken = document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content");
+
+                try {
+                    const response = await fetch(
+                        `/admin/categorias/${categoryIdToDelete}`,
+                        {
                             method: "POST",
                             headers: {
                                 "X-CSRF-TOKEN": csrfToken,
+                                "X-HTTP-Method-Override": "DELETE",
                             },
-                            body: formData,
+                        }
+                    );
+
+                    const data = await response.json().catch(() => ({}));
+
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Eliminado",
+                            text: data.message,
+                            confirmButtonColor: "#ffc107",
                         });
 
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "¡Éxito!",
-                                text: data.message,
-                                confirmButtonColor: "#ffc107",
-                            });
-
-                            // 🔥 Recargar categorías
-                            await loadCategories();
-
-                            // 🔥 Cerrar el modal
-                            const modal = bootstrap.Modal.getInstance(
-                                document.getElementById("newCategoryModal")
-                            );
-                            modal.hide();
-
-                            form.reset();
-                        } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Error",
-                                text:
-                                    data.message ||
-                                    "No se pudo crear la categoría.",
-                            });
-                        }
-                    } catch (error) {
-                        console.error("Error al guardar la categoría:", error);
+                        categoryIdToDelete = null;
+                        deleteCategoryModal.hide();
+                        await loadCategories();
+                    } else {
                         Swal.fire({
                             icon: "error",
                             title: "Error",
-                            text: "Hubo un problema al conectar con el servidor.",
+                            text:
+                                data.message ||
+                                "No se pudo eliminar la categoría.",
                         });
                     }
-                });
-
-                // 🔹 Ejecutar carga inicial
-                loadCategories();
-            });
-
-            // Función para eliminar categorías con SweetAlert2
-            const attachDeleteEvents = () => {
-                document
-                    .querySelectorAll(".delete-category-btn")
-                    .forEach((btn) => {
-                        btn.addEventListener("click", async () => {
-                            const id = btn.dataset.id;
-
-                            const confirm = await Swal.fire({
-                                title: "¿Eliminar categoría?",
-                                text: "Esta acción no se puede deshacer.",
-                                icon: "warning",
-                                showCancelButton: true,
-                                confirmButtonText: "Sí, eliminar",
-                                cancelButtonText: "Cancelar",
-                                confirmButtonColor: "#d33",
-                                cancelButtonColor: "#6c757d",
-                            });
-
-                            if (confirm.isConfirmed) {
-                                try {
-                                    const res = await fetch(
-                                        `/admin/categorias/${id}`,
-                                        {
-                                            method: "POST",
-                                            headers: {
-                                                "X-CSRF-TOKEN":
-                                                    "{{ csrf_token() }}",
-                                                "X-HTTP-Method-Override":
-                                                    "DELETE",
-                                            },
-                                        }
-                                    );
-
-                                    const data = await res.json();
-                                    if (res.ok) {
-                                        Swal.fire({
-                                            icon: "success",
-                                            title: "Eliminado",
-                                            text: data.message,
-                                            confirmButtonColor: "#ffc107",
-                                        });
-                                        loadCategories(); // recargar tabla
-                                    } else {
-                                        Swal.fire({
-                                            icon: "error",
-                                            title: "Error",
-                                            text:
-                                                data.message ||
-                                                "No se pudo eliminar.",
-                                        });
-                                    }
-                                } catch (error) {
-                                    Swal.fire({
-                                        icon: "error",
-                                        title: "Error",
-                                        text: "Error al conectar con el servidor.",
-                                    });
-                                }
-                            }
-                        });
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Error al conectar con el servidor.",
                     });
-            };
+                }
+            });
+    };
 
-            // Llamar la carga inicial
-            await loadCategories();
-        });
+    // ---------------------------
+    // Inicializar
+    // ---------------------------
+    loadCategories();
 });

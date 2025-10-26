@@ -16,45 +16,62 @@ class CategoriaController extends Controller
     // Guardar nueva categoría
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:255|unique:categorias,nombre',
-            'descripcion' => 'nullable|string|max:500',
-        ]);
+        try {
+            $validated = $request->validate([
+                'nombre' => 'required|string|max:255|unique:categorias,nombre',
+                'descripcion' => 'nullable|string|max:500',
+            ], [
+                'nombre.required' => 'El nombre de la categoría es obligatorio.',
+                'nombre.unique' => 'La categoría ya existe.',
+            ]);
 
-        $categoria = Categoria::create($validated);
+            $categoria = Categoria::create($validated);
 
-        return response()->json([
-            'message' => 'Categoría creada exitosamente.',
-            'categoria' => $categoria,
-        ], 201);
+            return response()->json([
+                'message' => 'Categoría creada exitosamente.',
+                'categoria' => $categoria,
+            ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // 🔥 Laravel atrapará aquí si ya existe la categoría
+            return response()->json([
+                'message' => 'Error de validación.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            // Por si ocurre otro error inesperado
+            return response()->json([
+                'message' => 'Error en el servidor: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
+
     // Mostrar una categoría específica (opcional)
-    public function show(Categoria $categoria)
+    public function show(Categoria $id)
     {
-        return response()->json($categoria);
+        return response()->json($id);
     }
 
     // Actualizar una categoría
-    public function updateCategoria(Request $request, Categoria $categoria)
+    public function update(Request $request, Categoria $id)
     {
         $validated = $request->validate([
-            'nombre' => 'required|string|max:255|unique:categorias,nombre,' . $categoria->id,
+            'nombre' => 'required|string|max:255|unique:categorias,nombre,' . $id->id,
             'descripcion' => 'nullable|string|max:500',
         ]);
 
-        $categoria->update($validated);
+        $id->update($validated);
 
         return response()->json([
             'message' => 'Categoría actualizada correctamente.',
-            'categoria' => $categoria,
+            'categoria' => $id,
         ]);
     }
 
     // Eliminar una categoría
-    public function destroyCategoria(Categoria $categoria)
+    public function destroy(Categoria $id)
     {
-        $categoria->delete();
+        $id->delete();
 
         return response()->json([
             'message' => 'Categoría eliminada exitosamente.',
