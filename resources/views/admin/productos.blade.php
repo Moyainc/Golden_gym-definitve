@@ -83,7 +83,6 @@
                       <h3
                         id="totalProducts"
                         class="text-warning mb-0 fw-bold">
-                        3
                       </h3>
                     </div>
                   </div>
@@ -92,7 +91,6 @@
                       class="card bg-black border-warning text-center p-3 shadow-sm">
                       <h6 class="text-muted">Stock Total</h6>
                       <h3 id="totalStock" class="text-warning mb-0 fw-bold">
-                        53
                       </h3>
                     </div>
                   </div>

@@ -293,6 +293,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const productModal = new bootstrap.Modal(productModalEl);
     const saveProductBtn = document.getElementById("guardarProducto");
     const categoriaSelect = document.getElementById("categoriaProducto");
+    const totalProductsEl = document.getElementById("totalProducts");
+    const totalStockEl = document.getElementById("totalStock");
 
     let editingProductId = null;
     let productIdToDelete = null;
@@ -328,7 +330,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // -----------------------------
     const renderProducts = (productos) => {
         productTable.innerHTML = "";
+        let totalStock = 0;
         productos.forEach((prod) => {
+          totalStock += Number(prod.stock);
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${prod.nombre}</td>
@@ -358,6 +362,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 </td>`;
             productTable.appendChild(row);
         });
+
+        totalProductsEl.textContent = productos.length;
+        totalStockEl.textContent = totalStock;
         if (typeof feather !== "undefined") feather.replace();
         attachProductEvents();
     };
