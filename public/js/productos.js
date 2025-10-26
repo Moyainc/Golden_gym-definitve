@@ -280,3 +280,274 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---------------------------
     loadCategories();
 });
+
+
+
+// --------------------- Productossss ====================
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const productTable = document.getElementById("productTable");
+    const productForm = document.getElementById("productForm");
+    const productModalEl = document.getElementById("productModal");
+    const productModal = new bootstrap.Modal(productModalEl);
+    const saveProductBtn = document.getElementById("guardarProducto");
+    const categoriaSelect = document.getElementById("categoriaProducto");
+
+    let editingProductId = null;
+    let productIdToDelete = null;
+    let allProducts = [];
+
+    // -----------------------------
+    // Cargar categorías dinámicamente
+    // -----------------------------
+    const loadCategorias = async () => {
+        try {
+            const res = await fetch("/admin/categorias/list");
+            const categorias = await res.json();
+            categoriaSelect.innerHTML = ""; // limpiar opciones
+            categorias.forEach((cat) => {
+                const option = document.createElement("option");
+                option.value = cat.id;
+                option.textContent = cat.nombre;
+                categoriaSelect.appendChild(option);
+
+                const filterOption = document.createElement("option");
+                filterOption.value = cat.id;
+                filterOption.textContent = cat.nombre;
+                filterCategory.appendChild(filterOption);
+            });
+        } catch (err) {
+            console.error(err);
+            Swal.fire("Error", "No se pudieron cargar las categorías", "error");
+        }
+    };
+
+    // -----------------------------
+    // Render tabla
+    // -----------------------------
+    const renderProducts = (productos) => {
+        productTable.innerHTML = "";
+        productos.forEach((prod) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${prod.nombre}</td>
+                <td>${prod.categoria.nombre}</td>
+                <td>${prod.stock}</td>
+                <td>$${prod.precio}</td>
+                <td>${prod.estado}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-light me-1 edit-product-btn"
+                        data-id="${prod.id}"
+                        data-nombre="${prod.nombre}"
+                        data-categoria="${prod.categoria_id}"
+                        data-stock="${prod.stock}"
+                        data-precio="${prod.precio}"
+                        data-estado="${prod.estado}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#productModal"
+                        data-mode="edit">
+                        <i data-feather="edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger delete-product-btn"
+                        data-id="${prod.id}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteProductModal">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </td>`;
+            productTable.appendChild(row);
+        });
+        if (typeof feather !== "undefined") feather.replace();
+        attachProductEvents();
+    };
+
+    // -----------------------------
+    // Cargar productos
+    // -----------------------------
+    const loadProducts = async () => {
+        await loadCategorias(); // asegurar que las categorías estén cargadas antes de abrir modal
+        try {
+            const res = await fetch("/admin/productos/list");
+            const data = await res.json();
+            allProducts = data;
+            renderProducts(allProducts);
+        } catch (err) {
+            console.error(err);
+            Swal.fire("Error", "No se pudieron cargar los productos", "error");
+        }
+    };
+
+    // --------------- FILTROOOOOOOO ================
+
+    const filterProducts = () => {
+        const category = filterCategory.value;
+        const status = filterStatus.value.toLowerCase();
+        const search = searchProduct.value.toLowerCase();
+
+        const filtered = allProducts.filter((prod) => {
+            const matchCategory = !category || prod.categoria_id == category;
+            let matchStatus = true;
+
+            if (status) {
+                if (status === "bajo stock")
+                    matchStatus = prod.stock > 0 && prod.stock <= 5;
+                else if (status === "agotado") matchStatus = prod.stock == 0;
+                else matchStatus = prod.estado.toLowerCase() === status;
+            }
+
+            const matchSearch = prod.nombre.toLowerCase().includes(search);
+
+            return matchCategory && matchStatus && matchSearch;
+        });
+
+        renderProducts(filtered);
+    };
+
+    filterCategory.addEventListener("change", filterProducts);
+    filterStatus.addEventListener("change", filterProducts);
+    searchProduct.addEventListener("input", filterProducts);
+
+    // -----------------------------
+    // Abrir modal para editar/crear
+    // -----------------------------
+    productModalEl.addEventListener("show.bs.modal", (event) => {
+        const button = event.relatedTarget;
+        const title = productModalEl.querySelector(".modal-title");
+
+        if (button.dataset.mode === "create") {
+            editingProductId = null;
+            productForm.reset();
+            title.innerHTML = `<i data-feather="package"></i> Nuevo Producto`;
+            saveProductBtn.textContent = "Guardar";
+            // Seleccionar la primera categoría disponible
+            if (categoriaSelect.options.length > 0) {
+                categoriaSelect.value = categoriaSelect.options[0].value;
+            }
+        } else {
+            editingProductId = button.dataset.id;
+            title.innerHTML = `<i data-feather="package"></i> Editar Producto`;
+            saveProductBtn.textContent = "Actualizar";
+
+            document.getElementById("nombreProducto").value =
+                button.dataset.nombre;
+            document.getElementById("categoriaProducto").value =
+                button.dataset.categoria;
+            document.getElementById("stockProducto").value =
+                button.dataset.stock;
+            document.getElementById("precioProducto").value =
+                button.dataset.precio;
+            document.getElementById("estadoProducto").value =
+                button.dataset.estado;
+        }
+        if (typeof feather !== "undefined") feather.replace();
+    });
+
+    // -----------------------------
+    // Guardar o actualizar producto
+    // -----------------------------
+    saveProductBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const formData = {
+            nombre: document.getElementById("nombreProducto").value.trim(),
+            categoria_id: document.getElementById("categoriaProducto").value,
+            stock: document.getElementById("stockProducto").value,
+            precio: document.getElementById("precioProducto").value,
+            estado: document.getElementById("estadoProducto").value,
+        };
+
+        try {
+            const csrfToken = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
+            const url = editingProductId
+                ? `/admin/productos/${editingProductId}`
+                : "/admin/productos";
+            const method = editingProductId ? "PUT" : "POST";
+
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                Swal.fire({
+                    icon: "success",
+                    title: editingProductId ? "Actualizado" : "Creado",
+                    text: data.message,
+                    confirmButtonColor: "#ffc107",
+                });
+                productForm.reset();
+                productModal.hide();
+                await loadProducts();
+            } else {
+                Swal.fire(
+                    "Error",
+                    data.message || "No se pudo guardar el producto",
+                    "error"
+                );
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire("Error", "Error al conectar con el servidor", "error");
+        }
+    });
+
+    // -----------------------------
+    // Eventos editar y eliminar
+    // -----------------------------
+    const attachProductEvents = () => {
+        document.querySelectorAll(".delete-product-btn").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                productIdToDelete = btn.dataset.id;
+            });
+        });
+
+        document
+            .querySelector("#deleteProductModal .btn-danger")
+            .addEventListener("click", async () => {
+                if (!productIdToDelete) return;
+                const csrfToken = document
+                    .querySelector('meta[name="csrf-token"]')
+                    .getAttribute("content");
+                try {
+                    const res = await fetch(
+                        `/admin/productos/${productIdToDelete}`,
+                        {
+                            method: "DELETE",
+                            headers: { "X-CSRF-TOKEN": csrfToken },
+                        }
+                    );
+                    const data = await res.json();
+                    if (res.ok) {
+                        Swal.fire("Eliminado", data.message, "success");
+                        productIdToDelete = null;
+                        const modalEl =
+                            document.getElementById("deleteProductModal");
+                        bootstrap.Modal.getInstance(modalEl).hide();
+                        await loadProducts();
+                    } else {
+                        Swal.fire("Error", data.message, "error");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire(
+                        "Error",
+                        "Error al conectar con el servidor",
+                        "error"
+                    );
+                }
+            });
+    };
+
+    loadProducts();
+});
+
+

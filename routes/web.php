@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ProductoController;
 
 
 // RUTAS PÚBLICAS
@@ -49,6 +50,13 @@ Route::get('/admin/categorias/{id}/edit', [CategoriaController::class, 'edit'])-
 Route::put('/admin/categorias/{id}', [CategoriaController::class, 'update'])->name('admin.categorias.update');
 Route::delete('/admin/categorias/{id}', [CategoriaController::class, 'destroy'])->name('admin.categorias.destroy');
 
+
+// ADMIN → PRODUCTOS (CRUD con ProductoController)
+
+Route::get('/admin/productos/list', [ProductoController::class, 'list'])->name('admin.produtos.list');
+Route::post('/admin/productos', [ProductoController::class, 'store']) ->name('admin.productos.store');
+Route::put('/admin/productos/{id}', [ProductoController::class, 'update'])->name('admin.productos.update');
+Route::delete('/admin/productos/{id}', [ProductoController::class, 'destroy'])->name('admin.productos.destroy');
 
 // ADMIN → MEMBRESÍAS
 Route::get('admin/membresias', [HomeController::class, 'membresias'])->name('admin.membresias');

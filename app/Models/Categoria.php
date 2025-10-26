@@ -17,8 +17,8 @@ class Categoria extends Model
     ];
 
     // Relación con productos
-    // public function productos()
-    // {
-    //     return $this->hasMany(Producto::class);
-    // }
+    public function productos()
+    {
+        return $this->hasMany(Producto::class);
+    }
 }

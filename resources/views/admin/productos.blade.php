@@ -49,11 +49,6 @@
                         id="filterCategory"
                         class="form-select text-light border-secondary">
                         <option value="">Tipo de producto</option>
-                        <option>Proteínas</option>
-                        <option>Bebidas</option>
-                        <option>Ropa</option>
-                        <option>Accesorios</option>
-                        <option>Batidos</option>
                       </select>
                     </div>
                     <div class="col-md-4">
@@ -62,8 +57,7 @@
                         class="form-select text-light border-secondary">
                         <option value="">Disponibilidad</option>
                         <option>Activo</option>
-                        <option>Bajo Stock</option>
-                        <option>Agotado</option>
+                        <option>Inactivo</option>
                       </select>
                     </div>
                     <div class="col-md-4">
@@ -125,14 +119,15 @@
                         <th>Categoría</th>
                         <th>Stock</th>
                         <th>Precio</th>
-                        <th>Ventas</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                       </tr>
                     </thead>
                     <tbody id="productTable" class="text-light">
-                      <!-- JS inserta filas aquí -->
+                      <!-- JS insertará filas aquí -->
                     </tbody>
                   </table>
+
                 </div>
               </div>
             </div>
@@ -267,6 +262,9 @@
             </div>
             <div class="modal-body">
               <form id="productForm" class="row g-3">
+                <!-- Campo oculto para saber si estamos editando y almacenar el ID -->
+                <input type="hidden" id="productId" />
+
                 <div class="col-md-6">
                   <label class="form-label">Nombre del Producto</label>
                   <input
@@ -275,19 +273,17 @@
                     id="nombreProducto"
                     required />
                 </div>
+
                 <div class="col-md-6">
                   <label class="form-label">Categoría</label>
                   <select
                     id="categoriaProducto"
                     class="form-select text-light border-0"
                     required>
-                    <option>Proteínas</option>
-                    <option>Bebidas</option>
-                    <option>Ropa</option>
-                    <option>Accesorios</option>
-                    <option>Batidos</option>
+                    <!-- JS insertará aquí las opciones dinámicamente -->
                   </select>
                 </div>
+
                 <div class="col-md-4">
                   <label class="form-label">Stock</label>
                   <input
@@ -296,6 +292,7 @@
                     id="stockProducto"
                     required />
                 </div>
+
                 <div class="col-md-4">
                   <label class="form-label">Precio</label>
                   <input
@@ -304,13 +301,14 @@
                     id="precioProducto"
                     required />
                 </div>
+
                 <div class="col-md-4">
                   <label class="form-label">Estado</label>
                   <select
                     id="estadoProducto"
                     class="form-select text-light border-0">
-                    <option>Activo</option>
-                    <option>Inactivo</option>
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
                   </select>
                 </div>
               </form>
