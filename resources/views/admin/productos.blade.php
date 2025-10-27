@@ -76,27 +76,39 @@
             <div class="col-md-4 d-flex align-items-center">
               <div class="w-100">
                 <div class="row g-2">
+                  <!-- Total Productos -->
                   <div class="col-6">
-                    <div
-                      class="card bg-black border-warning text-center p-3 shadow-sm">
-                      <h6 class="text-muted">Total Productos</h6>
-                      <h3
-                        id="totalProducts"
-                        class="text-warning mb-0 fw-bold">
-                      </h3>
+                    <div class="card border-0 shadow-sm bg-dark-card h-100">
+                      <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="text-muted text-uppercase small mb-1">Total Productos</h6>
+                          <h5 id="totalProducts" class="text-warning fw-bold mb-0">$0</h5>
+                        </div>
+                        <div class="bg-warning bg-opacity-25 p-2 rounded">
+                          <i data-feather="package" class="text-warning" width="20"></i>
+                        </div>
+                      </div>
                     </div>
                   </div>
+
+                  <!-- Stock Total -->
                   <div class="col-6">
-                    <div
-                      class="card bg-black border-warning text-center p-3 shadow-sm">
-                      <h6 class="text-muted">Stock Total</h6>
-                      <h3 id="totalStock" class="text-warning mb-0 fw-bold">
-                      </h3>
+                    <div class="card border-0 shadow-sm bg-dark-card h-100">
+                      <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
+                        <div>
+                          <h6 class="text-muted text-uppercase small mb-1">Stock Total</h6>
+                          <h5 id="totalStock" class="text-info fw-bold mb-0">0</h5>
+                        </div>
+                        <div class="bg-info bg-opacity-25 p-2 rounded">
+                          <i data-feather="layers" class="text-info" width="20"></i>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
           </div>
 
           <!-- TABLA -->
@@ -350,16 +362,7 @@
       </div>
     </div>
   </div>
-  <script>
-    const productosUrl = "{{ url('admin/productos/list') }}";
-  </script>
-  <script>
-    const categoriasUrl = "{{ url('admin/categorias/list') }}";
-  </script>
   <script src="{{ asset('js/productos.js') }}"></script>
-
-
-
   <script src="../js/app.js"></script>
 </body>
 @endsection
