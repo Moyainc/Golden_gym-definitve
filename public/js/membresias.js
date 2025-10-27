@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const deleteModal = new bootstrap.Modal(deleteModalEl);
     const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
-
     // Render tabla
     const renderMemberships = (membresias, metricsData) => {
         membershipsTableBody.innerHTML = "";
@@ -49,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
             membershipsTableBody.appendChild(row);
         });
 
-
         if (typeof feather !== "undefined") feather.replace();
         attachMembershipEvents();
     };
@@ -60,6 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch("/admin/membresias/list");
             const data = await res.json();
             renderMemberships(data.membresias);
+
+            // 🔹 Reasignar instancia modal si algo cambió en el DOM
+            bootstrap.Modal.getInstance(membershipModalEl)?.dispose();
+            new bootstrap.Modal(membershipModalEl);
         } catch (err) {
             console.error(err);
             Swal.fire("Error", "No se pudieron cargar las membresías", "error");
@@ -112,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .querySelector('meta[name="csrf-token"]')
                 .getAttribute("content");
             const url = editingMembershipId
-                ? `/admin/membresias/${editingMembershipId}`
+                ? `/admin/membresias/${editingMembershipId}/edit`
                 : "/admin/membresias";
             const method = editingMembershipId ? "PUT" : "POST";
 
@@ -130,7 +132,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.ok) {
                 Swal.fire("Éxito", data.message, "success");
                 membershipForm.reset();
-                membershipModal.hide();
+
+                // 🔹 Asegurarte de tener la instancia activa del modal antes de cerrarlo
+                const modalInstance =
+                    bootstrap.Modal.getInstance(membershipModalEl);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+
                 await loadMemberships();
             } else {
                 Swal.fire(
