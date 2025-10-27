@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MembresiaController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ProductoController;
 
 
 // RUTAS PÚBLICAS
@@ -57,3 +58,6 @@ Route::get('admin/membresias/list', [MembresiaController::class, 'list'])->name(
 Route::post('admin/membresias', [MembresiaController::class, 'store'])->name('admin.membresias.store');
 Route::put('admin/membresias/{id}/edit', [MembresiaController::class, 'update'])->name('admin.membresias.update');
 Route::delete('admin/membresias/{id}', [MembresiaController::class, 'destroy'])->name('admin.membresias.destroy');
+
+
+Route::get('admin/productos/list', [ProductoController::class, 'list'])->name('admin.membresias.list');
