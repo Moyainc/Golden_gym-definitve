@@ -27,9 +27,17 @@ class HomeController extends Controller
     {
         return view('admin/confirmacion-pagos');
     }
-    public function contabilidad()
+    public function resumen_general()
     {
-        return view('admin/contabilidad');
+        return view('admin/contabilidad/resumen-general');
+    }
+    public function resumen_ventas()
+    {
+        return view('admin/contabilidad/resumen-ventas');
+    }
+    public function resumen_membresias()
+    {
+        return view('admin/contabilidad/resumen-membresias');
     }
     public function dashboard()
     {
@@ -67,10 +75,7 @@ class HomeController extends Controller
 
         return view('admin.usuarios', compact('usuarios', 'totalUsuarios'));
     }
-    public function resumen_ventas()
-    {
-        return view('admin/ventas/resumen-ventas');
-    }
+
     public function vender()
     {
         return view('admin/ventas/vender');

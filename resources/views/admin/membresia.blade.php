@@ -22,58 +22,64 @@
           </div>
 
           <!-- Resumen de métricas -->
+          <!-- === TOTALES DE MEMBRESÍAS Y DIARIAS === -->
           <div class="row g-3 mb-4">
-            <div class="col-md-3 col-sm-6">
-              <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <h6 class="text-muted text-uppercase small mb-2">
-                    Total en membresías
-                  </h6>
-                  <h4 id="totalMemberships" class="text-warning fw-bold mb-0">
-                    $0
-                  </h4>
+            <!-- Total en Membresías -->
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="card border-0 shadow-sm bg-dark-card h-100">
+                <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="text-muted text-uppercase small mb-1">Total en Membresías</h6>
+                    <h5 id="totalMemberships" class="text-warning fw-bold mb-0">$0</h5>
+                  </div>
+                  <div class="bg-warning bg-opacity-25 p-2 rounded">
+                    <i data-feather="credit-card" class="text-warning" width="20"></i>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Total hecho en diarias -->
-            <div class="col-md-3 col-sm-6">
-              <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <h6 class="text-muted text-uppercase small mb-2">
-                    Total en diarias
-                  </h6>
-                  <h4 id="totalDiarias" class="text-warning fw-bold mb-0">
-                    $0
-                  </h4>
+            <!-- Total en Diarias -->
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="card border-0 shadow-sm bg-dark-card h-100">
+                <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="text-muted text-uppercase small mb-1">Total en Diarias</h6>
+                    <h5 id="totalDiarias" class="text-warning fw-bold mb-0">$0</h5>
+                  </div>
+                  <div class="bg-warning bg-opacity-25 p-2 rounded">
+                    <i data-feather="clock" class="text-warning" width="20"></i>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Total general -->
-            <div class="col-md-3 col-sm-6">
-              <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <h6 class="text-muted text-uppercase small mb-2">
-                    Total general
-                  </h6>
-                  <h4 id="totalGeneral" class="text-success fw-bold mb-0">
-                    $0
-                  </h4>
+            <!-- Total General -->
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="card border-0 shadow-sm bg-dark-card h-100">
+                <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="text-muted text-uppercase small mb-1">Total General</h6>
+                    <h5 id="totalGeneral" class="text-success fw-bold mb-0">$0</h5>
+                  </div>
+                  <div class="bg-success bg-opacity-25 p-2 rounded">
+                    <i data-feather="trending-up" class="text-success" width="20"></i>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Membresías activas -->
-            <div class="col-md-3 col-sm-6">
-              <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <h6 class="text-muted text-uppercase small mb-2">
-                    Membresías activas
-                  </h6>
-                  <h4 id="activeMemberships" class="text-info fw-bold mb-0">
-                    $0
-                  </h4>
+            <!-- Membresías Activas -->
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="card border-0 shadow-sm bg-dark-card h-100">
+                <div class="card-body py-3 px-3 d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="text-muted text-uppercase small mb-1">Membresías Activas</h6>
+                    <h5 id="activeMemberships" class="text-info fw-bold mb-0">$0</h5>
+                  </div>
+                  <div class="bg-info bg-opacity-25 p-2 rounded">
+                    <i data-feather="users" class="text-info" width="20"></i>
+                  </div>
                 </div>
               </div>
             </div>

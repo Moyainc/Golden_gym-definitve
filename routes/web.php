@@ -24,10 +24,12 @@ Route::get('admin/profile', [HomeController::class, 'profile'])->name('admin.pro
 Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
 Route::get('admin/contabilidad', [HomeController::class, 'contabilidad'])->name('admin.contabilidad');
 Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
+Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
+Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
+Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
 
 
 // ADMIN → VENTAS
-Route::get('admin/ventas/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen_ventas');
 Route::get('admin/ventas/vender', [HomeController::class, 'vender'])->name('admin.vender');
 Route::get('admin/ventas/lista-ventas', [HomeController::class, 'lista_ventas'])->name('admin.lista_ventas');
 
@@ -60,4 +62,4 @@ Route::put('admin/membresias/{id}/edit', [MembresiaController::class, 'update'])
 Route::delete('admin/membresias/{id}', [MembresiaController::class, 'destroy'])->name('admin.membresias.destroy');
 
 
-Route::get('admin/productos/list', [ProductoController::class, 'list'])->name('admin.membresias.list');
+Route::get('admin/productos/list', [ProductoController::class, 'list'])->name('admin.productos.list');

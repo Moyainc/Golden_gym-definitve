@@ -10,12 +10,11 @@ document.addEventListener("DOMContentLoaded", () => {
     let editingMembershipId = null;
     let membershipIdToDelete = null;
 
-    const metrics = {
-        totalGeneral: document.getElementById("totalGeneral"),
-        totalDiarias: document.getElementById("totalDiarias"),
-        totalMemberships: document.getElementById("totalMemberships"),
-        activas: document.getElementById("activeMemberships"),
-    };
+    // 🔹 Modal de eliminación (nuevo)
+    const deleteModalEl = document.getElementById("deleteMembershipModal");
+    const deleteModal = new bootstrap.Modal(deleteModalEl);
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+
 
     // Render tabla
     const renderMemberships = (membresias, metricsData) => {
@@ -50,12 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
             membershipsTableBody.appendChild(row);
         });
 
-        // Actualizar métricas
-        metrics.totalGeneral.textContent = `$${metricsData.total_general}`;
-        metrics.totalDiarias.textContent = `$${metricsData.diarias}`;
-        metrics.totalMemberships.textContent = `$${metricsData.membresias}`;
-        metrics.activas.textContent = metricsData.activas;
-
 
         if (typeof feather !== "undefined") feather.replace();
         attachMembershipEvents();
@@ -66,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const res = await fetch("/admin/membresias/list");
             const data = await res.json();
-            renderMemberships(data.membresias, data.metrics);
+            renderMemberships(data.membresias);
         } catch (err) {
             console.error(err);
             Swal.fire("Error", "No se pudieron cargar las membresías", "error");
@@ -154,49 +147,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Editar/Eliminar eventos
     const attachMembershipEvents = () => {
+        // 🔹 Ya no usamos SweetAlert aquí — solo abrimos el modal real
         document.querySelectorAll(".delete-membership-btn").forEach((btn) => {
             btn.addEventListener("click", () => {
                 membershipIdToDelete = btn.dataset.id;
-                Swal.fire({
-                    title: `Eliminar membresía "${btn.dataset.nombre}"?`,
-                    text: "Esta acción no se puede deshacer",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#d33",
-                    cancelButtonColor: "#3085d6",
-                    confirmButtonText: "Sí, eliminar",
-                }).then(async (result) => {
-                    if (result.isConfirmed) {
-                        const csrfToken = document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content");
-                        try {
-                            const res = await fetch(
-                                `/admin/membresias/${membershipIdToDelete}`,
-                                {
-                                    method: "DELETE",
-                                    headers: { "X-CSRF-TOKEN": csrfToken },
-                                }
-                            );
-                            const data = await res.json();
-                            if (res.ok) {
-                                Swal.fire("Eliminado", data.message, "success");
-                                await loadMemberships();
-                            } else {
-                                Swal.fire("Error", data.message, "error");
-                            }
-                        } catch (err) {
-                            Swal.fire(
-                                "Error",
-                                "No se pudo conectar con el servidor",
-                                "error"
-                            );
-                        }
-                    }
-                });
+                deleteModal.show(); // abre el modal de eliminación
             });
         });
     };
+
+    // 🔹 Confirmar eliminación desde el modal Bootstrap
+    confirmDeleteBtn.addEventListener("click", async () => {
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
+
+        try {
+            const res = await fetch(
+                `/admin/membresias/${membershipIdToDelete}`,
+                {
+                    method: "DELETE",
+                    headers: { "X-CSRF-TOKEN": csrfToken },
+                }
+            );
+            const data = await res.json();
+
+            if (res.ok) {
+                deleteModal.hide(); // cierra el modal
+                Swal.fire("Eliminado", data.message, "success");
+                await loadMemberships(); // recarga la tabla
+            } else {
+                Swal.fire("Error", data.message, "error");
+            }
+        } catch (err) {
+            Swal.fire("Error", "No se pudo conectar con el servidor", "error");
+        }
+    });
 
     loadMemberships();
 });
