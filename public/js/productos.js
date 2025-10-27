@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---------------------------
     const loadCategories = async () => {
         try {
-            const response = await fetch("/admin/categorias/list");
+            const response = await fetch(categoriasUrl);
             const data = await response.json();
             renderCategories(data);
         } catch (error) {
@@ -305,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // -----------------------------
     const loadCategorias = async () => {
         try {
-            const res = await fetch("/admin/categorias/list");
+            const res = await fetch(categoriasUrl);
             const categorias = await res.json();
             categoriaSelect.innerHTML = ""; // limpiar opciones
             categorias.forEach((cat) => {
@@ -375,7 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadProducts = async () => {
         await loadCategorias(); // asegurar que las categorías estén cargadas antes de abrir modal
         try {
-            const res = await fetch("/admin/productos/list");
+            const res = await fetch(productosUrl);
             const data = await res.json();
             allProducts = data;
             renderProducts(allProducts);

@@ -60,4 +60,4 @@ Route::put('admin/membresias/{id}/edit', [MembresiaController::class, 'update'])
 Route::delete('admin/membresias/{id}', [MembresiaController::class, 'destroy'])->name('admin.membresias.destroy');
 
 
-Route::get('admin/productos/list', [ProductoController::class, 'list'])->name('admin.membresias.list');
+Route::get('admin/productos/list', [ProductoController::class, 'list'])->name('admin.productos.list');
