@@ -48,7 +48,17 @@
 
 
 
+    <script>
+        window.app = {
+            baseUrl: "{{ url('/') }}"
+        };
+
+        // Función auxiliar para construir URLs seguras
+        const apiUrl = (path) => `${window.app.baseUrl}/${path.replace(/^\/+/, '')}`;
+    </script>
     <script src="../js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

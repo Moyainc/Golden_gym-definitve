@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
             resetForm("editar");
 
             try {
-                const response = await fetch(`/admin/usuarios/${userId}/edit`);
+                const response = await fetch(apiUrl(`/admin/usuarios/${userId}/edit`));
                 if (!response.ok)
                     throw new Error(
                         "No se pudieron cargar los datos del usuario."
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // ⚙️ Ajustes del modal
                 modalTitle.innerHTML = `<i data-feather="edit" class="me-1"></i> Editar usuario`;
                 saveButton.innerHTML = `<i data-feather="save" class="me-1"></i> Actualizar usuario`;
-                form.action = `/admin/usuarios/${userId}`;
+                form.action = apiUrl(`/admin/usuarios/${userId}`);
                 passwordGroup.style.display = "none"; // ocultar contraseñas
 
                 // 🔁 Botón "Cambiar contraseña"
@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🧹 Limpiar formulario al cerrar modal
     modal.addEventListener("hidden.bs.modal", () => resetForm("nuevo"));
 
-    
+
 
 
     const deleteModal = document.getElementById("deleteUserModal");
@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!selectedUserId) return;
 
         try {
-            const response = await fetch(`/admin/usuarios/${selectedUserId}`, {
+            const response = await fetch(apiUrl(`/admin/usuarios/${selectedUserId}`), {
                 method: "DELETE",
                 headers: {
                     "X-CSRF-TOKEN": document.querySelector(

@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Cargar membresías
     const loadMemberships = async () => {
         try {
-            const res = await fetch("/admin/membresias/list");
+            const res = await fetch(apiUrl("admin/membresias/list"));
             const data = await res.json();
             renderMemberships(data.membresias);
 
@@ -114,8 +114,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 .querySelector('meta[name="csrf-token"]')
                 .getAttribute("content");
             const url = editingMembershipId
-                ? `/admin/membresias/${editingMembershipId}/edit`
-                : "/admin/membresias";
+                ? apiUrl(`/admin/membresias/${editingMembershipId}/edit`)
+                : apiUrl("/admin/membresias");
             const method = editingMembershipId ? "PUT" : "POST";
 
             const res = await fetch(url, {
@@ -173,7 +173,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const res = await fetch(
-                `/admin/membresias/${membershipIdToDelete}`,
+                apiUrl(`admin/membresias/${membershipIdToDelete}`),
                 {
                     method: "DELETE",
                     headers: { "X-CSRF-TOKEN": csrfToken },
