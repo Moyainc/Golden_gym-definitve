@@ -242,8 +242,7 @@
         </div>
       </div>
     </div>
-  </div>
-
+  </div>  
   <script src="{{ asset('js/membresias.js') }}"></script>
   <script src="../js/app.js"></script>
 </body>

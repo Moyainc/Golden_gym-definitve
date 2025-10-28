@@ -32,7 +32,7 @@
                  <a
                      class="sidebar-link d-flex justify-content-between align-items-center {{ Request::routeIs('admin.resumen.*') ? '' : 'collapsed' }}"
                      data-bs-toggle="collapse"
-                     href="#contabilidadMenu"
+                     data-bs-target="#contabilidadMenu"
                      role="button"
                      aria-expanded="{{ Request::routeIs('admin.resumen.*') ? 'true' : 'false' }}"
                      aria-controls="contabilidadMenu">
@@ -66,6 +66,7 @@
                      </ul>
                  </div>
              </li>
+
 
 
 

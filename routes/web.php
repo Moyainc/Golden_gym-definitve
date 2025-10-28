@@ -22,7 +22,6 @@ Route::get('admin/profile', [HomeController::class, 'profile'])->name('admin.pro
 
 // ADMIN → CLIENTES / CONTABILIDAD / PAGOS
 Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
-Route::get('admin/contabilidad', [HomeController::class, 'contabilidad'])->name('admin.contabilidad');
 Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
 Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
 Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');

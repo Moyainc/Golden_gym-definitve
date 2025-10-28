@@ -362,6 +362,12 @@
       </div>
     </div>
   </div>
+  <script>
+    const productosUrl = "{{ url('admin/productos/list') }}";
+  </script>
+  <script>
+    const categoriasUrl = "{{ url('admin/categorias/list') }}";
+  </script>
   <script src="{{ asset('js/productos.js') }}"></script>
   <script src="../js/app.js"></script>
 </body>

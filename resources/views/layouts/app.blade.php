@@ -6,9 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        content="width=device-width, initial-scale=1, shrink-to-fi
     <meta
-        name="description"
+        name=" description"
         content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5" />
     <meta name="author" content="Golden Gym" />
     <meta
@@ -27,6 +27,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+</head>
 
 </head>
 
@@ -47,8 +48,18 @@
     </div>
 
 
+    <script>
+        window.app = {
+            baseUrl: "{{ url('/') }}",
+        };
 
+        function apiUrl(path) {
+            return `${app.baseUrl}/${path.replace(/^\/+/, '')}`;
+        }
+    </script>
     <script src="../js/app.js"></script>
+
+</html>
 </body>
 
 </html>
