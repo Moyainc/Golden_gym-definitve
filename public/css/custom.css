@@ -40,3 +40,70 @@
     max-height: 400px; /* Ajusta según necesites */
     overflow-y: auto;
 }
+
+.custom-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1050; /* nivel sobre el resto del contenido */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5); /* fondo oscuro semitransparente */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.custom-modal.show {
+    display: block;
+    opacity: 1;
+}
+
+.custom-modal .modal-dialog {
+    position: relative;
+    margin: 5% auto;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.custom-modal .modal-header,
+.custom-modal .modal-body,
+.custom-modal .modal-footer {
+    padding: 1rem;
+}
+
+.custom-modal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.custom-modal .modal-footer {
+    border-top: 1px solid #ddd;
+    text-align: right;
+}
+
+.custom-modal .close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* Animación suave de aparición */
+@keyframes modalFadeIn {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
