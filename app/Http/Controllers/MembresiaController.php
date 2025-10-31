@@ -26,47 +26,85 @@ class MembresiaController extends Controller
       ],
     ]);
   }
+  public function index()
+  {
+    try {
+      $membresias = Membresia::orderByDesc('id')->get();
+      return response()->json($membresias);
+    } catch (\Exception $e) {
+      return response()->json(['error' => $e->getMessage()], 500);
+    }
+  }
+
+  public function edit($id)
+  {
+    try {
+      $membresia = Membresia::findOrFail($id);
+      return response()->json($membresia);
+    } catch (\Exception $e) {
+      return response()->json(['error' => $e->getMessage()], 500);
+    }
+  }
 
   public function store(Request $request)
   {
     $request->validate([
-      'nombre' => 'required|string|max:255',
+      'nombre' => 'required|string|max:100|unique:membresias,nombre',
+      'duracion' => 'required|integer|min:1',
+      'tipo_duracion' => 'required|in:dias,meses',
       'precio' => 'required|numeric|min:0',
-      'duracion_meses' => 'required|integer|min:0',
-      'activo' => 'required|in:Activa,Inactiva',
     ]);
 
-    $membresia = Membresia::create($request->all());
+    $membresia = Membresia::create([
+      'nombre' => $request->nombre,
+      'duracion' => $request->duracion,
+      'tipo_duracion' => $request->tipo_duracion,
+      'precio' => $request->precio,
+    ]);
 
     return response()->json([
-      'message' => 'Membresía creada exitosamente',
+      'success' => true,
       'membresia' => $membresia,
-    ], 201);
-  }
-
-  public function update(Request $request, Membresia $id)
-  {
-    $request->validate([
-      'nombre' => 'required|string|max:255',
-      'precio' => 'required|numeric|min:0',
-      'duracion_meses' => 'required|integer|min:0',
-      'activo' => 'required|in:Activa,inactiva',
-    ]);
-
-    $id->update($request->all());
-
-    return response()->json([
-      'message' => 'Membresía actualizada exitosamente',
-      'membresia' => $id,
     ]);
   }
 
-  public function destroy(Membresia $id)
+  public function update(Request $request, $id)
   {
-    $id->delete();
+    try {
+      $membresia = Membresia::findOrFail($id);
 
-    return response()->json([
-      'message' => "Membresía '{$id->nombre}' eliminada exitosamente",
-    ]);
+      $request->validate([
+        'nombre' => 'required|string|max:100|unique:membresias,nombre,' . $membresia->id,
+        'duracion' => 'required|integer|min:1',
+        'tipo_duracion' => 'required|in:dias,meses',
+        'precio' => 'required|numeric|min:0',
+      ]);
+
+      $membresia->update([
+        'nombre' => $request->nombre,
+        'duracion' => $request->duracion,
+        'tipo_duracion' => $request->tipo_duracion,
+        'precio' => $request->precio,
+      ]);
+
+      return response()->json([
+        'success' => true,
+        'membresia' => $membresia,
+      ]);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+  }
+
+  public function destroy($id)
+  {
+    try {
+      $membresia = Membresia::findOrFail($id);
+      $membresia->delete();
+
+      return response()->json(['success' => true]);
+    } catch (\Exception $e) {
+      return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
   }
 }

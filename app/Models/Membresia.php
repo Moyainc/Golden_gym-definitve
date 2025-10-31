@@ -11,8 +11,8 @@ class Membresia extends Model
 
     protected $fillable = [
         'nombre',
+        'duracion',
+        'tipo_duracion',
         'precio',
-        'duracion_meses',
-        'activo',
     ];
 }

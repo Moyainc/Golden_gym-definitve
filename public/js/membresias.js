@@ -1,197 +1,246 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const membershipsTableBody = document.getElementById(
-        "membershipsTableBody"
-    );
-    const membershipModalEl = document.getElementById("membershipModal");
-    const membershipModal = new bootstrap.Modal(membershipModalEl);
-    const saveMembershipBtn = document.getElementById("saveMembership");
-    const membershipForm = document.getElementById("membershipForm");
-
+    const form = document.getElementById("membershipForm");
+    const saveBtn = document.getElementById("saveMembership");
+    const tableBody = document.getElementById("membershipsTableBody");
     let editingMembershipId = null;
-    let membershipIdToDelete = null;
 
-    // 🔹 Modal de eliminación (nuevo)
-    const deleteModalEl = document.getElementById("deleteMembershipModal");
-    const deleteModal = new bootstrap.Modal(deleteModalEl);
-    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    const apiUrl = (path) => `/golden-gym/public/${path}`;
+    const feather = window.feather;
+    const bootstrap = window.bootstrap;
+    const Swal = window.Swal;
 
-    // Render tabla
-    const renderMemberships = (membresias, metricsData) => {
-        membershipsTableBody.innerHTML = "";
+    // 🚀 Cargar membresías
+    loadMembresias();
 
-        membresias.forEach((m) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${m.nombre}</td>
-                <td>${m.duracion_meses}</td>
-                <td>$${m.precio}</td>
-                <td>${m.activo}</td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-outline-light me-1 edit-membership-btn"
-                        data-id="${m.id}"
-                        data-nombre="${m.nombre}"
-                        data-precio="${m.precio}"
-                        data-duracion="${m.duracion_meses}"
-                        data-activo="${m.activo}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#membershipModal">
-                        <i data-feather="edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger delete-membership-btn"
-                        data-id="${m.id}"
-                        data-nombre="${m.nombre}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteMembershipModal">
-                        <i data-feather="trash-2"></i>
-                    </button>
-                </td>`;
-            membershipsTableBody.appendChild(row);
-        });
+    function loadMembresias() {
+    fetch(apiUrl("admin/membresias/list/json"))
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("membershipsTableBody");
+            tbody.innerHTML = "";
 
-        if (typeof feather !== "undefined") feather.replace();
-        attachMembershipEvents();
-    };
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">
+                            No hay membresías registradas.
+                        </td>
+                    </tr>`;
+                feather.replace();
+                return;
+            }
 
-    // Cargar membresías
-    const loadMemberships = async () => {
-        try {
-            const res = await fetch(apiUrl("/admin/membresias/list"));
-            const data = await res.json();
-            renderMemberships(data.membresias);
+            data.forEach(m => {
+                const duracion = m.duracion ? m.duracion : "—";
+                const tipoDuracion = m.tipo_duracion
+                    ? (m.tipo_duracion === "meses"
+                        ? (m.duracion == 1 ? "Mes" : "Meses")
+                        : (m.duracion == 1 ? "Día" : "Días"))
+                    : "—";
+                const precio = `$${parseInt(m.precio).toLocaleString("es-CO")}`;
 
-            // 🔹 Reasignar instancia modal si algo cambió en el DOM
-            bootstrap.Modal.getInstance(membershipModalEl)?.dispose();
-            new bootstrap.Modal(membershipModalEl);
-        } catch (err) {
-            console.error(err);
-            Swal.fire("Error", "No se pudieron cargar las membresías", "error");
-        }
-    };
+                const row = `
+                    <tr data-id="${m.id}">
+                        <td class="nombre">${m.nombre}</td>
+                        <td class="duracion">${duracion}</td>
+                        <td class="tipo_duracion">${tipoDuracion}</td>
+                        <td class="precio text-nowrap">${precio}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-light me-1 editMembership" data-id="${m.id}">
+                                <i data-feather="edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger deleteMembership" data-id="${m.id}">
+                                <i data-feather="trash-2"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                tbody.insertAdjacentHTML("beforeend", row);
+            });
 
-    // Abrir modal para crear/editar
-    membershipModalEl.addEventListener("show.bs.modal", (event) => {
-        const button = event.relatedTarget;
-        const title = membershipModalEl.querySelector(".modal-title");
+            feather.replace();
+        })
+        .catch(err => console.error("Error cargando membresías:", err));
+}
+
+
+    // ➕ NUEVA MEMBRESÍA
+    document.getElementById("addMembershipBtn").addEventListener("click", () => {
         editingMembershipId = null;
-        membershipForm.reset();
-
-        if (button.id === "btnAddMembership") {
-            title.innerHTML = `<i data-feather="plus-circle" class="me-1"></i> Nueva membresía`;
-            saveMembershipBtn.textContent = "Guardar";
-        } else {
-            editingMembershipId = button.dataset.id;
-            title.innerHTML = `<i data-feather="plus-circle" class="me-1"></i> Editar membresía`;
-            saveMembershipBtn.textContent = "Actualizar";
-
-            membershipForm.querySelector("input[name='nombre']").value =
-                button.dataset.nombre;
-            membershipForm.querySelector("input[name='precio']").value =
-                button.dataset.precio;
-            membershipForm.querySelector("input[name='duracion_meses']").value =
-                button.dataset.duracion;
-            membershipForm.querySelector("select[name='activo']").value =
-                button.dataset.activo;
-        }
-
-        if (typeof feather !== "undefined") feather.replace();
+        form.reset();
+        document.getElementById("membershipModalLabel").innerHTML =
+            '<i data-feather="plus" class="me-1"></i> Nueva membresía';
+        const modal = new bootstrap.Modal(document.getElementById("membershipModal"));
+        modal.show();
+        feather.replace();
     });
 
-    // Guardar/Actualizar membresía
-    saveMembershipBtn.addEventListener("click", async (e) => {
-        e.preventDefault();
+    // ✏️ EDITAR MEMBRESÍA
+    tableBody.addEventListener("click", (e) => {
+        const editBtn = e.target.closest(".editMembership");
+        if (!editBtn) return;
 
-        const formData = {
-            nombre: membershipForm.querySelector("input[name='nombre']").value,
-            precio: membershipForm.querySelector("input[name='precio']").value,
-            duracion_meses: membershipForm.querySelector(
-                "input[name='duracion_meses']"
-            ).value,
-            activo: membershipForm.querySelector("select[name='activo']").value,
-        };
+        const id = editBtn.dataset.id;
+        editingMembershipId = id;
 
-        try {
-            const csrfToken = document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute("content");
-            const url = editingMembershipId
-                ? apiUrl(`admin/membresias/${editingMembershipId}/edit`)
-                : apiUrl("admin/membresias");
-            const method = editingMembershipId ? "PUT" : "POST";
-            
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
-                },
-                body: JSON.stringify(formData),
-            });
+        fetch(apiUrl(`admin/membresias/json/${id}`))
+            .then((res) => res.json())
+            .then((m) => {
+                document.getElementById("membershipModalLabel").innerHTML =
+                    '<i data-feather="edit" class="me-1"></i> Editar membresía';
+                document.getElementById("nombre").value = m.nombre;
+                document.getElementById("duracion").value = m.duracion ?? "";
+                document.getElementById("tipo_duracion").value = m.tipo_duracion ?? "dias";
+                document.getElementById("precio").value = m.precio ?? "";
 
-            const data = await res.json();
-
-            if (res.ok) {
-                Swal.fire("Éxito", data.message, "success");
-                membershipForm.reset();
-
-                // 🔹 Asegurarte de tener la instancia activa del modal antes de cerrarlo
-                const modalInstance =
-                    bootstrap.Modal.getInstance(membershipModalEl);
-                if (modalInstance) {
-                    modalInstance.hide();
-                }
-
-                await loadMemberships();
-            } else {
-                Swal.fire(
-                    "Error",
-                    data.message || "No se pudo guardar",
-                    "error"
-                );
-            }
-        } catch (err) {
-            console.error(err);
-            Swal.fire("Error", "Error al conectar con el servidor", "error");
-        }
-    });
-
-    // Editar/Eliminar eventos
-    const attachMembershipEvents = () => {
-        // 🔹 Ya no usamos SweetAlert aquí — solo abrimos el modal real
-        document.querySelectorAll(".delete-membership-btn").forEach((btn) => {
-            btn.addEventListener("click", () => {
-                membershipIdToDelete = btn.dataset.id;
-                deleteModal.show(); // abre el modal de eliminación
-            });
-        });
-    };
-
-    // 🔹 Confirmar eliminación desde el modal Bootstrap
-    confirmDeleteBtn.addEventListener("click", async () => {
-        const csrfToken = document
-            .querySelector('meta[name="csrf-token"]')
-            .getAttribute("content");
-
-        try {
-            const res = await fetch(
-                `/admin/membresias/${membershipIdToDelete}`,
-                {
-                    method: "DELETE",
-                    headers: { "X-CSRF-TOKEN": csrfToken },
-                }
+                const modal = new bootstrap.Modal(document.getElementById("membershipModal"));
+                modal.show();
+                feather.replace();
+            })
+            .catch(() =>
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "No se pudo cargar la información de la membresía",
+                    background: "#1a1a1a",
+                    color: "#fff",
+                    confirmButtonColor: "#fcd52B",
+                })
             );
-            const data = await res.json();
-
-            if (res.ok) {
-                deleteModal.hide(); // cierra el modal
-                Swal.fire("Eliminado", data.message, "success");
-                await loadMemberships(); // recarga la tabla
-            } else {
-                Swal.fire("Error", data.message, "error");
-            }
-        } catch (err) {
-            Swal.fire("Error", "No se pudo conectar con el servidor", "error");
-        }
     });
 
-    loadMemberships();
+    // 💾 GUARDAR / ACTUALIZAR
+    saveBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        const url = editingMembershipId
+            ? apiUrl(`admin/membresias/json/${editingMembershipId}`)
+            : apiUrl(`admin/membresias/json`);
+
+        if (editingMembershipId) formData.append("_method", "PUT");
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                Accept: "application/json",
+            },
+            body: formData,
+        })
+            .then((res) => {
+                if (!res.ok) return res.json().then((err) => Promise.reject(err));
+                return res.json();
+            })
+            .then((data) => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: editingMembershipId
+                            ? "Membresía actualizada correctamente"
+                            : "Membresía registrada correctamente",
+                        background: "#1a1a1a",
+                        color: "#fff",
+                        confirmButtonColor: "#fcd52B",
+                        timer: 1500,
+                        showConfirmButton: false,
+                    });
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("membershipModal"));
+                    modal.hide();
+                    form.reset();
+                    editingMembershipId = null;
+                    loadMembresias();
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: data.message || "No se pudo guardar la membresía",
+                        background: "#1a1a1a",
+                        color: "#fff",
+                        confirmButtonColor: "#fcd52B",
+                    });
+                }
+            })
+            .catch((err) => {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: err.message || "Ocurrió un problema con la solicitud",
+                    background: "#1a1a1a",
+                    color: "#fff",
+                    confirmButtonColor: "#fcd52B",
+                });
+            });
+    });
+
+    // 🗑️ ELIMINAR MEMBRESÍA
+    tableBody.addEventListener("click", (e) => {
+        const btn = e.target.closest(".deleteMembership");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+
+        Swal.fire({
+            title: "¿Estás seguro?",
+            text: "Esta acción eliminará la membresía permanentemente",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#fcd52B",
+            cancelButtonColor: "#1a1a1a",
+            confirmButtonText: "Sí, eliminar",
+            cancelButtonText: "Cancelar",
+            background: "#1a1a1a",
+            color: "#fff",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const formData = new FormData();
+                formData.append("_method", "DELETE");
+
+                fetch(apiUrl(`admin/membresias/json/${id}`), {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        Accept: "application/json",
+                    },
+                    body: formData,
+                })
+                    .then((res) => {
+                        if (!res.ok) return res.json().then((err) => Promise.reject(err));
+                        return res.json();
+                    })
+                    .then((data) => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Membresía eliminada correctamente",
+                                background: "#1a1a1a",
+                                color: "#fff",
+                                confirmButtonColor: "#fcd52B",
+                                timer: 1500,
+                                showConfirmButton: false,
+                            });
+                            loadMembresias();
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: data.message || "No se pudo eliminar la membresía",
+                                background: "#1a1a1a",
+                                color: "#fff",
+                                confirmButtonColor: "#fcd52B",
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: error.message || "Ocurrió un problema con la solicitud",
+                            background: "#1a1a1a",
+                            color: "#fff",
+                            confirmButtonColor: "#fcd52B",
+                        });
+                    });
+            }
+        });
+    });
 });

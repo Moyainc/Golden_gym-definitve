@@ -52,7 +52,8 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost/golden-gym'),
+    'url' => env('APP_URL', 'http://localhost/golden_gym-definitve/public'),
+
 
     /*
     |--------------------------------------------------------------------------

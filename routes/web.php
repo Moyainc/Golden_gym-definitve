@@ -5,8 +5,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MembresiaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ProductoController;
-
-
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\PagoDiarioController;
 // RUTAS PÚBLICAS
 Route::get('/', [HomeController::class, 'index'])->name('inicio');
 Route::get('sign-in', [HomeController::class, 'login'])->name('user.login');
@@ -20,13 +20,32 @@ Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin
 Route::get('admin/profile', [HomeController::class, 'profile'])->name('admin.profile');
 
 
-// ADMIN → CLIENTES / CONTABILIDAD / PAGOS
-Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
+// ADMIN → CONTABILIDAD / PAGOS
+
 Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
 Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
 Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
 Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
 
+// ADMIN → CLIENTES
+Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
+Route::prefix('admin/clientes')->group(function () {
+    Route::get('/list/json', [ClienteController::class, 'getClientes']); 
+    Route::get('/json/{id}', [ClienteController::class, 'show']); 
+    Route::post('/json', [ClienteController::class, 'store']); 
+    Route::put('/json/{id}', [ClienteController::class, 'update']); 
+    Route::delete('/json/{id}', [ClienteController::class, 'destroy']);
+    Route::get('/membresias/json', [ClienteController::class, 'getMembresias']); 
+    Route::post('/json/{id}/renovar', [ClienteController::class, 'renovarMembresia']);
+    Route::get('/export/pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export.pdf');
+    Route::get('/export/excel', [ClienteController::class, 'exportExcel'])->name('clientes.export.excel');
+});
+// ADMIN → CLIENTES → PAGOS DIARIOS
+Route::prefix('admin/pagos-diarios')->group(function () {
+    Route::get('/list/json', [PagoDiarioController::class, 'index']);
+    Route::post('/json', [PagoDiarioController::class, 'store']);
+    Route::delete('/json/{id}', [PagoDiarioController::class, 'destroy']);
+});
 
 // ADMIN → VENTAS
 Route::get('admin/ventas/vender', [HomeController::class, 'vender'])->name('admin.vender');
@@ -55,10 +74,14 @@ Route::delete('/admin/categorias/{id}', [CategoriaController::class, 'destroy'])
 
 // ADMIN → MEMBRESÍAS
 Route::get('admin/membresias', [HomeController::class, 'membresias'])->name('admin.membresias');
-Route::get('admin/membresias/list', [MembresiaController::class, 'list'])->name('admin.membresias.list');
-Route::post('admin/membresias', [MembresiaController::class, 'store'])->name('admin.membresias.store');
-Route::put('admin/membresias/{id}/edit', [MembresiaController::class, 'update'])->name('admin.membresias.update');
-Route::delete('admin/membresias/{id}', [MembresiaController::class, 'destroy'])->name('admin.membresias.destroy');
+Route::prefix('admin/membresias')->group(function () {
+    Route::get('/list/json', [MembresiaController::class, 'index']); // listado JSON
+    Route::get('/json/{id}', [MembresiaController::class, 'edit']); // obtener una membresía específica
+    Route::post('/json', [MembresiaController::class, 'store']); // guardar
+    Route::put('/json/{id}', [MembresiaController::class, 'update']); // actualizar
+    Route::delete('/json/{id}', [MembresiaController::class, 'destroy']); // 👈 nueva ruta para eliminar
+});
+
 
 
 Route::get('admin/productos/list', [ProductoController::class, 'list'])->name('admin.productos.list');

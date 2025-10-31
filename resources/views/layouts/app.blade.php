@@ -8,7 +8,7 @@
         name="viewport"
         content="width=device-width, initial-scale=1, shrink-to-fi
     <meta
-        name=" description"
+        name=" description
         content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5" />
     <meta name="author" content="Golden Gym" />
     <meta
@@ -47,17 +47,18 @@
         </div>
     </div>
 
-
     <script>
         window.app = {
-            baseUrl: "{{ url('/') }}",
+            baseUrl: "{{ url('/') }}"
         };
 
-        function apiUrl(path) {
-            return `${app.baseUrl}/${path.replace(/^\/+/, '')}`;
-        }
+        // Función auxiliar para construir URLs seguras
+        const apiUrl = (path) => `${window.app.baseUrl}/${path.replace(/^\/+/, '')}`;
     </script>
-    <script src="../js/app.js"></script>
+    <script src="{{ asset('/js/app.js') }}"></script>"
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
 
 </html>
 </body>

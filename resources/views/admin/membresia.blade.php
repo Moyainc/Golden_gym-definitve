@@ -13,7 +13,7 @@
               <i data-feather="credit-card" class="me-2 tittle-color"></i>Membresías
             </h1>
             <button
-              id="btnAddMembership"
+              id="addMembershipBtn"
               class="btn btn-warning tittle-color btn-sm p-2"
               data-bs-toggle="modal"
               data-bs-target="#membershipModal">
@@ -97,96 +97,167 @@
 
             <div class="card-body">
               <div class="table-responsive">
-                <table class="table table-hover align-middle border-0 mb-0">
+                <table class="table table-dark table-striped align-middle mt-3">
                   <thead>
-                    <tr class="text-muted small">
+                    <tr class="text-uppercase text-secondary">
                       <th>Nombre</th>
-                      <th>Duración en Meses</th>
-                      <th>Valor</th>
-                      <th>Estado</th>
+                      <th>Duración</th>
+                      <th>Tipo de duración</th>
+                      <th>Precio</th>
                       <th class="text-end">Acciones</th>
                     </tr>
                   </thead>
+
                   <tbody id="membershipsTableBody">
-                    <!-- Aquí el JS insertará las filas dinámicamente -->
+                    @forelse ($membresias as $m)
+                    <tr data-id="{{ $m->id }}">
+                      <!-- Nombre -->
+                      <td class="nombre">{{ $m->nombre ?? '—' }}</td>
+
+                      <!-- Duración: solo el número -->
+                      <td class="duracion" data-value="{{ $m->duracion }}">
+                        {{ $m->duracion !== null && $m->duracion !== '' ? $m->duracion : '—' }}
+                      </td>
+
+                      <!-- Tipo de duración: muestra texto legible -->
+                      <td class="tipo_duracion" data-value="{{ $m->tipo_duracion }}">
+                        @if ($m->tipo_duracion === 'meses')
+                        {{ $m->duracion == 1 ? 'Mes' : 'Meses' }}
+                        @elseif ($m->tipo_duracion === 'dias')
+                        {{ $m->duracion == 1 ? 'Día' : 'Días' }}
+                        @else
+                        —
+                        @endif
+                      </td>
+
+                      <!-- Precio: formateado -->
+                      <td class="precio text-nowrap" data-value="{{ $m->precio }}">
+                        ${{ number_format((float) $m->precio, 0, ',', '.') }}
+                      </td>
+
+                      <!-- Acciones: botones con data-id -->
+                      <td class="text-end">
+                        <button
+                          class="btn btn-sm btn-outline-light me-1 editMembership"
+                          data-id="{{ $m->id }}"
+                          title="Editar"
+                          type="button">
+                          <i data-feather="edit"></i>
+                        </button>
+
+                        <button
+                          class="btn btn-sm btn-outline-danger deleteMembership"
+                          data-id="{{ $m->id }}"
+                          title="Eliminar"
+                          type="button">
+                          <i data-feather="trash-2"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    @empty
+                    <tr>
+                      <td colspan="5" class="text-center text-muted py-3">
+                        No hay membresías registradas.
+                      </td>
+                    </tr>
+                    @endforelse
                   </tbody>
                 </table>
+
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      <div class="modal fade" id="membershipModal" tabindex="-1">
-        <div class="modal-dialog modal-md modal-dialog-centered">
+      <!-- Modal compartido (Agregar / Editar) -->
+      <div class="modal fade" id="membershipModal" tabindex="-1" aria-labelledby="membershipModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content bg-dark border-0 shadow-lg">
-            <div class="modal-header bg-dark border-secondary">
-              <h5 class="modal-title text-warning">
-                <i data-feather="plus-circle" class="me-1"></i> Membresía
+            <div class="modal-header border-secondary">
+              <h5 class="modal-title tittle-color" id="membershipModalLabel">
+                <i data-feather="plus" class="me-1"></i> Nueva membresía
               </h5>
-              <button
-                type="button"
-                class="btn-close btn-close-white"
-                data-bs-dismiss="modal"></button>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
             <div class="modal-body">
-              <form id="membershipForm" class="row g-3">
-                <div class="col-11">
-                  <label class="form-label">Nombre *</label>
+              <form id="membershipForm" enctype="multipart/form-data">
+                @csrf
+                <input type="hidden" id="membershipId" name="id" />
+
+                <!-- Nombre -->
+                <div class="mb-3">
+                  <label for="nombre" class="form-label text-white">Nombre</label>
                   <input
-                    name="nombre"
                     type="text"
+                    id="nombre"
+                    name="nombre"
                     class="form-control text-white border-0"
-                    placeholder="Ej: Mensual, Trimestral, Diaria..."
+                    placeholder="Ej. Mensual, Quincenal, Anual"
                     required />
                 </div>
 
-                <div class="col-md-6">
-                  <label class="form-label">Duración *</label>
+                <!-- Duración -->
+                <div class="row">
+                  <div class="col-6 mb-3">
+                    <label for="duracion" class="form-label text-white">Duración</label>
+                    <input
+                      type="number"
+                      id="duracion"
+                      name="duracion"
+                      class="form-control text-white border-0"
+                      min="1"
+                      placeholder="Ej. 1"
+                      required />
+                  </div>
+                  <div class="col-6 mb-3">
+                    <label for="tipo_duracion" class="form-label text-white">Tipo de duración</label>
+                    <select
+                      id="tipo_duracion"
+                      name="tipo_duracion"
+                      class="form-select text-white border-0"
+                      required>
+                      <option value="meses">Meses</option>
+                      <option value="dias">Días</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Precio -->
+                <div class="mb-3">
+                  <label for="precio" class="form-label text-white">Precio</label>
                   <input
-                    name="duracion_meses"
                     type="number"
-                    class="form-control text-white border-0"
-                    placeholder="Ej: 30"
-                    required />
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label">Unidad de tiempo *</label>
-                  <select class="form-select text-white border-0" required>
-                    <option value="meses">Meses</option>
-                  </select>
-                </div>
-
-                <div class="col-6">
-                  <label class="form-label">Valor base *</label>
-                  <input
+                    id="precio"
                     name="precio"
-                    type="number"
                     class="form-control text-white border-0"
-                    placeholder="Ej: 80000"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ej. 50000"
                     required />
-                </div>
-
-                <div class="col-6">
-                  <label class="form-label">Estado *</label>
-                  <select name="activo" class="form-select text-white border-0" required>
-                    <option value="Activa">Activa</option>
-                    <option value="Inactiva">Inactiva</option>
-                  </select>
+                  <small class="form-text text-secondary">
+                    Digite el precio sin puntos ni comas.
+                  </small>
                 </div>
               </form>
             </div>
 
-            <div class="modal-footer bg-dark border-secondary">
-              <button class="btn btn-secondary" data-bs-dismiss="modal">
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
                 Cancelar
               </button>
-              <button class="btn btn-warning" id="saveMembership">
-                <i data-feather="save" class="me-1"></i>Guardar
+              <button
+                id="saveMembership"
+                type="button"
+                class="btn btn-warning tittle-color">
+                <i data-feather="save" class="me-1"></i> Guardar
               </button>
             </div>
+
           </div>
         </div>
       </div>
@@ -242,7 +313,7 @@
         </div>
       </div>
     </div>
-  </div>  
+  </div>
   <script src="{{ asset('js/membresias.js') }}"></script>
   <script src="../js/app.js"></script>
 </body>

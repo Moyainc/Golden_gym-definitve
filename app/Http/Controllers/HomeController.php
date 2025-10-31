@@ -11,7 +11,7 @@ use App\Models\Usuario;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
-
+use App\Models\Membresia;
 class HomeController extends Controller
 {
     public function index()
@@ -45,7 +45,8 @@ class HomeController extends Controller
     }
     public function membresias()
     {
-        return view('admin/membresia');
+        $membresias = Membresia::orderByDesc('id')->get();
+        return view('admin/membresia', compact('membresias'));
     }
     public function productos()
     {

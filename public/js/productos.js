@@ -75,7 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // ---------------------------
     const loadCategories = async () => {
         try {
+<<<<<<< HEAD
             const response = await fetch(categoriasUrl);
+=======
+            const response = await fetch(apiUrl("/admin/categorias/list"));
+>>>>>>> 907e3dabd51da996ba4a84258919522de0acc292
             const data = await response.json();
             renderCategories(data);
         } catch (error) {
@@ -135,11 +139,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 .querySelector('meta[name="csrf-token"]')
                 .getAttribute("content");
 
-            let url = "/admin/categorias";
+            let url = apiUrl("/admin/categorias");
             let method = "POST";
 
             if (editingCategoryId) {
-                url = `/admin/categorias/${editingCategoryId}`;
+                url = apiUrl(`/admin/categorias/${editingCategoryId}`);
                 method = "POST"; // Laravel usa POST + _method
                 formData.append("_method", "PUT");
             }
@@ -232,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 try {
                     const response = await fetch(
-                        `/admin/categorias/${categoryIdToDelete}`,
+                       apiUrl(`/admin/categorias/${categoryIdToDelete}`),
                         {
                             method: "POST",
                             headers: {
@@ -305,7 +309,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // -----------------------------
     const loadCategorias = async () => {
         try {
+<<<<<<< HEAD
             const res = await fetch(categoriasUrl);
+=======
+            const res = await fetch(apiUrl("/admin/categorias/list"));
+>>>>>>> 907e3dabd51da996ba4a84258919522de0acc292
             const categorias = await res.json();
             categoriaSelect.innerHTML = ""; // limpiar opciones
             categorias.forEach((cat) => {
@@ -375,7 +383,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadProducts = async () => {
         await loadCategorias(); // asegurar que las categorías estén cargadas antes de abrir modal
         try {
+<<<<<<< HEAD
             const res = await fetch(productosUrl);
+=======
+            const res = await fetch(apiUrl("/admin/productos/list"));
+>>>>>>> 907e3dabd51da996ba4a84258919522de0acc292
             const data = await res.json();
             allProducts = data;
             renderProducts(allProducts);
@@ -469,8 +481,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 .querySelector('meta[name="csrf-token"]')
                 .getAttribute("content");
             const url = editingProductId
-                ? `/admin/productos/${editingProductId}`
-                : "/admin/productos";
+                ? apiUrl(`/admin/productos/${editingProductId}`)
+                : apiUrl("/admin/productos");
             const method = editingProductId ? "PUT" : "POST";
 
             const res = await fetch(url, {
@@ -526,7 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     .getAttribute("content");
                 try {
                     const res = await fetch(
-                        `/admin/productos/${productIdToDelete}`,
+                        apiUrl(`/admin/productos/${productIdToDelete}`),
                         {
                             method: "DELETE",
                             headers: { "X-CSRF-TOKEN": csrfToken },
