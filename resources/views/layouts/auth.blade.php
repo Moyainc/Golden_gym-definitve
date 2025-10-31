@@ -25,7 +25,14 @@
         &copy; {{ date('Y') }} Golden Gym. Todos los derechos reservados.
     </footer>
 
+    <script>
+        window.app = {
+            baseUrl: "{{ url('/') }}" // genera http://localhost/golden_gym/public automáticamente
+        };
 
+        // 🔧 Función global que usa esa base URL
+        const apiUrl = (path) => `${window.app.baseUrl}/${path.replace(/^\/+/, '')}`;
+    </script>
 </body>
 
 </html>

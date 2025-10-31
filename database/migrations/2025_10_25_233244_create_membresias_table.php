@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('membresias', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->decimal('precio', 10, 2);
+            $table->decimal('precio', 10, 1);
             $table->integer('duracion_meses');
             $table->enum('activo', ['Activa', 'Inactiva'])->default('Activa');
             $table->timestamps();

@@ -15,10 +15,9 @@ class LoginController extends Controller
 {
   public function loginUsuario(Request $request)
   {
-    // 🔐 1️⃣ Protección contra ataques de fuerza bruta
+    //Protección contra ataques de fuerza bruta
     $this->checkRateLimit($request);
 
-    // 2️⃣ Validar entrada
     $validator = Validator::make($request->all(), [
       'correo' => 'required|email|exists:usuarios,correo',
       'password' => 'required|string|min:6|max:100',
@@ -36,7 +35,6 @@ class LoginController extends Controller
       ], 422);
     }
 
-    // 3️⃣ Buscar usuario y verificar password
     $usuario = Usuario::where('correo', $request->correo)->first();
 
     if (!$usuario || !Hash::check($request->password, $usuario->password)) {
@@ -47,22 +45,25 @@ class LoginController extends Controller
       ], 401);
     }
 
-    // 4️⃣ Autenticar usuario manualmente (sin attempt)
+    //Autenticar usuario manualmente (sin attempt)
     Auth::login($usuario, $request->boolean('remember'));
 
-    // 5️⃣ Regenerar sesión para prevenir fijación
+    //Regenerar sesión para prevenir fijación
     $request->session()->regenerate();
 
-    // 6️⃣ Actualizar último acceso
+
     $usuario->update(['ultimo_acceso' => now()]);
 
-    // 7️⃣ Limpiar contador de intentos
+    //Limpiar contador de intentos
     $this->clearRateLimit($request);
 
-    // 8️⃣ Respuesta segura
+    // Respuesta segura
     return response()->json([
       'success' => true,
       'message' => 'Inicio de sesión exitoso.',
+      'user' => [
+        'nombre' => $usuario->nombre_completo,
+      ],
       'redirect' => route('admin.dashboard'),
     ], 200);
   }
@@ -82,7 +83,7 @@ class LoginController extends Controller
 
   private function incrementRateLimit(Request $request)
   {
-    RateLimiter::hit('login:' . $request->ip(), 60);
+    RateLimiter::hit('login:' . $request->ip(), 300);
   }
 
   private function clearRateLimit(Request $request)
