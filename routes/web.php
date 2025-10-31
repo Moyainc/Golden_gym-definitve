@@ -50,12 +50,12 @@ Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resume
 // ADMIN → CLIENTES
 Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
 Route::prefix('admin/clientes')->group(function () {
-    Route::get('/list/json', [ClienteController::class, 'getClientes']); 
-    Route::get('/json/{id}', [ClienteController::class, 'show']); 
-    Route::post('/json', [ClienteController::class, 'store']); 
-    Route::put('/json/{id}', [ClienteController::class, 'update']); 
+    Route::get('/list/json', [ClienteController::class, 'getClientes']);
+    Route::get('/json/{id}', [ClienteController::class, 'show']);
+    Route::post('/json', [ClienteController::class, 'store']);
+    Route::put('/json/{id}', [ClienteController::class, 'update']);
     Route::delete('/json/{id}', [ClienteController::class, 'destroy']);
-    Route::get('/membresias/json', [ClienteController::class, 'getMembresias']); 
+    Route::get('/membresias/json', [ClienteController::class, 'getMembresias']);
     Route::post('/json/{id}/renovar', [ClienteController::class, 'renovarMembresia']);
     Route::get('/export/pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export.pdf');
     Route::get('/export/excel', [ClienteController::class, 'exportExcel'])->name('clientes.export.excel');
@@ -105,5 +105,5 @@ Route::prefix('admin/membresias')->group(function () {
 //   Route::get('/clientes/buscar/{identificacion}', [VentaController::class, 'buscarCliente']);
 //   Route::post('/ventas/guardar', [VentaController::class, 'guardarVenta'])->name('ventas.guardar');
 //   Route::get('/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
-// 
+//
 });

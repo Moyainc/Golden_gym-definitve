@@ -155,17 +155,8 @@ const initializePage = () => {
 
     const loadCategories = async () => {
         try {
-<<<<<<< HEAD
-<<<<<<< HEAD
-            const response = await fetch(categoriasUrl);
-=======
-            const response = await fetch(apiUrl("/admin/categorias/list"));
->>>>>>> 907e3dabd51da996ba4a84258919522de0acc292
-            const data = await response.json();
-=======
             const res = await fetch(apiUrl("/admin/categorias/list"));
             const data = await res.json();
->>>>>>> 3672f60aa864332e7ea9dbdf70cee6f21b94b9ac
             renderCategories(data);
         } catch (err) {
             console.error(err);
@@ -366,11 +357,7 @@ const initializePage = () => {
 
     const loadCategoriasForProducts = async () => {
         try {
-<<<<<<< HEAD
-            const res = await fetch(categoriasUrl);
-=======
             const res = await fetch(apiUrl("/admin/categorias/list"));
->>>>>>> 907e3dabd51da996ba4a84258919522de0acc292
             const categorias = await res.json();
             categoriaSelect.innerHTML = "";
             filterCategory.innerHTML = '<option value="">Todas</option>';
@@ -427,11 +414,7 @@ const initializePage = () => {
     const loadProducts = async () => {
         await loadCategoriasForProducts();
         try {
-<<<<<<< HEAD
-            const res = await fetch(productosUrl);
-=======
             const res = await fetch(apiUrl("/admin/productos/list"));
->>>>>>> 907e3dabd51da996ba4a84258919522de0acc292
             const data = await res.json();
             allProducts = data;
             renderProducts(allProducts);
