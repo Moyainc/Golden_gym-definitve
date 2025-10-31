@@ -49,10 +49,10 @@
 
     <script>
         window.app = {
-            baseUrl: "{{ url('/') }}"
+            baseUrl: "{{ url('/') }}" // genera http://localhost/golden_gym/public automáticamente
         };
 
-        // Función auxiliar para construir URLs seguras
+        // 🔧 Función global que usa esa base URL
         const apiUrl = (path) => `${window.app.baseUrl}/${path.replace(/^\/+/, '')}`;
     </script>
     <script src="{{ asset('/js/app.js') }}"></script>"

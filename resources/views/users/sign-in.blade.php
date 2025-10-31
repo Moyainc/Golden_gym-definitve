@@ -24,7 +24,7 @@
                 <div class="m-sm-3">
                   <form id="loginForm" method="POST" action="{{ route('usuario.login') }}">
                     @csrf
-                    
+
                     <div class="mb-3">
                       <label class="form-label">Correo</label>
                       <input
@@ -65,7 +65,7 @@
             </div>
             <div class="text-center mb-3">
               No tienes una cuenta?
-              <a class="tittle-color" href="{{ route('user.register') }}">Registrar</a>
+              <a class="tittle-color" href="">Registrar</a>
             </div>
           </div>
         </div>

@@ -118,9 +118,21 @@ document.addEventListener("DOMContentLoaded", () => {
                         text: errores,
                     });
                 } else {
+                    const hora = new Date().getHours();
+                    let saludo = "";
+
+                    if (hora >= 5 && hora < 12) {
+                        saludo = "Buenos días";
+                    } else if (hora >= 12 && hora < 19) {
+                        saludo = "Buenas tardes";
+                    } else {
+                        saludo = "Buenas noches";
+                    }
+
+                    const nombre = data.user?.nombre || "usuario";
                     Swal.fire({
                         icon: "success",
-                        title: "¡Bienvenido!",
+                        title: `${saludo}, ${nombre}!`,
                         text:
                             data.message || "Has iniciado sesión correctamente",
                     }).then(() => {

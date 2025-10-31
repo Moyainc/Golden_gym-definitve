@@ -13,7 +13,8 @@ return new class extends Migration
             $table->string('nombre');
             $table->foreignId('categoria_id')->constrained('categorias')->onDelete('cascade');
             $table->integer('stock')->default(0);
-            $table->decimal('precio', 10, 2);
+            $table->decimal('precio', 10, 1);
+            $table->string('foto')->nullable();
             $table->enum('estado', ['Activo', 'Inactivo'])->default('Activo');
             $table->timestamps();
         });
