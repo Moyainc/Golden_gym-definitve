@@ -15,7 +15,7 @@ class Venta extends Model
 
     protected $fillable = [
         'usuario_id',
-        'cliente_membresia_id',
+        'cliente_id',
         'total',
         'metodo_pago',
         'descripcion',

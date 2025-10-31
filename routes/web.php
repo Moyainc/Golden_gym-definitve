@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Middleware\Authenticate;
+use App\Http\Controllers\VentaController;
 
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
@@ -68,4 +69,9 @@ Route::middleware(['auth'])->group(function () {
 
   // 🔸 Logout
   Route::post('/logout', [LoginController::class, 'logoutUsuario'])->name('usuario.logout');
+
+  // Ventas
+  Route::get('/clientes/buscar/{identificacion}', [VentaController::class, 'buscarCliente']);
+  Route::post('/ventas/guardar', [VentaController::class, 'guardarVenta'])->name('ventas.guardar');
+  Route::get('/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
 });
