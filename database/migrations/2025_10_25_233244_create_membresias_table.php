@@ -1,5 +1,4 @@
-<?php
-
+<?php 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,9 +10,9 @@ return new class extends Migration
         Schema::create('membresias', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
+            $table->integer('duracion'); // Ej: 30
+            $table->enum('tipo_duracion', ['dias', 'meses']); // solo permite 'dias' o 'meses'
             $table->decimal('precio', 10, 2);
-            $table->integer('duracion_meses');
-            $table->enum('activo', ['Activa', 'Inactiva'])->default('Activa');
             $table->timestamps();
         });
     }
@@ -23,4 +22,3 @@ return new class extends Migration
         Schema::dropIfExists('membresias');
     }
 };
-
