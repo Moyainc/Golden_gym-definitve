@@ -2,22 +2,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const identificacionInput = document.getElementById(
         "identificacionCliente"
     );
+    const token = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
     const nombreClienteInput = document.getElementById("nombreCliente");
     const clienteIdInput = document.getElementById("cliente_id");
     const productosContainer = document.getElementById("productosContainer");
-    const agregarBtn = document.getElementById("agregarProductoBtn");
     const totalInput = document.getElementById("totalVenta");
     const guardarBtn = document.getElementById("guardarVentaDetalladaBtn");
     const metodoPagoSelect = document.getElementById("metodoPago");
     const usuarioId = document.getElementById("usuarioVenta").value;
-    const MAX_PRODUCTOS = 5;
     let timeout = null;
     const suggestionBox = document.getElementById("suggestionBox");
     const apiUrl = (path) => {
         const base = `${window.location.origin}/golden_gym/public`;
         return `${base}/${path.replace(/^\/+/, "")}`;
     };
-
 
     // 🔍 Búsqueda dinámica
     identificacionInput.addEventListener("input", () => {
@@ -285,4 +285,185 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     });
+
+    // ==============================
+    // ⚡ VENTA RÁPIDA
+    // ==============================
+    const productosContainerModal = document.getElementById(
+        "productosRapidosContainer"
+    );
+    const agregarBtnModal = document.getElementById("agregarProductoRapidaBtn");
+    const totalInputModal = document.getElementById("totalRapida");
+    const guardarBtnModal = document.getElementById("guardarRapidaBtn");
+    const usuarioIdRapida = document.getElementById("usuario_id_rapida").value;
+
+    // 🧩 Cargar categorías y productos
+    async function cargarCategoriasRapida(select) {
+        try {
+            const res = await fetch(apiUrl("/admin/categorias/list"));
+            const data = await res.json();
+            select.innerHTML = '<option value="">Seleccione categoría</option>';
+            data.forEach((cat) => {
+                select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+            });
+        } catch (error) {
+            console.error("Error cargando categorías", error);
+        }
+    }
+
+    async function cargarProductosRapida(categoriaId, selectProducto) {
+        try {
+            const res = await fetch(apiUrl(`/admin/productos/list`));
+            const productos = await res.json();
+            const filtrados = productos.filter(
+                (p) => p.categoria_id == categoriaId
+            );
+            selectProducto.innerHTML =
+                '<option value="">Seleccione producto</option>';
+            filtrados.forEach((prod) => {
+                selectProducto.innerHTML += `<option value="${prod.id}" data-precio="${prod.precio}">${prod.nombre}</option>`;
+            });
+        } catch (error) {
+            console.error("Error cargando productos", error);
+        }
+    }
+
+    // 💰 Calcular total
+    const calcularTotalRapida = () => {
+        let total = 0;
+        productosContainerModal
+            .querySelectorAll(".producto-item")
+            .forEach((item) => {
+                const precio =
+                    parseFloat(
+                        item
+                            .querySelector(".precioRapida")
+                            .value.replace("$", "")
+                    ) || 0;
+                const cantidad =
+                    parseInt(item.querySelector(".cantidadRapida").value) || 1;
+                total += precio * cantidad;
+            });
+        totalInputModal.value = `$${total.toFixed(1)}`;
+        return total;
+    };
+
+    // ➕ Agregar producto
+    agregarBtnModal.addEventListener("click", () => {
+        const nuevoItem = productosContainerModal
+            .querySelector(".producto-item")
+            .cloneNode(true);
+        nuevoItem.querySelectorAll("input, select").forEach((el) => {
+            if (el.tagName === "INPUT")
+                el.value = el.classList.contains("cantidadRapida") ? 1 : "$0";
+            if (el.tagName === "SELECT")
+                el.innerHTML = '<option value="">Seleccione...</option>';
+        });
+        productosContainerModal.appendChild(nuevoItem);
+        cargarCategoriasRapida(nuevoItem.querySelector(".categoriaRapida"));
+    });
+
+    // 🎛️ Eventos dinámicos
+    productosContainerModal.addEventListener("change", async (e) => {
+        const item = e.target.closest(".producto-item");
+
+        if (e.target.classList.contains("categoriaRapida")) {
+            await cargarProductosRapida(
+                e.target.value,
+                item.querySelector(".productoRapida")
+            );
+        }
+
+        if (e.target.classList.contains("productoRapida")) {
+            const precio =
+                e.target.selectedOptions[0]?.getAttribute("data-precio") || 0;
+            item.querySelector(".precioRapida").value = `$${parseFloat(
+                precio
+            ).toFixed(1)}`;
+            calcularTotalRapida();
+        }
+
+        if (e.target.classList.contains("cantidadRapida"))
+            calcularTotalRapida();
+    });
+
+    productosContainerModal.addEventListener("click", (e) => {
+        if (e.target.classList.contains("eliminarProductoRapida")) {
+            const items = document.querySelectorAll(".producto-item");
+            if (items.length > 1) e.target.closest(".producto-item").remove();
+            calcularTotalRapida();
+        }
+    });
+
+    // 🧾 Guardar venta rápida
+    guardarBtnModal.addEventListener("click", async () => {
+        const form = document.getElementById("ventaRapidaForm");
+        const metodoPago = document.getElementById("metodoRapida").value;
+        const estado = document.getElementById("estadoRapida").value;
+        const total = calcularTotalRapida();
+
+        const productos = [...form.querySelectorAll(".productoRapida")].map(
+            (p, i) => ({
+                producto_id: p.value,
+                cantidad: parseInt(
+                    form.querySelectorAll(".cantidadRapida")[i].value
+                ),
+                subtotal:
+                    parseFloat(
+                        form
+                            .querySelectorAll(".precioRapida")
+                            [i].value.replace("$", "")
+                    ) *
+                    parseInt(form.querySelectorAll(".cantidadRapida")[i].value),
+            })
+        );
+
+        try {
+            const res = await fetch(apiUrl("/admin/ventas/rapida"), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": token,
+                },
+                body: JSON.stringify({
+                    usuario_id: usuarioIdRapida,
+                    metodo_pago: metodoPago,
+                    total,
+                    productos,
+                    estado,
+                }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                Swal.fire(
+                    "✅ Venta rápida registrada",
+                    data.message,
+                    "success"
+                );
+                form.reset();
+                calcularTotalRapida();
+                const modal = bootstrap.Modal.getInstance(
+                    document.getElementById("ventaRapidaModal")
+                );
+                modal.hide();
+            } else {
+                Swal.fire(
+                    "Error",
+                    data.message || "Error al registrar venta rápida.",
+                    "error"
+                );
+            }
+        } catch (error) {
+            console.error("Error al registrar venta rápida:", error);
+            Swal.fire(
+                "Error",
+                "No se pudo registrar la venta rápida.",
+                "error"
+            );
+        }
+    });
+
+    cargarCategoriasRapida(document.querySelector(".categoriaRapida"));
 });

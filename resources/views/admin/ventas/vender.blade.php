@@ -1,4 +1,4 @@
-@extends('../layouts.app')
+@extends('/layouts.app')
 @section('title', 'Ventas - Golden Gym')
 @section('content')
 
@@ -161,44 +161,67 @@
 
           <div class="modal-body">
             <form id="ventaRapidaForm">
+              <!-- Campo oculto con el ID del usuario autenticado -->
+              <input
+                type="hidden"
+                id="usuario_id_rapida"
+                name="usuario_id"
+                value="{{ Auth::id() }}" />
 
               <div id="productosRapidosContainer">
                 <!-- Producto inicial -->
                 <div class="row g-2 mb-3 producto-item align-items-end">
                   <div class="col-3 categoria-col">
                     <label class="form-label">Categoría</label>
-                    <select name="categoria[]" class="form-select text-light border-0 categoriaRapida">
+                    <select
+                      name="categoria[]"
+                      class="form-select text-light border-0 categoriaRapida">
                       <option value="">Seleccione categoría</option>
                     </select>
                   </div>
 
                   <div class="col-3 producto-col">
                     <label class="form-label">Producto</label>
-                    <select name="producto[]" class="form-select text-light border-0 productoRapida">
+                    <select
+                      name="producto[]"
+                      class="form-select text-light border-0 productoRapida">
                       <option value="">Seleccione producto</option>
                     </select>
                   </div>
 
                   <div class="col-2">
                     <label class="form-label">Precio</label>
-                    <input type="text" name="precio[]" class="form-control text-light border-0 precioRapida" readonly value="$0" />
+                    <input
+                      type="text"
+                      name="precio[]"
+                      class="form-control text-light border-0 precioRapida"
+                      readonly
+                      value="$0" />
                   </div>
 
                   <div class="col-2">
                     <label class="form-label">Cantidad</label>
-                    <input type="number" name="cantidad[]" class="form-control text-light border-0 cantidadRapida" min="1" value="1" />
+                    <input
+                      type="number"
+                      name="cantidad[]"
+                      class="form-control text-light border-0 cantidadRapida"
+                      min="1"
+                      value="1" />
                   </div>
 
                   <div class="col-2 mb-1 d-flex align-items-end">
-                    <button type="button" class="btn btn-danger btn-sm eliminarProductoRapida">X</button>
+                    <button type="button" class="btn btn-danger btn-sm eliminarProductoRapida">
+                      X
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <button type="button" class="btn btn-secondary mb-3" id="agregarProductoRapidaBtn">Agregar Producto</button>
+              <button type="button" class="btn btn-secondary mb-3" id="agregarProductoRapidaBtn">
+                Agregar Producto
+              </button>
 
               <div class="row g-2 mb-3 align-items-end">
-                <!-- Método de Pago -->
                 <div class="col-3">
                   <label for="metodoRapida" class="form-label">Método de Pago</label>
                   <select id="metodoRapida" class="form-select text-light border-0">
@@ -207,22 +230,28 @@
                   </select>
                 </div>
 
-                <!-- Total Final -->
                 <div class="col-3">
                   <label for="totalRapida" class="form-label">Total Final</label>
-                  <input type="text" id="totalRapida" class="form-control text-light border-0" readonly value="$0" />
+                  <input
+                    type="text"
+                    id="totalRapida"
+                    class="form-control text-light border-0"
+                    readonly
+                    value="$0" />
                 </div>
 
-                <!-- Botón Vender -->
                 <div class="col-3 mb-1">
                   <input type="hidden" id="estadoRapida" value="Completada" />
-                  <button type="button" class="btn btn-success text-dark fw-bold" id="guardarRapidaBtn">
+                  <button
+                    type="button"
+                    class="btn btn-success text-dark fw-bold"
+                    id="guardarRapidaBtn">
                     Vender
                   </button>
                 </div>
               </div>
-
             </form>
+
           </div>
         </div>
       </div>

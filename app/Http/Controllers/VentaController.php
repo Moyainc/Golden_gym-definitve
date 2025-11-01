@@ -163,4 +163,104 @@ class VentaController extends Controller
       ], 500);
     }
   }
+
+  public function storeFast(Request $request)
+{
+    $validated = $request->validate([
+        'usuario_id' => 'required|integer|exists:usuarios,id',
+        'productos' => 'required|array|min:1',
+        'productos.*.producto_id' => 'required|exists:productos,id',
+        'productos.*.cantidad' => 'required|integer|min:1',
+        'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
+        'estado' => 'required|string|in:Completada,Cancelada',
+    ], [
+        'productos.required' => 'Debe agregar al menos un producto.',
+        'productos.*.producto_id.exists' => 'El producto seleccionado no existe.',
+        'productos.*.cantidad.min' => 'La cantidad debe ser al menos 1.',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        $total = 0;
+
+        // 🔍 Recalcular todo en el backend (seguro y confiable)
+        foreach ($request->productos as $item) {
+            $producto = Producto::findOrFail($item['producto_id']);
+
+            if ($producto->stock < $item['cantidad']) {
+                throw new \Exception("El producto '{$producto->nombre}' no tiene suficiente stock disponible.");
+            }
+
+            $subtotal = $producto->precio * $item['cantidad'];
+            $total += $subtotal;
+        }
+
+        // 🧾 Registrar venta principal
+        $venta = Venta::create([
+            'usuario_id' => $request->usuario_id,
+            'cliente_id' => null, // Venta rápida sin cliente
+            'total' => $total,
+            'estado' => $request->estado,
+            'metodo_pago' => $request->metodo_pago,
+            'fecha_venta' => now(),
+        ]);
+
+        // 💾 Registrar detalle y actualizar stock
+        foreach ($request->productos as $item) {
+            $producto = Producto::findOrFail($item['producto_id']);
+            $cantidad = $item['cantidad'];
+            $subtotal = $producto->precio * $cantidad;
+
+            // Validación de stock antes de descontar
+            if ($producto->stock < $cantidad) {
+                throw new \Exception("Stock insuficiente para el producto '{$producto->nombre}'.");
+            }
+
+            // Guardar detalle
+            DetalleVenta::create([
+                'venta_id' => $venta->id,
+                'producto_id' => $producto->id,
+                'cantidad' => $cantidad,
+                'precio_unitario' => $producto->precio,
+                'subtotal' => $subtotal,
+            ]);
+
+            // Descontar del stock
+            $producto->decrement('stock', $cantidad);
+        }
+
+        // 💰 Registrar pago
+        PagoGeneral::create([
+            'tipo_pago' => 'venta_producto',
+            'origen_id' => $venta->id,
+            'monto' => $total,
+            'metodo_pago' => $request->metodo_pago,
+            'usuario_id' => $request->usuario_id,
+            'fecha_pago' => now(),
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Venta rápida registrada correctamente.',
+            'venta_id' => $venta->id,
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // ⚠️ Responder errores de validación (422)
+        return response()->json([
+            'success' => false,
+            'errors' => $e->errors(),
+        ], 422);
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al registrar la venta rápida: '.$e->getMessage(),
+        ], 500);
+    }
+}
+
 }

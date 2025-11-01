@@ -105,4 +105,5 @@ Route::middleware(['auth'])->group(function () {
   Route::get('/admin/ventas/buscar', [VentaController::class, 'buscarCliente'])->name('ventas.buscarCliente');
   Route::post('/admin/ventas/registrar', [VentaController::class, 'store'])->name('ventas.store');
   Route::get('/admin/ventas/sugerir-clientes', [VentaController::class, 'sugerirClientes'])->name('ventas.sugerirClientes');
+  Route::post('/admin/ventas/rapida', [VentaController::class, 'storeFast'])->name('ventas.storeFast');
 });
