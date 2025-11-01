@@ -102,8 +102,7 @@ Route::middleware(['auth'])->group(function () {
   });
 
   // Ventas
-  // Route::get('/clientes/buscar/{identificacion}', [VentaController::class, 'buscarCliente']);
-  // Route::post('/ventas/guardar', [VentaController::class, 'guardarVenta'])->name('ventas.guardar');
-  // Route::get('/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
-
+  Route::get('/admin/ventas/buscar', [VentaController::class, 'buscarCliente'])->name('ventas.buscarCliente');
+  Route::post('/admin/ventas/registrar', [VentaController::class, 'store'])->name('ventas.store');
+  Route::get('/admin/ventas/sugerir-clientes', [VentaController::class, 'sugerirClientes'])->name('ventas.sugerirClientes');
 });

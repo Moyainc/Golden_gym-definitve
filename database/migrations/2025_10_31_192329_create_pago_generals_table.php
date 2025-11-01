@@ -11,23 +11,36 @@ return new class extends Migration
         Schema::create('pagos_generales', function (Blueprint $table) {
             $table->id();
 
-            // Fuente del pago: venta, membresía, pago individual, etc.
-            $table->string('tipo_pago'); // 'venta_producto', 'membresia', 'pago_individual', etc.
-            $table->unsignedBigInteger('origen_id'); // ID de la tabla específica según el tipo
+            // 🔹 Fuente del pago: venta, membresía, pago individual, etc.
+            $table->string('tipo_pago');
+            // Ejemplo: 'venta_producto', 'membresia', 'pago_individual', etc.
 
-            // Información contable y de filtros
-            $table->decimal('monto', 10, 1);
-            $table->string('metodo_pago');
-            $table->unsignedBigInteger('usuario_id')->nullable(); // usuario que registró el pago
-            $table->timestamp('fecha_pago')->useCurrent();
+            // 🔹 ID del registro en la tabla de origen (por ejemplo, id de la venta)
+            $table->unsignedBigInteger('origen_id');
+
+            // 🔹 Información contable y general
+            $table->decimal('monto', 10, 1); // total pagado
+            $table->string('metodo_pago');   // Efectivo, Transferencia, etc.
+            $table->unsignedBigInteger('usuario_id')->nullable(); // Usuario que registró el pago
+            $table->timestamp('fecha_pago')->useCurrent(); // Fecha en que se registró el pago
 
             $table->timestamps();
 
-            // Llaves foráneas
-            $table->foreign('usuario_id')->references('id')->on('usuarios')->nullOnDelete();
+            $table->foreign('origen_id')
+                ->references('id')
+                ->on('ventas')
+                ->cascadeOnDelete();
+
+            $table->foreign('usuario_id')
+                ->references('id')
+                ->on('usuarios')
+                ->nullOnDelete();
         });
     }
 
+    /**
+     * Revertir la migración.
+     */
     public function down(): void
     {
         Schema::dropIfExists('pagos_generales');

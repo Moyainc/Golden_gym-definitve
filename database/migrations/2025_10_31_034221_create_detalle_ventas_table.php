@@ -18,7 +18,6 @@ return new class extends Migration
 
             // Relación con producto: si se elimina el producto, el detalle queda intacto
             $table->unsignedBigInteger('producto_id')->nullable();
-            $table->string('nombre_producto'); // guardamos el nombre al momento de la venta
             $table->decimal('precio_unitario', 10, 1);
             $table->integer('cantidad');
             $table->decimal('subtotal', 10, 1);

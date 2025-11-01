@@ -41,6 +41,8 @@
     overflow-y: auto;
 }
 
+/* Estilos para el modal personalizado */
+
 .custom-modal {
     display: none;
     position: fixed;
@@ -108,6 +110,8 @@
     }
 }
 
+/*  Animaciones para la columna de foto en la tabla de productos  */
+
 .foto-container {
     overflow: hidden;
     width: 0;
@@ -122,4 +126,27 @@
 }
 .foto-container.visible img {
     opacity: 1;
+}
+
+/* Estilos para el cuadro de sugerencias */
+
+#suggestionBox {
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 0.4rem;
+    background-color: #584b00; /* 🌈 color de fondo que tú quieras */
+    border: 1px solid #444;
+}
+
+/* Cada sugerencia individual */
+#suggestionBox li {
+    background-color: #1d1d8a; /* igual que el fondo del contenedor */
+    color: #f1f1f1; /* texto claro para contraste */
+    transition: background 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+/* Efecto al pasar el mouse */
+#suggestionBox li:hover {
+    background-color: #3d9eff; /* tono más claro al pasar el mouse */
 }

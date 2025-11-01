@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('../layouts.app')
 @section('title', 'Ventas - Golden Gym')
 @section('content')
 
@@ -26,6 +26,34 @@
           <div class="card-body text-light">
             <h5 class="text-warning mb-3">Nueva Venta Detallada</h5>
             <form id="ventaDetalladaForm">
+              <div class="row g-2 mb-3 align-items-end">
+                <div class="col-3 position-relative">
+                  <label class="form-label">Identificación del Cliente</label>
+                  <input
+                    type="text"
+                    id="identificacionCliente"
+                    class="form-control text-light border-0"
+                    placeholder="Cédula o documento"
+                    autocomplete="off" />
+                  <ul
+                    id="suggestionBox"
+                    class="list-group position-absolute w-100 mt-1"
+                    style="z-index: 1050; display: none;"></ul>
+
+                  <input type="hidden" id="cliente_id" name="cliente_id" />
+                </div>
+
+                <div class="col-4">
+                  <label class="form-label">Nombre del Cliente</label>
+                  <input
+                    type="text"
+                    id="nombreCliente"
+                    class="form-control text-light border-0"
+                    placeholder="Nombre del cliente"
+                    readonly />
+                </div>
+              </div>
+
 
               <div id="productosContainer">
                 <div class="row g-2 mb-3 producto-item align-items-end">
@@ -199,18 +227,14 @@
         </div>
       </div>
     </div>
-
-
-
-
   </div>
 </div>
 
 
-
 <script src="../../js/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="{{ asset('js/ventas/ventas.js') }}"></script>
+<script src="{{ asset('js/ventas/funcionalidad-ventas.js') }}"></script>
+<script src="{{ asset('js/ventas/venta-productos.js') }}"></script>
 
 
 </html>
