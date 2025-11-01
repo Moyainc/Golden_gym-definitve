@@ -8,8 +8,7 @@ use App\Traits\HasPrecioFormatted;
 
 class DetalleVenta extends Model
 {
-    use HasPrecioFormatted;
-    use HasFactory;
+    use HasFactory, HasPrecioFormatted;
 
     protected $table = 'detalle_ventas';
 
@@ -26,9 +25,6 @@ class DetalleVenta extends Model
         'subtotal' => 'decimal:1',
     ];
 
-    protected $appends = ['precio_formatted'];
-
-
     // Relaciones
     public function venta()
     {
@@ -38,5 +34,23 @@ class DetalleVenta extends Model
     public function producto()
     {
         return $this->belongsTo(Producto::class, 'producto_id');
+    }
+
+    // Hook para actualizar subtotal automáticamente al guardar
+    protected static function booted()
+    {
+        static::saving(function ($detalle) {
+            $detalle->subtotal = $detalle->cantidad * $detalle->precio_unitario;
+        });
+
+        // Después de crear o actualizar, actualizar total de la venta
+        static::saved(function ($detalle) {
+            $detalle->venta->actualizarTotal();
+        });
+
+        // Después de eliminar, actualizar total de la venta
+        static::deleted(function ($detalle) {
+            $detalle->venta->actualizarTotal();
+        });
     }
 }

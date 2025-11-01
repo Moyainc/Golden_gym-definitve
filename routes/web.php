@@ -40,16 +40,16 @@ Route::middleware(['auth'])->group(function () {
   Route::get('admin/ventas/vender', [HomeController::class, 'vender'])->name('admin.vender');
   Route::get('admin/ventas/lista-ventas', [HomeController::class, 'lista_ventas'])->name('admin.lista_ventas');
 
-// ADMIN → CONTABILIDAD / PAGOS
+  // ADMIN → CONTABILIDAD / PAGOS
 
-Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
-Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
-Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
-Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
+  Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
+  Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
+  Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
+  Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
 
-// ADMIN → CLIENTES
-Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
-Route::prefix('admin/clientes')->group(function () {
+  // ADMIN → CLIENTES
+  Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
+  Route::prefix('admin/clientes')->group(function () {
     Route::get('/list/json', [ClienteController::class, 'getClientes']);
     Route::get('/json/{id}', [ClienteController::class, 'show']);
     Route::post('/json', [ClienteController::class, 'store']);
@@ -59,13 +59,13 @@ Route::prefix('admin/clientes')->group(function () {
     Route::post('/json/{id}/renovar', [ClienteController::class, 'renovarMembresia']);
     Route::get('/export/pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export.pdf');
     Route::get('/export/excel', [ClienteController::class, 'exportExcel'])->name('clientes.export.excel');
-});
-// ADMIN → CLIENTES → PAGOS DIARIOS
-Route::prefix('admin/pagos-diarios')->group(function () {
+  });
+  // ADMIN → CLIENTES → PAGOS DIARIOS
+  Route::prefix('admin/pagos-diarios')->group(function () {
     Route::get('/list/json', [PagoDiarioController::class, 'index']);
     Route::post('/json', [PagoDiarioController::class, 'store']);
     Route::delete('/json/{id}', [PagoDiarioController::class, 'destroy']);
-});
+  });
   // 🔸 Usuarios
   Route::get('admin/usuarios', [HomeController::class, 'usuarios'])->name('admin.usuarios');
   Route::post('/admin/usuarios', [HomeController::class, 'store'])->name('admin.usuarios.store');
@@ -91,19 +91,19 @@ Route::prefix('admin/pagos-diarios')->group(function () {
   Route::post('/logout', [LoginController::class, 'logoutUsuario'])->name('usuario.logout');
 
 
-// ADMIN → MEMBRESÍAS
-Route::get('admin/membresias', [HomeController::class, 'membresias'])->name('admin.membresias');
-Route::prefix('admin/membresias')->group(function () {
+  // ADMIN → MEMBRESÍAS
+  Route::get('admin/membresias', [HomeController::class, 'membresias'])->name('admin.membresias');
+  Route::prefix('admin/membresias')->group(function () {
     Route::get('/list/json', [MembresiaController::class, 'index']); // listado JSON
     Route::get('/json/{id}', [MembresiaController::class, 'edit']); // obtener una membresía específica
     Route::post('/json', [MembresiaController::class, 'store']); // guardar
     Route::put('/json/{id}', [MembresiaController::class, 'update']); // actualizar
     Route::delete('/json/{id}', [MembresiaController::class, 'destroy']); // 👈 nueva ruta para eliminar
-});
+  });
 
-//   // Ventas
-//   Route::get('/clientes/buscar/{identificacion}', [VentaController::class, 'buscarCliente']);
-//   Route::post('/ventas/guardar', [VentaController::class, 'guardarVenta'])->name('ventas.guardar');
-//   Route::get('/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
-//
+  // Ventas
+  // Route::get('/clientes/buscar/{identificacion}', [VentaController::class, 'buscarCliente']);
+  // Route::post('/ventas/guardar', [VentaController::class, 'guardarVenta'])->name('ventas.guardar');
+  // Route::get('/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
+
 });

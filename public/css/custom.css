@@ -107,3 +107,19 @@
         opacity: 1;
     }
 }
+
+.foto-container {
+    overflow: hidden;
+    width: 0;
+    transition: all 0.3s ease;
+}
+.foto-container img {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.foto-container.visible {
+    width: 80px; /* ancho deseado de la columna de foto */
+}
+.foto-container.visible img {
+    opacity: 1;
+}

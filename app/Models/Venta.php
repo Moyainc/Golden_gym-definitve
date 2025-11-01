@@ -8,8 +8,7 @@ use App\Traits\HasPrecioFormatted;
 
 class Venta extends Model
 {
-    use HasPrecioFormatted;
-    use HasFactory;
+    use HasFactory, HasPrecioFormatted;
 
     protected $table = 'ventas';
 
@@ -18,8 +17,9 @@ class Venta extends Model
         'cliente_id',
         'total',
         'metodo_pago',
+        'estado',
         'descripcion',
-        'fecha_venta',
+        'fecha_venta'
     ];
 
     protected $casts = [
@@ -35,13 +35,20 @@ class Venta extends Model
         return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 
-    // public function clienteMembresia()
-    // {
-    //     return $this->belongsTo(ClienteMembresia::class, 'cliente_membresia_id');
-    // }
+    public function cliente()
+    {
+        return $this->belongsTo(Cliente::class, 'cliente_id');
+    }
 
     public function detalles()
     {
         return $this->hasMany(DetalleVenta::class, 'venta_id');
+    }
+
+    // Método para actualizar el total automáticamente
+    public function actualizarTotal()
+    {
+        $this->total = $this->detalles()->sum('subtotal');
+        $this->save();
     }
 }
