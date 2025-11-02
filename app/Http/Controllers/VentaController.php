@@ -10,6 +10,7 @@ use App\Models\PagoGeneral;
 use App\Models\Producto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class VentaController extends Controller
 {
@@ -165,102 +166,147 @@ class VentaController extends Controller
   }
 
   public function storeFast(Request $request)
-{
+  {
     $validated = $request->validate([
-        'usuario_id' => 'required|integer|exists:usuarios,id',
-        'productos' => 'required|array|min:1',
-        'productos.*.producto_id' => 'required|exists:productos,id',
-        'productos.*.cantidad' => 'required|integer|min:1',
-        'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
-        'estado' => 'required|string|in:Completada,Cancelada',
+      'usuario_id' => 'required|integer|exists:usuarios,id',
+      'productos' => 'required|array|min:1',
+      'productos.*.producto_id' => 'required|exists:productos,id',
+      'productos.*.cantidad' => 'required|integer|min:1',
+      'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
+      'estado' => 'required|string|in:Completada,Cancelada',
     ], [
-        'productos.required' => 'Debe agregar al menos un producto.',
-        'productos.*.producto_id.exists' => 'El producto seleccionado no existe.',
-        'productos.*.cantidad.min' => 'La cantidad debe ser al menos 1.',
+      'productos.required' => 'Debe agregar al menos un producto.',
+      'productos.*.producto_id.exists' => 'El producto seleccionado no existe.',
+      'productos.*.cantidad.min' => 'La cantidad debe ser al menos 1.',
     ]);
 
     try {
-        DB::beginTransaction();
+      DB::beginTransaction();
 
-        $total = 0;
+      $total = 0;
 
-        // 🔍 Recalcular todo en el backend (seguro y confiable)
-        foreach ($request->productos as $item) {
-            $producto = Producto::findOrFail($item['producto_id']);
+      // 🔍 Recalcular todo en el backend (seguro y confiable)
+      foreach ($request->productos as $item) {
+        $producto = Producto::findOrFail($item['producto_id']);
 
-            if ($producto->stock < $item['cantidad']) {
-                throw new \Exception("El producto '{$producto->nombre}' no tiene suficiente stock disponible.");
-            }
-
-            $subtotal = $producto->precio * $item['cantidad'];
-            $total += $subtotal;
+        if ($producto->stock < $item['cantidad']) {
+          throw new \Exception("El producto '{$producto->nombre}' no tiene suficiente stock disponible.");
         }
 
-        // 🧾 Registrar venta principal
-        $venta = Venta::create([
-            'usuario_id' => $request->usuario_id,
-            'cliente_id' => null, // Venta rápida sin cliente
-            'total' => $total,
-            'estado' => $request->estado,
-            'metodo_pago' => $request->metodo_pago,
-            'fecha_venta' => now(),
-        ]);
+        $subtotal = $producto->precio * $item['cantidad'];
+        $total += $subtotal;
+      }
 
-        // 💾 Registrar detalle y actualizar stock
-        foreach ($request->productos as $item) {
-            $producto = Producto::findOrFail($item['producto_id']);
-            $cantidad = $item['cantidad'];
-            $subtotal = $producto->precio * $cantidad;
+      // 🧾 Registrar venta principal
+      $venta = Venta::create([
+        'usuario_id' => $request->usuario_id,
+        'cliente_id' => null, // Venta rápida sin cliente
+        'total' => $total,
+        'estado' => $request->estado,
+        'metodo_pago' => $request->metodo_pago,
+        'fecha_venta' => now(),
+      ]);
 
-            // Validación de stock antes de descontar
-            if ($producto->stock < $cantidad) {
-                throw new \Exception("Stock insuficiente para el producto '{$producto->nombre}'.");
-            }
+      // 💾 Registrar detalle y actualizar stock
+      foreach ($request->productos as $item) {
+        $producto = Producto::findOrFail($item['producto_id']);
+        $cantidad = $item['cantidad'];
+        $subtotal = $producto->precio * $cantidad;
 
-            // Guardar detalle
-            DetalleVenta::create([
-                'venta_id' => $venta->id,
-                'producto_id' => $producto->id,
-                'cantidad' => $cantidad,
-                'precio_unitario' => $producto->precio,
-                'subtotal' => $subtotal,
-            ]);
-
-            // Descontar del stock
-            $producto->decrement('stock', $cantidad);
+        // Validación de stock antes de descontar
+        if ($producto->stock < $cantidad) {
+          throw new \Exception("Stock insuficiente para el producto '{$producto->nombre}'.");
         }
 
-        // 💰 Registrar pago
-        PagoGeneral::create([
-            'tipo_pago' => 'venta_producto',
-            'origen_id' => $venta->id,
-            'monto' => $total,
-            'metodo_pago' => $request->metodo_pago,
-            'usuario_id' => $request->usuario_id,
-            'fecha_pago' => now(),
+        // Guardar detalle
+        DetalleVenta::create([
+          'venta_id' => $venta->id,
+          'producto_id' => $producto->id,
+          'cantidad' => $cantidad,
+          'precio_unitario' => $producto->precio,
+          'subtotal' => $subtotal,
         ]);
 
-        DB::commit();
+        // Descontar del stock
+        $producto->decrement('stock', $cantidad);
+      }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Venta rápida registrada correctamente.',
-            'venta_id' => $venta->id,
-        ]);
+      // 💰 Registrar pago
+      PagoGeneral::create([
+        'tipo_pago' => 'venta_producto',
+        'origen_id' => $venta->id,
+        'monto' => $total,
+        'metodo_pago' => $request->metodo_pago,
+        'usuario_id' => $request->usuario_id,
+        'fecha_pago' => now(),
+      ]);
+
+      DB::commit();
+
+      return response()->json([
+        'success' => true,
+        'message' => 'Venta rápida registrada correctamente.',
+        'venta_id' => $venta->id,
+      ]);
     } catch (\Illuminate\Validation\ValidationException $e) {
-        // ⚠️ Responder errores de validación (422)
-        return response()->json([
-            'success' => false,
-            'errors' => $e->errors(),
-        ], 422);
+      // ⚠️ Responder errores de validación (422)
+      return response()->json([
+        'success' => false,
+        'errors' => $e->errors(),
+      ], 422);
     } catch (\Exception $e) {
-        DB::rollBack();
+      DB::rollBack();
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Error al registrar la venta rápida: '.$e->getMessage(),
-        ], 500);
+      return response()->json([
+        'success' => false,
+        'message' => 'Error al registrar la venta rápida: ' . $e->getMessage(),
+      ], 500);
     }
-}
+  }
 
+  // Obtener las últimas 5 ventas (AJAX) + Verificar rol
+
+  public function ultimasVentas()
+  {
+    $usuario = Auth::user();
+
+    if (!$usuario) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Usuario no autenticado.'
+      ], 401);
+    }
+
+    // Construcción de la consulta
+    $query = DB::table('detalle_ventas')
+      ->join('ventas', 'detalle_ventas.venta_id', '=', 'ventas.id')
+      ->join('productos', 'detalle_ventas.producto_id', '=', 'productos.id')
+      ->leftJoin('categorias', 'productos.categoria_id', '=', 'categorias.id')
+      ->select(
+        'productos.nombre as producto_nombre',
+        'categorias.nombre as categoria_nombre',
+        'ventas.metodo_pago',
+        'productos.precio as producto_precio',
+        'detalle_ventas.cantidad',
+        'detalle_ventas.subtotal',
+        'ventas.estado',
+        'ventas.usuario_id',
+        'ventas.created_at'
+      )
+      ->orderBy('ventas.created_at', 'desc');
+
+    // Si no es admin, filtrar solo las ventas del usuario logueado
+    if ($usuario->rol !== 'Administrador') {
+      $query->where('ventas.usuario_id', $usuario->id);
+    }
+
+    // Solo las 5 más recientes
+    $ventas = $query->take(5)->get();
+
+    return response()->json([
+      'success' => true,
+      'ventas' => $ventas,
+      'isAdmin' => $usuario->rol === 'Administrador',
+    ]);
+  }
 }

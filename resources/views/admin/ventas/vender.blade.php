@@ -120,15 +120,14 @@
         <!-- TABLA DE VENTAS -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body ventas-container">
-            <h5 class="text-warning mb-3">
-              <i data-feather="list" class="me-1"></i>Últimas Ventas
+            <h5 class="text-warning mb-3 d-flex align-items-center justify-content-between">
+              <span><i data-feather="list" class="me-1"></i>Últimas Ventas</span>
             </h5>
 
             <div class="ventas-scroll">
               <table class="table table-hover align-middle mb-0">
                 <thead class="text-warning border-secondary">
                   <tr>
-                    <th>Foto</th>
                     <th>Producto</th>
                     <th>Categoría</th>
                     <th>Método</th>
@@ -145,12 +144,13 @@
             </div>
           </div>
         </div>
+
       </div>
     </main>
 
     <!-- Modal Venta Rápida -->
     <div class="modal fade" id="ventaRapidaModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" style="max-width: 680px;">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 820px;">
         <div class="modal-content bg-dark text-light border-success">
           <div class="modal-header border-success">
             <h5 class="modal-title text-success">
@@ -180,7 +180,7 @@
                     </select>
                   </div>
 
-                  <div class="col-3 producto-col">
+                  <div class="col-4 producto-col">
                     <label class="form-label">Producto</label>
                     <select
                       name="producto[]"
@@ -209,7 +209,7 @@
                       value="1" />
                   </div>
 
-                  <div class="col-2 mb-1 d-flex align-items-end">
+                  <div class="col mb-2 d-flex align-items-end">
                     <button type="button" class="btn btn-danger btn-sm eliminarProductoRapida">
                       X
                     </button>

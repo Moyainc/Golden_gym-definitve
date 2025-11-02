@@ -41,6 +41,31 @@
     overflow-y: auto;
 }
 
+/* 🎨 Intercalado oscuro entre filas */
+.table tbody tr:nth-child(odd) {
+    background-color: rgba(
+        255,
+        255,
+        255,
+        0.03
+    ) !important; /* tono más oscuro */
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.06) !important; /* tono más claro */
+}
+
+/* Hover suave que resalta sin romper el intercalado */
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Mantiene el borde inferior suave */
+.table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
 /* Estilos para el modal personalizado */
 
 .custom-modal {
@@ -131,22 +156,22 @@
 /* Estilos para el cuadro de sugerencias */
 
 #suggestionBox {
-    max-height: 200px;
-    overflow-y: auto;
-    border-radius: 0.4rem;
-    background-color: #584b00; /* 🌈 color de fondo que tú quieras */
-    border: 1px solid #444;
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    border-radius: 0.4rem !important;
+    background-color: #1d1800 !important; /* 🌈 color de fondo que tú quieras */
+    border: 1px solid #444 !important;
 }
 
 /* Cada sugerencia individual */
 #suggestionBox li {
-    background-color: #1d1d8a; /* igual que el fondo del contenedor */
-    color: #f1f1f1; /* texto claro para contraste */
-    transition: background 0.2s ease-in-out;
-    cursor: pointer;
+    background-color: #494949 !important; /* igual que el fondo del contenedor */
+    color: #f1f1f1 !important; /* texto claro para contraste */
+    transition: background 0.2s ease-in-out !important;
+    cursor: pointer !important;
 }
 
 /* Efecto al pasar el mouse */
 #suggestionBox li:hover {
-    background-color: #3d9eff; /* tono más claro al pasar el mouse */
+    background-color: #3d3d3d !important; /* tono más claro al pasar el mouse */
 }

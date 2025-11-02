@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const productosContainer = document.getElementById("productosContainer");
     const agregarBtn = document.getElementById("agregarProductoBtn");
     const totalInput = document.getElementById("totalVenta");
-    const MAX_PRODUCTOS = 5;
+    const MAX_PRODUCTOS = 4;
 
     function recalcularTotal() {
         let total = 0;
@@ -74,61 +74,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Recalcular total al cambiar producto o cantidad
     productosContainer.addEventListener("change", (e) => {
-        const item = e.target.closest(".producto-item");
-        if (!item) return;
-        recalcularTotal();
-    });
+        productosContainer.addEventListener("change", (e) => {
+            const item = e.target.closest(".producto-item");
+            if (!item) return;
 
-    const productosRapidosContainer = document.getElementById(
-        "productosRapidosContainer"
-    );
-    const agregarBtnRapida = document.getElementById(
-        "agregarProductoRapidaBtn"
-    );
-    const MAX_PRODUCTOS_RAPIDA = 4;
+            // ⚡ Solo actuar si cambió un select de producto
+            if (e.target.classList.contains("producto")) {
+                const seleccionado = e.target.value;
 
-    // Agregar un nuevo producto rápido
-    agregarBtnRapida.addEventListener("click", () => {
-        const totalProductos =
-            productosRapidosContainer.querySelectorAll(".producto-item").length;
+                // Obtener todos los productos seleccionados en otros items
+                const productosSeleccionados = Array.from(
+                    productosContainer.querySelectorAll(".producto")
+                )
+                    .filter((p) => p !== e.target) // excluir el que cambió
+                    .map((p) => p.value);
 
-        if (totalProductos >= MAX_PRODUCTOS_RAPIDA) {
-            Swal.fire({
-                icon: "warning",
-                title: "Límite alcanzado",
-                text: `No puedes agregar más de ${MAX_PRODUCTOS_RAPIDA} productos.`,
-                confirmButtonColor: "#f0ad4e",
-            });
-            return;
-        }
+                if (
+                    productosSeleccionados.includes(seleccionado) &&
+                    seleccionado !== ""
+                ) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Producto duplicado",
+                        text: "Ya agregaste este producto en otra casilla.",
+                        confirmButtonColor: "#f0ad4e",
+                    });
 
-        const itemOriginal =
-            productosRapidosContainer.querySelector(".producto-item");
-        const nuevo = itemOriginal.cloneNode(true);
-
-        // Reset valores
-        nuevo.querySelector("select").value = "";
-        nuevo.querySelector("input").value = 1;
-
-        productosRapidosContainer.appendChild(nuevo);
-    });
-
-    // Eliminar producto rápido
-    productosRapidosContainer.addEventListener("click", (e) => {
-        if (e.target.classList.contains("eliminarProductoRapida")) {
-            const items =
-                productosRapidosContainer.querySelectorAll(".producto-item");
-
-            if (items.length > 1) {
-                e.target.closest(".producto-item").remove();
-            } else {
-                Swal.fire({
-                    icon: "info",
-                    title: "Atención",
-                    text: "Debe quedar al menos un producto.",
-                    confirmButtonColor: "#5bc0de",
-                });
+                    // Resetear el select
+                    e.target.value = "";
+                }
             }
-        }
+
+            // Recalcular total después de cualquier cambio
+            recalcularTotal();
+        });
     });
 });

@@ -106,4 +106,9 @@ Route::middleware(['auth'])->group(function () {
   Route::post('/admin/ventas/registrar', [VentaController::class, 'store'])->name('ventas.store');
   Route::get('/admin/ventas/sugerir-clientes', [VentaController::class, 'sugerirClientes'])->name('ventas.sugerirClientes');
   Route::post('/admin/ventas/rapida', [VentaController::class, 'storeFast'])->name('ventas.storeFast');
+  Route::get('/admin/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
+
+  Route::get('/admin/ventas', [App\Http\Controllers\VentaController::class, 'todasVentas'])
+    ->middleware('admin') // 👈 crearemos este middleware
+    ->name('ventas.todas');
 });

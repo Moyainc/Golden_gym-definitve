@@ -72,13 +72,13 @@
               <table class="table table-hover align-middle mb-0">
                 <thead class="text-warning border-secondary">
                   <tr>
-                    <th>ID</th>
                     <th>Producto</th>
                     <th>Categoría</th>
                     <th>Método</th>
                     <th>Precio</th>
                     <th>Fecha</th>
                     <th>Estado</th>
+                    <th>Vendedor</th>
                   </tr>
                 </thead>
                 <tbody id="ventasTable" class="text-light">
