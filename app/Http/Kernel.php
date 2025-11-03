@@ -36,5 +36,6 @@ class Kernel extends HttpKernel
     'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
     'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     'admin' => \App\Http\Middleware\AdminMiddleware::class,
+    'checkrole' => \App\Http\Middleware\CheckRole::class,
   ];
 }
