@@ -20,25 +20,45 @@
             <div class="col-md-4 col-xl-3">
               <div class="card border-0 shadow-sm mb-3 text-center">
                 <div class="card-body">
+                  {{-- Foto de perfil --}}
                   <img
-                    src="{{ asset('img/avatars/avatar-4.jpg') }}"
+                    src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('img/avatars/avatar-4.jpg') }}"
                     alt="Foto de perfil"
                     id="profileImagePreview"
                     class="img-fluid rounded-circle mb-3"
                     width="128"
                     height="128" />
-                  <h5 class="text-white mb-0" id="profileUserName">Christina Mason</h5>
-                  <p class="small mb-2 tittle-color" id="profileUserRole">Administrador</p>
+
+                  {{-- Nombre --}}
+                  <h5 class="text-white mb-0" id="profileUserName">{{ auth()->user()->nombre_completo }}</h5>
+
+                  {{-- Rol --}}
+                  <p class="small mb-2 tittle-color" id="profileUserRole">{{ ucfirst(auth()->user()->rol) }}</p>
+
+                  {{-- Último acceso --}}
                   <p class="text-muted small mb-2" id="profileCreatedAt">
-                    Fecha de registro: 15/04/2023
+                    Último acceso: {{ auth()->user()->ultimo_acceso_formateado }}
                   </p>
 
-                  <button class="btn btn-outline-warning tittle-color btn-sm mb-2" id="btnChangePhoto">
-                    <i data-feather="upload" class="me-1"></i> Cambiar foto
-                  </button>
+
+
+                  {{-- Botones --}}
+                  <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-outline-warning tittle-color btn-sm mb-2" id="btnChangePhoto">
+                      <i data-feather="upload" class="me-1"></i> Cambiar foto
+                    </button>
+
+                    @if(auth()->user()->foto)
+                    <button class="btn btn-outline-danger tittle-color btn-sm mb-2" id="btnDeletePhoto">
+                      <i data-feather="trash-2" class="me-1"></i> Eliminar foto
+                    </button>
+                    @endif
+                  </div>
+
                   <input type="file" id="inputPhoto" class="d-none" accept="image/*">
                 </div>
               </div>
+
             </div>
 
             <!-- FORMULARIO -->
@@ -101,90 +121,93 @@
 
         </div>
       </main>
+    </div>
+  </div>
 
-      <!-- Modal para cambiar contraseña -->
+  <!-- Modal para cambiar contraseña -->
+  <div
+    class="modal fade"
+    id="changePasswordModal"
+    tabindex="-1"
+    aria-labelledby="changePasswordLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
       <div
-        class="modal fade"
-        id="changePasswordModal"
-        tabindex="-1"
-        aria-labelledby="changePasswordLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div
-            class="modal-content bg-dark text-white border-0 rounded-4 shadow-lg">
-            <div class="modal-header border-0">
-              <h5 class="modal-title tittle-color" id="changePasswordLabel">
-                <i data-feather="key" class="me-2 text-warning"></i> Cambiar
-                contraseña
-              </h5>
-              <button
-                type="button"
-                class="btn-close btn-close-white"
-                data-bs-dismiss="modal"
-                aria-label="Close"></button>
+        class="modal-content bg-dark text-white border-0 rounded-4 shadow-lg">
+        <div class="modal-header border-0">
+          <h5 class="modal-title tittle-color" id="changePasswordLabel">
+            <i data-feather="key" class="me-2 text-warning"></i> Cambiar contraseña
+          </h5>
+          <button
+            type="button"
+            class="btn-close btn-close-white"
+            data-bs-dismiss="modal"
+            aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <form id="passwordChangeForm">
+            <div class="mb-3 position-relative">
+              <label for="currentPassword" class="form-label">Contraseña actual</label>
+              <input
+                type="password"
+                id="currentPassword"
+                class="form-control text-white border-0"
+                placeholder="********"
+                required />
+              <i class="feather-eye position-absolute top-50 end-0 translate-middle-y me-3 toggle-password" data-target="currentPassword"></i>
             </div>
 
-            <div class="modal-body">
-              <form id="passwordChangeForm">
-                <div class="mb-3">
-                  <label for="currentPassword" class="form-label">Contraseña actual</label>
-                  <input
-                    type="password"
-                    id="currentPassword"
-                    class="form-control text-white border-0"
-                    placeholder="********"
-                    required />
-                </div>
-
-                <div class="mb-3">
-                  <label for="newPassword" class="form-label">Nueva contraseña</label>
-                  <input
-                    type="password"
-                    id="newPassword"
-                    class="form-control text-white border-0"
-                    placeholder="********"
-                    required />
-                  <div
-                    id="passwordStrength"
-                    class="mt-1 small fw-semibold text-warning">
-                    Fuerza: Débil
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="confirmPassword" class="form-label">Confirmar nueva contraseña</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    class="form-control text-white border-0"
-                    placeholder="********"
-                    required />
-                  <div
-                    id="passwordMatch"
-                    class="mt-1 small fw-semibold text-danger"></div>
-                </div>
-              </form>
+            <div class="mb-3 position-relative">
+              <label for="newPassword" class="form-label">Nueva contraseña</label>
+              <input
+                type="password"
+                id="newPassword"
+                class="form-control text-white border-0"
+                placeholder="********"
+                required />
+              <i class="feather-eye position-absolute top-50 end-0 translate-middle-y me-3 toggle-password" data-target="newPassword"></i>
+              <div
+                id="passwordStrength"
+                class="mt-1 small fw-semibold text-warning">
+                Fuerza: Débil
+              </div>
             </div>
 
-            <div class="modal-footer border-0">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal">
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                form="passwordChangeForm"
-                class="btn btn-warning text-black">
-                Guardar cambios
-              </button>
+            <div class="mb-3 position-relative">
+              <label for="confirmPassword" class="form-label">Confirmar nueva contraseña</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                class="form-control text-white border-0"
+                placeholder="********"
+                required />
+              <i class="feather-eye position-absolute top-50 end-0 translate-middle-y me-3 toggle-password" data-target="confirmPassword"></i>
+              <div
+                id="passwordMatch"
+                class="mt-1 small fw-semibold text-danger"></div>
             </div>
-          </div>
+          </form>
+        </div>
+
+        <div class="modal-footer border-0">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            form="passwordChangeForm"
+            class="btn btn-warning text-black">
+            Guardar cambios
+          </button>
         </div>
       </div>
     </div>
   </div>
   <script src="../js/app.js"></script>
-</body>
-@endsection
+  <script src="{{ asset('js/perfil.js') }}"></script>
+
+  @endsection

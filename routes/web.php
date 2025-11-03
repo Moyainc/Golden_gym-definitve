@@ -10,6 +10,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PagoDiarioController;
+use App\Http\Controllers\PerfilController;
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
 // =========================
@@ -115,4 +116,11 @@ Route::middleware(['auth'])->group(function () {
   // web.php
   Route::get('/admin/ventas/{id}', [VentaController::class, 'showVentaDetalle'])
     ->name('ventas.detalle');
+
+
+  // Perfil Usuario
+  Route::get('/admin/perfil', [PerfilController::class, 'showProfile'])->name('perfil.show');
+  Route::post('/admin/perfil/actualizar', [PerfilController::class, 'updateProfile'])->name('perfil.update');
+  Route::post('/admin/perfil/cambiar-contrasena', [PerfilController::class, 'changePassword'])->name('perfil.changePassword');
+  Route::post('/admin/perfil/eliminar-foto', [PerfilController::class, 'deletePhoto'])->name('perfil.eliminar-foto');
 });
