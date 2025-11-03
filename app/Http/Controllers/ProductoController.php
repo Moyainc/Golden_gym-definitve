@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Producto;
 use App\Models\Categoria;
 use Illuminate\Http\Request;
+use App\Traits\HasPrecioFormatted;
 
 class ProductoController extends Controller
 {
+  use HasPrecioFormatted;
+
   public function list()
   {
     $productos = Producto::with('categoria')->get();

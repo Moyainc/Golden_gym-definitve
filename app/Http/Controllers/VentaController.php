@@ -11,9 +11,13 @@ use App\Models\Producto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\HasPrecioFormatted;
 
 class VentaController extends Controller
 {
+  use HasPrecioFormatted;
+
+
   /**
    * Buscar cliente por identificación (AJAX)
    */
@@ -307,6 +311,106 @@ class VentaController extends Controller
       'success' => true,
       'ventas' => $ventas,
       'isAdmin' => $usuario->rol === 'Administrador',
+    ]);
+  }
+
+  public function listVentas(Request $request)
+  {
+    $categoriaId = $request->query('categoria');
+    $fechaDesde = $request->query('fecha_desde');
+    $fechaHasta = $request->query('fecha_hasta');
+    $perPage = 10;
+
+    $query = Venta::with(['detalles.producto.categoria', 'usuario'])
+      ->orderBy('fecha_venta', 'desc');
+
+    // Filtrar por rango de fechas
+    if ($fechaDesde) $query->whereDate('fecha_venta', '>=', $fechaDesde);
+    if ($fechaHasta) $query->whereDate('fecha_venta', '<=', $fechaHasta);
+
+    $ventas = $query->paginate($perPage)->appends($request->query());
+
+    // 🔹 Mapear ventas y filtrar detalles por categoría si aplica
+    $ventasFormateadas = $ventas->map(function ($venta) use ($categoriaId) {
+      $detalles = $venta->detalles->map(function ($det) {
+        return [
+          'producto' => $det->producto->nombre ?? 'Sin nombre',
+          'categoria' => $det->producto->categoria->nombre ?? 'N/A',
+          'categoria_id' => $det->producto->categoria->id ?? null, // 🔹 agregamos ID
+          'cantidad' => $det->cantidad,
+          'precio_unitario' => $det->precio_unitario,
+          'precio_unitario_formatted' => '$' . number_format($det->precio_unitario, 0, ',', '.'),
+          'subtotal' => $det->subtotal,
+          'subtotal_formatted' => '$' . number_format($det->subtotal, 0, ',', '.'),
+        ];
+      });
+
+      // 🔹 Filtrar detalles por categoría si se seleccionó una
+      if ($categoriaId) {
+        $detalles = $detalles->filter(function ($det) use ($categoriaId) {
+          return $det['categoria_id'] == $categoriaId;
+        })->values(); // reset keys
+      }
+
+      return [
+        'id' => $venta->id,
+        'fecha_venta' => $venta->fecha_venta,
+        'metodo_pago' => $venta->metodo_pago,
+        'estado' => $venta->estado,
+        'usuario' => $venta->usuario->nombre_completo ?? 'Desconocido',
+        'total' => $venta->total,
+        'total_formatted' => '$' . number_format($venta->total, 0, ',', '.'),
+        'detalles' => $detalles,
+      ];
+    })
+      ->filter(fn($v) => $v['detalles']->count() > 0) // solo ventas con detalles
+      ->values();
+
+    return response()->json([
+      'ventas' => $ventasFormateadas,
+      'pagination' => [
+        'current_page' => $ventas->currentPage(),
+        'last_page' => $ventas->lastPage(),
+        'total' => $ventas->total(),
+      ],
+    ]);
+  }
+
+
+
+
+  public function showVentaDetalle($id)
+  {
+    $venta = Venta::with(['detalles.producto.categoria', 'usuario'])->find($id);
+
+    if (!$venta) {
+      return response()->json(['error' => 'Venta no encontrada'], 404);
+    }
+
+    $detalles = $venta->detalles->map(function ($det) {
+      $productoNombre = optional($det->producto)->nombre ?? 'Sin nombre';
+      $categoriaNombre = optional($det->producto->categoria)->nombre ?? 'N/A';
+
+      return [
+        'producto' => $productoNombre,
+        'categoria' => $categoriaNombre,
+        'cantidad' => $det->cantidad,
+        'precio_unitario' => $det->precio_unitario,
+        'precio_unitario_formatted' => $this->precioFormatted($det->precio_unitario),
+        'subtotal' => $det->subtotal,
+        'subtotal_formatted' => $this->precioFormatted($det->subtotal),
+      ];
+    });
+
+    return response()->json([
+      'id' => $venta->id,
+      'fecha_venta' => $venta->fecha_venta,
+      'metodo_pago' => $venta->metodo_pago,
+      'estado' => $venta->estado,
+      'usuario' => optional($venta->usuario)->nombre_completo ?? 'Desconocido',
+      'total' => $venta->total,
+      'total_formatted' => $this->precioFormatted($venta->total),
+      'detalles' => $detalles
     ]);
   }
 }

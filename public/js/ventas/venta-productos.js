@@ -640,7 +640,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btn.className = "btn btn-warning mt-3 fw-bold";
                 btn.textContent = "Ver más ventas";
                 btn.addEventListener("click", () => {
-                    window.location.href = apiUrl("/admin/ventas");
+                    window.location.href = apiUrl("/admin/ventas/administrador");
                 });
                 container.appendChild(btn);
             }
