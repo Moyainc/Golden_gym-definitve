@@ -174,9 +174,6 @@
   </div>
 </div>
 
-<script src="{{ asset('js/productos.js') }}"></script>
-
-@endsection
 <div
   class="modal fade"
   id="newCategoryModal"
@@ -365,3 +362,7 @@
     </div>
   </div>
 </div>
+
+<script src="{{ asset('js/productos.js') }}"></script>
+
+@endsection

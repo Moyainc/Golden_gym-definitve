@@ -11,6 +11,9 @@ use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PagoDiarioController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\ResumenVentasController;
+
+
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
 // =========================
@@ -123,4 +126,10 @@ Route::middleware(['auth'])->group(function () {
   Route::post('/admin/perfil/actualizar', [PerfilController::class, 'updateProfile'])->name('perfil.update');
   Route::post('/admin/perfil/cambiar-contrasena', [PerfilController::class, 'changePassword'])->name('perfil.changePassword');
   Route::post('/admin/perfil/eliminar-foto', [PerfilController::class, 'deletePhoto'])->name('perfil.eliminar-foto');
+
+  // Resumen Ventass
+
+  Route::get('/admin/resumen-ventas/data', [ResumenVentasController::class, 'data'])->name('resumen.ventas.data');
+  Route::get('/admin/resumen-ventas/ultimas', [ResumenVentasController::class, 'ultimasVentas'])->name('resumen.ventas.ultimas');
+  
 });
