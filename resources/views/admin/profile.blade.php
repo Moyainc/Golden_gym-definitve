@@ -44,16 +44,21 @@
 
                   {{-- Botones --}}
                   <div class="d-flex justify-content-center gap-2">
-                    <button class="btn btn-outline-warning tittle-color btn-sm mb-2" id="btnChangePhoto">
+                    <!-- Cambiar foto: más pequeño -->
+                    <button
+                      class="btn btn-outline-warning btn-sm px-2 py-1 text-sm mb-2"
+                      id="btnChangePhoto">
                       <i data-feather="upload" class="me-1"></i> Cambiar foto
                     </button>
 
-                    @if(auth()->user()->foto)
-                    <button class="btn btn-outline-danger tittle-color btn-sm mb-2" id="btnDeletePhoto">
-                      <i data-feather="trash-2" class="me-1"></i> Eliminar foto
+                    <!-- Eliminar foto: todo rojo, más pequeño -->
+                    <button
+                      class="btn btn-danger btn-sm px-2 py-1 text-sm mb-2 d-none"
+                      id="btnDeletePhoto">
+                      <i data-feather="trash-2" class="me-1"></i> Eliminar
                     </button>
-                    @endif
                   </div>
+
 
                   <input type="file" id="inputPhoto" class="d-none" accept="image/*">
                 </div>
@@ -94,11 +99,11 @@
                     </div>
 
                     <div class="row mb-3">
-                      <div class="col-md-6">
-                        <label for="userRole" class="form-label text-white">Rol</label>
-                        <input type="text" id="userRoleDisplay" class="form-control text-white border-0" value="" readonly>
-                        <input type="hidden" name="rol" value="">
+                      <div class="col-md-4">
+                        <label for="userRoleDisplay" class="form-label text-white">Rol</label>
+                        <input type="text" id="userRoleDisplay" class="form-control text-white border-0" value="{{ ucfirst(auth()->user()->rol) }}" readonly>
                       </div>
+
 
 
                       <div class="col-md-4 d-flex flex-column justify-content-end">
@@ -147,6 +152,7 @@
 
         <div class="modal-body">
           <form id="passwordChangeForm">
+            {{-- Contraseña actual --}}
             <div class="mb-3 position-relative">
               <label for="currentPassword" class="form-label">Contraseña actual</label>
               <input
@@ -155,40 +161,43 @@
                 class="form-control text-white border-0"
                 placeholder="********"
                 required />
-              <i class="feather-eye position-absolute top-50 end-0 translate-middle-y me-3 toggle-password" data-target="currentPassword"></i>
+              <i class="feather-eye toggle-password" data-target="currentPassword" style="position:absolute; top:50%; right:1rem; transform:translateY(-50%); cursor:pointer;"></i>
             </div>
 
-            <div class="mb-3 position-relative">
-              <label for="newPassword" class="form-label">Nueva contraseña</label>
-              <input
-                type="password"
-                id="newPassword"
-                class="form-control text-white border-0"
-                placeholder="********"
-                required />
-              <i class="feather-eye position-absolute top-50 end-0 translate-middle-y me-3 toggle-password" data-target="newPassword"></i>
-              <div
-                id="passwordStrength"
-                class="mt-1 small fw-semibold text-warning">
-                Fuerza: Débil
+            {{-- Nueva y Confirmar en línea --}}
+            <div class="row g-2">
+              <div class="col">
+                <div class="mb-3 position-relative">
+                  <label for="newPassword" class="form-label">Nueva contraseña</label>
+                  <input
+                    type="password"
+                    id="newPassword"
+                    class="form-control text-white border-0"
+                    placeholder="********"
+                    required />
+                  <i class="feather-eye toggle-password" data-target="newPassword" style="position:absolute; top:50%; right:1rem; transform:translateY(-50%); cursor:pointer;"></i>
+                  <div id="passwordStrength" class="mt-1 small fw-semibold text-warning">
+                    Fuerza: Débil
+                  </div>
+                </div>
               </div>
-            </div>
-
-            <div class="mb-3 position-relative">
-              <label for="confirmPassword" class="form-label">Confirmar nueva contraseña</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                class="form-control text-white border-0"
-                placeholder="********"
-                required />
-              <i class="feather-eye position-absolute top-50 end-0 translate-middle-y me-3 toggle-password" data-target="confirmPassword"></i>
-              <div
-                id="passwordMatch"
-                class="mt-1 small fw-semibold text-danger"></div>
+              <div class="col">
+                <div class="mb-3 position-relative">
+                  <label for="confirmPassword" class="form-label">Confirmar contraseña</label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    class="form-control text-white border-0"
+                    placeholder="********"
+                    required />
+                  <i class="feather-eye toggle-password" data-target="confirmPassword" style="position:absolute; top:50%; right:1rem; transform:translateY(-50%); cursor:pointer;"></i>
+                  <div id="passwordMatch" class="mt-1 small fw-semibold text-danger"></div>
+                </div>
+              </div>
             </div>
           </form>
         </div>
+
 
         <div class="modal-footer border-0">
           <button

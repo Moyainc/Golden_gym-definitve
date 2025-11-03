@@ -11,7 +11,7 @@ use App\Models\Usuario;
 
 class PerfilController extends Controller
 {
-  // Mostrar perfil (opcional, si quieres cargar los datos desde backend)
+  // Mostrar perfil del usuario logeado
   public function showProfile()
   {
     $user = Usuario::findOrFail(Auth::id());
@@ -30,7 +30,7 @@ class PerfilController extends Controller
     ]);
   }
 
-  // Actualizar datos del usuario logeado
+  // Actualizar perfil
   public function updateProfile(Request $request)
   {
     $user = Usuario::findOrFail(Auth::id());
@@ -40,21 +40,32 @@ class PerfilController extends Controller
       'correo' => 'required|email|unique:usuarios,correo,' . $user->id,
       'telefono' => 'required|string|max:20',
       'cedula' => 'nullable|string|max:50|unique:usuarios,cedula,' . $user->id,
-      'foto' => 'nullable|image|max:2048', // 2MB
+      'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Limitar tipo y tamaño
     ]);
 
-    $user->nombre_completo = $validated['nombre_completo'];
-    $user->correo = $validated['correo'];
-    $user->telefono = $validated['telefono'];
-    $user->cedula = $validated['cedula'] ?? null;
-
-    // Subir foto si hay
-    if ($request->hasFile('foto')) {
-      if ($user->foto) {
-        Storage::disk('public')->delete($user->foto);
+    // Evitar sobrescribir campos que no cambian
+    $hasChanges = false;
+    foreach (['nombre_completo', 'correo', 'telefono', 'cedula'] as $field) {
+      if ($user->$field !== ($validated[$field] ?? null)) {
+        $user->$field = $validated[$field] ?? null;
+        $hasChanges = true;
       }
+    }
+
+    // Subir foto si se envió
+    if ($request->hasFile('foto')) {
+      if ($user->foto) Storage::disk('public')->delete($user->foto);
+
       $path = $request->file('foto')->store('usuarios/fotos', 'public');
       $user->foto = $path;
+      $hasChanges = true;
+    }
+
+    if (!$hasChanges) {
+      return response()->json([
+        'success' => false,
+        'message' => 'No se detectaron cambios para actualizar.'
+      ], 422);
     }
 
     $user->save();
@@ -68,7 +79,7 @@ class PerfilController extends Controller
         'telefono' => $user->telefono,
         'cedula' => $user->cedula,
         'rol' => $user->rol,
-        'ultimo_acceso' => $user->ultimo_acceso,
+        'ultimo_acceso' => $user->ultimo_acceso_formateado,
         'foto_url' => $user->foto ? asset("storage/{$user->foto}") : asset("img/avatars/avatar-4.jpg"),
       ],
     ]);
@@ -80,7 +91,7 @@ class PerfilController extends Controller
     $user = Usuario::findOrFail(Auth::id());
 
     $validated = $request->validate([
-      'current_password' => 'required',
+      'current_password' => 'required|string',
       'new_password' => [
         'required',
         'confirmed', // requiere new_password_confirmation
@@ -99,28 +110,41 @@ class PerfilController extends Controller
       ], 422);
     }
 
+    if (Hash::check($validated['new_password'], $user->password)) {
+      return response()->json([
+        'success' => false,
+        'message' => 'La nueva contraseña no puede ser igual a la anterior.'
+      ], 422);
+    }
+
     $user->password = Hash::make($validated['new_password']);
     $user->save();
 
     return response()->json([
       'success' => true,
-      'message' => 'Contraseña actualizada correctamente'
+      'message' => 'Contraseña actualizada correctamente.'
     ]);
   }
 
+  // Eliminar foto
   public function deletePhoto(Request $request)
   {
     $user = Usuario::findOrFail(Auth::id());
 
-    if ($user->foto) {
-      Storage::disk('public')->delete($user->foto);
-      $user->foto = null;
-      $user->save();
+    if (!$user->foto) {
+      return response()->json([
+        'success' => false,
+        'message' => 'No hay foto para eliminar.'
+      ], 422);
     }
+
+    Storage::disk('public')->delete($user->foto);
+    $user->foto = null;
+    $user->save();
 
     return response()->json([
       'success' => true,
-      'message' => 'Foto de perfil eliminada'
+      'message' => 'Foto de perfil eliminada.'
     ]);
   }
 }
