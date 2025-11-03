@@ -1,7 +1,9 @@
-main.content .container-fluid {
-    padding-bottom: 0 !important;
+.main {
+    min-height: calc(
+        100vh - 90px - 60px
+    ); /* altura de navbar + footer aproximada */
+    overflow-x: hidden;
 }
-
 
 /* Bordes suaves y compactos para todas las tablas */
 .table tbody,

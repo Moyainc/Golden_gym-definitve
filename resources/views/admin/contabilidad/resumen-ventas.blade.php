@@ -136,7 +136,7 @@
               <h5 class="text-warning mb-0">
                 <i data-feather="list" class="me-1"></i>Últimas Ventas
               </h5>
-              <a href="{{ route('admin.ventas.list.ajax') }}" class="btn btn-sm btn-outline-warning fw-bold">
+              <a href="{{ route('admin.lista_ventas') }}" class="btn btn-sm btn-outline-warning fw-bold">
                 Ver más <i data-feather="arrow-right" class="ms-1"></i>
               </a>
             </div>

@@ -28,7 +28,6 @@ Route::middleware(['auth'])->group(function () {
 
   //Dashboard y perfil (acceso general a todos los roles)
 
-  Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin.dashboard');
   Route::get('admin/profile', [HomeController::class, 'profile'])->name('admin.profile');
   Route::get('/admin/perfil', [PerfilController::class, 'showProfile'])->name('perfil.show');
   Route::post('/admin/perfil/actualizar', [PerfilController::class, 'updateProfile'])->name('perfil.update');
@@ -40,7 +39,11 @@ Route::middleware(['auth'])->group(function () {
 
   Route::middleware(['checkrole:Administrador'])->group(function () {
 
-    
+  //Dashboard
+
+    Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin.dashboard');
+
+
     //Usuarioss
     Route::get('/admin/usuarios', [HomeController::class, 'usuarios'])->name('admin.usuarios');
     Route::post('/admin/usuarios', [HomeController::class, 'store'])->name('admin.usuarios.store');
@@ -48,21 +51,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/admin/usuarios/{id}', [HomeController::class, 'updateUsuario'])->name('admin.usuarios.update');
     Route::delete('/admin/usuarios/{id}', [HomeController::class, 'destroyUsuario'])->name('admin.usuarios.destroy');
 
-
-    //Categorias
-    Route::get('/admin/categorias/list', [CategoriaController::class, 'getCategorias'])->name('admin.categorias.list');
-    Route::post('/admin/categorias', [CategoriaController::class, 'store'])->name('admin.categorias.store');
-    Route::get('/admin/categorias/{id}/edit', [CategoriaController::class, 'edit'])->name('admin.categorias.edit');
-    Route::put('/admin/categorias/{id}', [CategoriaController::class, 'update'])->name('admin.categorias.update');
-    Route::delete('/admin/categorias/{id}', [CategoriaController::class, 'destroy'])->name('admin.categorias.destroy');
-
-
-    //Productos
-    Route::get('admin/productos', [HomeController::class, 'productos'])->name('admin.productos');
-    Route::get('/admin/productos/list', [ProductoController::class, 'list'])->name('admin.productos.list');
-    Route::post('/admin/productos', [ProductoController::class, 'store'])->name('admin.productos.store');
-    Route::put('/admin/productos/{id}', [ProductoController::class, 'update'])->name('admin.productos.update');
-    Route::delete('/admin/productos/{id}', [ProductoController::class, 'destroy'])->name('admin.productos.destroy');
 
 
     //Membresias
@@ -89,7 +77,7 @@ Route::middleware(['auth'])->group(function () {
 
   //------------------------------------- RECEPCIONISTA ==================================
 
-  Route::middleware(['checkrole:Recepcionista'])->group(function () {
+  Route::middleware(['checkrole:Administrador,Recepcionista'])->group(function () {
     // Clientes
     Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
     Route::prefix('admin/clientes')->group(function () {
@@ -103,6 +91,22 @@ Route::middleware(['auth'])->group(function () {
       Route::get('/export/pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export.pdf');
       Route::get('/export/excel', [ClienteController::class, 'exportExcel'])->name('clientes.export.excel');
     });
+
+
+    //Categorias
+    Route::get('/admin/categorias/list', [CategoriaController::class, 'getCategorias'])->name('admin.categorias.list');
+    Route::post('/admin/categorias', [CategoriaController::class, 'store'])->name('admin.categorias.store');
+    Route::get('/admin/categorias/{id}/edit', [CategoriaController::class, 'edit'])->name('admin.categorias.edit');
+    Route::put('/admin/categorias/{id}', [CategoriaController::class, 'update'])->name('admin.categorias.update');
+    Route::delete('/admin/categorias/{id}', [CategoriaController::class, 'destroy'])->name('admin.categorias.destroy');
+
+
+    //Productos
+    Route::get('admin/productos', [HomeController::class, 'productos'])->name('admin.productos');
+    Route::get('/admin/productos/list', [ProductoController::class, 'list'])->name('admin.productos.list');
+    Route::post('/admin/productos', [ProductoController::class, 'store'])->name('admin.productos.store');
+    Route::put('/admin/productos/{id}', [ProductoController::class, 'update'])->name('admin.productos.update');
+    Route::delete('/admin/productos/{id}', [ProductoController::class, 'destroy'])->name('admin.productos.destroy');
 
 
     //Pagos diarios
@@ -130,13 +134,15 @@ Route::middleware(['auth'])->group(function () {
 
   //                    ----------------------------- CONTADOR =============================
 
-  Route::middleware(['checkrole:Contador'])->group(function () {
+  Route::middleware(['checkrole:Administrador,Contador'])->group(function () {
     // Acceso solo a contabilidad / resumen
     Route::get('admin/contabilidad', [HomeController::class, 'contabilidad'])->name('admin.contabilidad');
     Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
     Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
     Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
     Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
+    Route::get('admin/resumen-ventas/data', [ResumenVentasController::class, 'data'])->name('resumen.ventas.data');
+    Route::get('admin/resumen-ventas/ultimas', [ResumenVentasController::class, 'ultimasVentas'])->name('resumen.ventas.ultimas');
   });
 
 

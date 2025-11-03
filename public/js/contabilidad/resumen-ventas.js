@@ -80,8 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const mesData = Object.values(data.ventasPorMes).map(Number);
 
-            console.log("📆 Mes labels:", mesLabels);
-            console.log("💰 Mes data:", mesData);
 
             // 🥧 Gráfica Categoría
             if (chartCategoria) chartCategoria.destroy();
