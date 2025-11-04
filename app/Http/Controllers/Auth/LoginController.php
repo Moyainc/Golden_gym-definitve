@@ -44,16 +44,20 @@ class LoginController extends Controller
       ], 401);
     }
 
+
     // Autenticar usuario manualmente
     Auth::login($usuario, $request->boolean('remember'));
 
     // Regenerar sesión para prevenir fijación
     $request->session()->regenerate();
 
+
+    session(['ultimo_acceso_anterior' => $usuario->ultimo_acceso]);
     $usuario->update(['ultimo_acceso' => now()]);
+
     $this->clearRateLimit($request);
 
-    // ✅ Redirección según rol
+
     switch ($usuario->rol) {
       case 'Administrador':
         $redirect = route('admin.dashboard');

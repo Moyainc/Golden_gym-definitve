@@ -16,6 +16,9 @@ class PerfilController extends Controller
   {
     $user = Usuario::findOrFail(Auth::id());
 
+    // 🧩 Recuperar el último acceso anterior si existe en la sesión
+    $ultimoAccesoAnterior = session('ultimo_acceso_anterior', $user->ultimo_acceso);
+
     return response()->json([
       'success' => true,
       'user' => [
@@ -24,7 +27,7 @@ class PerfilController extends Controller
         'telefono' => $user->telefono,
         'cedula' => $user->cedula,
         'rol' => ucfirst($user->rol),
-        'ultimo_acceso' => $user->ultimo_acceso_formateado,
+        'ultimo_acceso' => \Carbon\Carbon::parse($ultimoAccesoAnterior)->format('d/m/Y H:i A'),
         'foto_url' => $user->foto ? asset('storage/' . $user->foto) : asset('img/avatars/avatar-4.jpg')
       ]
     ]);
@@ -84,6 +87,7 @@ class PerfilController extends Controller
       ],
     ]);
   }
+
 
   // Cambiar contraseña
   public function changePassword(Request $request)
