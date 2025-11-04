@@ -15,7 +15,6 @@ class LoginController extends Controller
 {
   public function loginUsuario(Request $request)
   {
-    //Protección contra ataques de fuerza bruta
     $this->checkRateLimit($request);
 
     $validator = Validator::make($request->all(), [
@@ -45,41 +44,60 @@ class LoginController extends Controller
       ], 401);
     }
 
-    //Autenticar usuario manualmente (sin attempt)
+    // Autenticar usuario manualmente
     Auth::login($usuario, $request->boolean('remember'));
 
-    //Regenerar sesión para prevenir fijación
+    // Regenerar sesión para prevenir fijación
     $request->session()->regenerate();
 
-
     $usuario->update(['ultimo_acceso' => now()]);
-
-    //Limpiar contador de intentos
     $this->clearRateLimit($request);
 
-    // Respuesta segura
+    // ✅ Redirección según rol
+    switch ($usuario->rol) {
+      case 'Administrador':
+        $redirect = route('admin.dashboard');
+        break;
+      case 'Recepcionista':
+        $redirect = route('admin.clientes');
+        break;
+      case 'Contador':
+        $redirect = route('admin.dashboard');
+        break;
+      default:
+        Auth::logout();
+        return response()->json([
+          'success' => false,
+          'message' => 'Tu rol no tiene permisos para acceder al sistema.',
+        ], 403);
+    }
+
     return response()->json([
       'success' => true,
       'message' => 'Inicio de sesión exitoso.',
       'user' => [
         'nombre' => $usuario->nombre_completo,
+        'rol' => $usuario->rol,
       ],
-      'redirect' => route('admin.dashboard'),
+      'redirect' => $redirect, // 👈 ahora depende del rol
     ], 200);
   }
 
-  // 🧠 Protección de intentos
+
+  //intentos
   private function checkRateLimit(Request $request)
   {
     $key = 'login:' . $request->ip();
 
-    if (RateLimiter::tooManyAttempts($key, 5)) {
+    if (RateLimiter::tooManyAttempts($key, 3)) {
       $seconds = RateLimiter::availableIn($key);
       throw ValidationException::withMessages([
         'correo' => ["Demasiados intentos. Intenta de nuevo en {$seconds} segundos."],
       ])->status(429);
     }
   }
+
+
 
   private function incrementRateLimit(Request $request)
   {
@@ -91,7 +109,8 @@ class LoginController extends Controller
     RateLimiter::clear('login:' . $request->ip());
   }
 
-  // 🚪 Logout seguro
+
+  //Logout
   public function logoutUsuario(Request $request)
   {
     Auth::logout();

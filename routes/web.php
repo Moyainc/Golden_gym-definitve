@@ -39,10 +39,6 @@ Route::middleware(['auth'])->group(function () {
 
   Route::middleware(['checkrole:Administrador'])->group(function () {
 
-  //Dashboard
-
-    Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin.dashboard');
-
 
     //Usuarioss
     Route::get('/admin/usuarios', [HomeController::class, 'usuarios'])->name('admin.usuarios');
@@ -143,9 +139,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
     Route::get('admin/resumen-ventas/data', [ResumenVentasController::class, 'data'])->name('resumen.ventas.data');
     Route::get('admin/resumen-ventas/ultimas', [ResumenVentasController::class, 'ultimasVentas'])->name('resumen.ventas.ultimas');
+
+    Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin.dashboard');
   });
 
 
   //Logout (todos los roles)
   Route::post('/logout', [LoginController::class, 'logoutUsuario'])->name('usuario.logout');
+
+  Route::get('/logout', function () {
+    \Illuminate\Support\Facades\Auth::logout();
+    session()->invalidate();
+    session()->regenerateToken();
+    return redirect('/sign-in');
+  });
 });
