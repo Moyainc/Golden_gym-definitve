@@ -11,6 +11,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PagoDiarioController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ResumenVentasController;
+use App\Http\Controllers\ResumenMembresiasController;
 
 
 
@@ -141,6 +142,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/resumen-ventas/ultimas', [ResumenVentasController::class, 'ultimasVentas'])->name('resumen.ventas.ultimas');
 
     Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin.dashboard');
+
+
+    // Moya
+    // ADMIN → CONTABILIDAD / MEMBRESÍAS
+    Route::get('admin/contabilidad/resumen-membresias', [ResumenMembresiasController::class, 'index'])->name('admin.resumen.membresias');
+    Route::get('admin/api/resumen-contabilidad', [ResumenMembresiasController::class, 'getResumenContabilidad']);
+    Route::get('admin/exportar/contabilidad-pdf', [ResumenMembresiasController::class, 'exportContabilidadPdf']);
+    Route::get('admin/exportar/contabilidad-excel', [ResumenMembresiasController::class, 'exportContabilidadExcel']);
   });
 
 

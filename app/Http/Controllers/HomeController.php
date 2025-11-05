@@ -35,10 +35,6 @@ class HomeController extends Controller
     {
         return view('admin/contabilidad/resumen-ventas');
     }
-    public function resumen_membresias()
-    {
-        return view('admin/contabilidad/resumen-membresias');
-    }
     public function dashboard()
     {
         return view('admin/dashboard');

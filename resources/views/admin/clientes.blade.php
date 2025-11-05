@@ -191,7 +191,7 @@
       </div>
     </main>
 
-    <!-- Modal Agregar / Editar Cliente -->
+    <!-- MODAL CREAR CLIENTE -->
     <div class="modal fade" id="clientFormModal" tabindex="-1">
       <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content bg-dark border-0 text-white shadow-lg">
@@ -205,7 +205,7 @@
           <form id="clientForm" class="modal-body row g-3" enctype="multipart/form-data">
             <input type="hidden" id="clientId" name="id" />
 
-            <!-- Foto -->
+            <!-- Foto del cliente -->
             <div class="col-12 text-center">
               <label class="form-label">Foto del cliente</label>
               <div class="d-flex justify-content-center align-items-center gap-3">
@@ -341,6 +341,108 @@
       </div>
     </div>
 
+    <!-- MODAL EDITAR CLIENTE -->
+    <div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark border-0 text-white shadow-lg">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title text-warning" id="editClientModalLabel">
+              <i data-feather="edit" class="me-1"></i> Editar Cliente
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="editClientForm" class="modal-body row g-3" enctype="multipart/form-data">
+            <input type="hidden" id="editClientId" name="id">
+
+            <!-- Foto del cliente en modal editar -->
+            <div class="col-12 text-center">
+              <label class="form-label">Foto del cliente</label>
+              <div class="d-flex justify-content-center align-items-center gap-3">
+                <img
+                  id="editClientPhotoPreview"
+                  src="{{ asset('storage/usuarios/default.png') }}"
+                  alt="Foto del cliente"
+                  class="rounded-circle"
+                  style="width:100px;height:100px;object-fit:cover;" />
+                <div>
+                  <input
+                    id="editClientPhoto"
+                    name="foto"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    class="form-control text-white border-0 mb-2" />
+                  <small class="text-muted">Selecciona una imagen o toma una foto</small>
+                </div>
+              </div>
+            </div>
+
+            <hr class="border-secondary" />
+
+            <div class="col-md-6">
+              <label class="form-label">Nombre Completo *</label>
+              <input type="text" class="form-control text-white border-0" id="editClientName" name="nombre_completo" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Cédula *</label>
+              <input type="text" class="form-control text-white border-0" id="editClientIdNumber" name="cedula" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Correo *</label>
+              <input type="email" class="form-control text-white border-0" id="editClientEmail" name="correo" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Teléfono</label>
+              <input type="tel" class="form-control text-white border-0" id="editClientPhone" name="telefono">
+            </div>
+
+            <hr class="border-secondary" />
+
+            <div class="col-md-6">
+              <label class="form-label">Tipo de Membresía *</label>
+              <select class="form-select text-white border-0" id="editClientMembershipType" name="membresia_id" required>
+                <option value="">Selecciona una membresía</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Método de pago *</label>
+              <select class="form-select text-white border-0" id="editClientPaymentMethod" name="metodo_pago" required>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+                <option value="tarjeta">Tarjeta</option>
+              </select>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Fecha Inicio</label>
+              <input type="date" class="form-control text-white border-0" id="editMembershipStart" name="fecha_inicio" readonly>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Fecha Fin</label>
+              <input type="date" class="form-control text-white border-0" id="editMembershipEnd" name="fecha_fin" readonly>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label">Precio</label>
+              <input type="text" class="form-control text-warning fw-bold border-0" id="editMembershipPrice" readonly>
+            </div>
+
+            <div class="modal-footer border-secondary">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" id="editClientSaveBtn" class="btn btn-warning">
+                <i data-feather="save" class="me-1"></i> Guardar cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal para Pago Diario -->
     <div class="modal fade" id="dailyPaymentModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
@@ -357,7 +459,7 @@
               <label class="form-label">Nombre del cliente *</label>
               <input
                 id="dailyPaymentName"
-                name="nombre"
+                name="nombre_cliente"
                 type="text"
                 class="form-control text-white border-0"
                 required />
@@ -379,7 +481,8 @@
               <label class="form-label">Fecha del pago *</label>
               <input
                 id="dailyPaymentDate"
-                name="fecha_pago"
+                name="fecha"
+                value="{{ now()->format('Y-m-d') }}"
                 type="date"
                 class="form-control text-white border-0"
                 required />
@@ -394,7 +497,6 @@
                 required>
                 <option value="efectivo">Efectivo</option>
                 <option value="transferencia">Transferencia</option>
-                <option value="tarjeta">Tarjeta</option>
               </select>
             </div>
 

@@ -73,7 +73,7 @@ class ClienteController extends Controller
             // 🔁 Obtener membresía
             $membresia = Membresia::findOrFail($request->membresia_id);
             $fechaInicio = Carbon::now();
-            
+
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
@@ -92,7 +92,7 @@ class ClienteController extends Controller
         } catch (\Exception $e) {
             Log::error('Error al registrar cliente: ' . $e->getMessage());
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Error interno al registrar el cliente: ' . $e->getMessage()
             ], 500);
         }
@@ -182,7 +182,7 @@ class ClienteController extends Controller
         try {
             $cliente = Cliente::findOrFail($id);
             $membresia = Membresia::findOrFail($request->membresia_id);
-            
+
             // La fecha de inicio es HOY
             $fechaInicio = Carbon::now();
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
@@ -358,10 +358,10 @@ class ClienteController extends Controller
 
             $callback = function() use ($clientes) {
                 $file = fopen('php://output', 'w');
-                
+
                 // BOM para UTF-8 (para que Excel reconozca los acentos)
                 fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-                
+
                 // Encabezados
                 fputcsv($file, [
                     'N°',
@@ -424,13 +424,13 @@ class ClienteController extends Controller
     private function calcularFechaFin($membresia, $fechaInicio)
     {
         $fechaFin = Carbon::parse($fechaInicio);
-        
+
         if ($membresia->tipo_duracion === 'meses') {
             return $fechaFin->addMonths($membresia->duracion);
         } elseif ($membresia->tipo_duracion === 'dias') {
             return $fechaFin->addDays($membresia->duracion);
         }
-        
+
         return $fechaFin;
     }
 

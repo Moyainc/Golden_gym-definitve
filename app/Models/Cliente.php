@@ -17,15 +17,13 @@ class Cliente extends Model
         'foto',
     ];
 
+    public function membresiaActual()
+    {
+        return $this->hasOne(PagoMembresia::class, 'cliente_id')->latest('created_at');
+    }
+
     public function pagosMembresias()
     {
         return $this->hasMany(PagoMembresia::class);
     }
-    public function membresiaActual()
-    {
-        return $this->hasOne(PagoMembresia::class)
-            ->latest('fecha_inicio')
-            ->with('membresia');
-    }
 }
-
