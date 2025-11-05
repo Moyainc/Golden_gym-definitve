@@ -184,3 +184,8 @@
 #suggestionBox li:hover {
     background-color: #3d3d3d !important; /* tono más claro al pasar el mouse */
 }
+
+.sidebar {
+    margin-top: 0 !important;
+}
+

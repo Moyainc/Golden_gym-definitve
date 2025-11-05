@@ -5,7 +5,17 @@
 
   <div class="navbar-collapse collapse">
     <ul class="navbar-nav navbar-align">
-      <li class="nav-item dropdown">
+
+      <li class="nav-item">
+        <a
+          class="nav-icon"
+          href=""
+          title="Redactar correo">
+          <i class="align-middle" data-feather="mail"></i>
+        </a>
+      </li>
+      
+      <li class="nav-item dropdown me-2">
         <a
           class="nav-icon dropdown-toggle"
           href="#"
@@ -24,12 +34,10 @@
             <a href="#" class="list-group-item">
               <div class="row g-0 align-items-center">
                 <div class="col-2">
-                  <i
-                    class="text-danger"
-                    data-feather="alert-circle"></i>
+                  <i class="text-danger" data-feather="alert-circle"></i>
                 </div>
                 <div class="col-10">
-                  <div class="txt-color-primary">Transferencias por confirmar </div>
+                  <div class="txt-color-primary">Transferencias por confirmar</div>
                   <div class="txt-color-secondary small mt-1">
                     Tienes 4 transferencias pendientes de confirmar.
                   </div>
@@ -68,6 +76,7 @@
           </div>
         </div>
       </li>
+
       <li class="nav-item dropdown">
         <a
           class="nav-icon dropdown-toggle d-inline-block d-sm-none"

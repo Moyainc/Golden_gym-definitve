@@ -2,6 +2,7 @@
 @section('title', 'Ventas - Golden Gym')
 @section('content')
 
+
 <div class="wrapper">
   <div class="main">
     <div id="navbar"></div>
@@ -260,11 +261,7 @@
 </div>
 
 
-<script src="../../js/app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ asset('js/ventas/funcionalidad-ventas.js') }}"></script>
 <script src="{{ asset('js/ventas/venta-productos.js') }}"></script>
 
-
-</html>
 @endsection
