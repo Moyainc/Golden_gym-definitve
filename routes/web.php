@@ -10,6 +10,7 @@ use App\Http\Middleware\Authenticate;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\PagoDiarioController;
+use App\Http\Controllers\ResumenMembresiasController;
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
 // =========================
@@ -44,8 +45,14 @@ Route::middleware(['auth'])->group(function () {
 
 Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
 Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
-Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
 Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
+
+// ADMIN → CONTABILIDAD / MEMBRESÍAS
+Route::get('admin/contabilidad/resumen-membresias', [ResumenMembresiasController::class, 'index'])->name('admin.resumen.membresias');
+Route::get('admin/api/resumen-contabilidad', [ResumenMembresiasController::class, 'getResumenContabilidad']);
+Route::get('admin/exportar/contabilidad-pdf', [ResumenMembresiasController::class, 'exportContabilidadPdf']);
+Route::get('admin/exportar/contabilidad-excel', [ResumenMembresiasController::class, 'exportContabilidadExcel']);
+
 
 // ADMIN → CLIENTES
 Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');

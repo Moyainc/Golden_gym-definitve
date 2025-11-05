@@ -28,10 +28,14 @@ class ClienteController extends Controller
                         $cliente->membresiaActual->fecha_fin
                     );
                     $cliente->membresia_nombre = $cliente->membresiaActual->membresia->nombre ?? 'N/A';
+                    $cliente->fecha_inicio = $cliente->membresiaActual->fecha_inicio ? $cliente->membresiaActual->fecha_inicio->format('Y-m-d') : null;
+                    $cliente->fecha_fin = $cliente->membresiaActual->fecha_fin ? $cliente->membresiaActual->fecha_fin->format('Y-m-d') : null;
                     $cliente->ultimo_pago = $cliente->membresiaActual->fecha_inicio->format('d/m/Y');
                 } else {
                     $cliente->estado = 'sin_membresia';
                     $cliente->membresia_nombre = 'Sin membresía';
+                    $cliente->fecha_inicio = null;
+                    $cliente->fecha_fin = null;
                     $cliente->ultimo_pago = 'N/A';
                 }
                 return $cliente;
@@ -55,13 +59,11 @@ class ClienteController extends Controller
         ]);
 
         try {
-            // 📸 Subir foto (si existe)
             $fotoPath = null;
             if ($request->hasFile('foto')) {
                 $fotoPath = $request->file('foto')->store('clientes/fotos', 'public');
             }
 
-            // 👤 Crear cliente
             $cliente = Cliente::create([
                 'nombre_completo' => $request->nombre_completo,
                 'cedula' => $request->cedula,
@@ -70,14 +72,12 @@ class ClienteController extends Controller
                 'foto' => $fotoPath,
             ]);
 
-            // 🔁 Obtener membresía
             $membresia = Membresia::findOrFail($request->membresia_id);
-            $fechaInicio = Carbon::now();
+            $fechaInicio = Carbon::now()->startOfDay();
             
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
-            // 💾 Crear pago de membresía
             PagoMembresia::create([
                 'cliente_id' => $cliente->id,
                 'membresia_id' => $membresia->id,
@@ -104,9 +104,22 @@ class ClienteController extends Controller
     public function show($id)
     {
         $cliente = Cliente::with(['membresiaActual.membresia'])->findOrFail($id);
-        $cliente->estado = $cliente->membresiaActual
-            ? $this->calcularEstadoMembresia($cliente->membresiaActual->fecha_inicio, $cliente->membresiaActual->fecha_fin)
-            : 'sin membresía';
+        
+        if ($cliente->membresiaActual) {
+            $cliente->estado = $this->calcularEstadoMembresia(
+                $cliente->membresiaActual->fecha_inicio,
+                $cliente->membresiaActual->fecha_fin
+            );
+            $cliente->fecha_inicio = $cliente->membresiaActual->fecha_inicio ? $cliente->membresiaActual->fecha_inicio->format('Y-m-d') : null;
+            $cliente->fecha_fin = $cliente->membresiaActual->fecha_fin ? $cliente->membresiaActual->fecha_fin->format('Y-m-d') : null;
+            $cliente->membresia_actual = $cliente->membresiaActual;
+        } else {
+            $cliente->estado = 'sin membresía';
+            $cliente->fecha_inicio = null;
+            $cliente->fecha_fin = null;
+            $cliente->membresia_actual = null;
+        }
+        
         return response()->json($cliente);
     }
 
@@ -128,7 +141,6 @@ class ClienteController extends Controller
         try {
             $cliente = Cliente::findOrFail($id);
 
-            // Actualizar foto si se envió una nueva
             if ($request->hasFile('foto')) {
                 $fotoPath = $request->file('foto')->store('clientes/fotos', 'public');
                 $cliente->foto = $fotoPath;
@@ -141,10 +153,9 @@ class ClienteController extends Controller
                 'telefono' => $request->telefono,
             ]);
 
-            // Si cambió la membresía, crear nuevo registro de pago
             if ($request->membresia_id != $cliente->membresiaActual?->membresia_id) {
                 $membresia = Membresia::findOrFail($request->membresia_id);
-                $fechaInicio = Carbon::now();
+                $fechaInicio = Carbon::now()->startOfDay();
                 $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
                 $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
@@ -183,8 +194,7 @@ class ClienteController extends Controller
             $cliente = Cliente::findOrFail($id);
             $membresia = Membresia::findOrFail($request->membresia_id);
             
-            // La fecha de inicio es HOY
-            $fechaInicio = Carbon::now();
+            $fechaInicio = Carbon::now()->startOfDay();
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
@@ -209,13 +219,14 @@ class ClienteController extends Controller
     }
 
     /**
-     * Eliminar cliente y sus pagos asociados
+     * Eliminar cliente sin borrar pagos (problema 3: prevenir eliminación de registros relacionados)
      */
     public function destroy($id)
     {
         try {
             $cliente = Cliente::findOrFail($id);
-            $cliente->pagosMembresias()->delete();
+            // No eliminar pagos membresías - solo marca como cliente eliminado
+            // Los registros históricos deben mantenerse para auditoría
             $cliente->delete();
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
@@ -225,7 +236,7 @@ class ClienteController extends Controller
     }
 
     /**
-     * Retorna las membresías disponibles (para llenar el select)
+     * Retorna las membresías disponibles
      */
     public function getMembresias()
     {
@@ -246,32 +257,29 @@ class ClienteController extends Controller
 
         try {
             $fechaInicio = Carbon::parse($request->fecha_inicio);
-            $fechaFin = Carbon::parse($request->fecha_fin);
+            $fechaFin = Carbon::parse($request->fecha_fin)->endOfDay();
 
-            // Obtener clientes filtrados por rango de fechas
-            $query = Cliente::with(['membresiaActual.membresia'])
-                ->whereBetween('created_at', [$fechaInicio, $fechaFin])
-                ->orderBy('nombre_completo');
+            $query = PagoMembresia::with(['cliente', 'membresia'])
+                ->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
+                ->orderBy('cliente_id')
+                ->latest('id');
 
-            $clientes = $query->get()->map(function ($cliente) {
-                if ($cliente->membresiaActual) {
-                    $cliente->estado = $this->calcularEstadoMembresia(
-                        $cliente->membresiaActual->fecha_inicio,
-                        $cliente->membresiaActual->fecha_fin
-                    );
-                    $cliente->membresia_nombre = $cliente->membresiaActual->membresia->nombre ?? 'N/A';
-                    $cliente->fecha_inicio = $cliente->membresiaActual->fecha_inicio->format('d/m/Y');
-                    $cliente->fecha_fin = $cliente->membresiaActual->fecha_fin->format('d/m/Y');
-                } else {
-                    $cliente->estado = 'sin_membresia';
-                    $cliente->membresia_nombre = 'Sin membresía';
-                    $cliente->fecha_inicio = 'N/A';
-                    $cliente->fecha_fin = 'N/A';
-                }
+            $pagos = $query->get();
+
+            $clientes = $pagos->map(function ($pago) {
+                $cliente = $pago->cliente;
+                $cliente->estado = $this->calcularEstadoMembresia(
+                    $pago->fecha_inicio,
+                    $pago->fecha_fin
+                );
+                $cliente->membresia_nombre = $pago->membresia->nombre ?? 'N/A';
+                $cliente->fecha_inicio = $pago->fecha_inicio->format('d/m/Y');
+                $cliente->fecha_fin = $pago->fecha_fin->format('d/m/Y');
+                $cliente->monto = $pago->monto ?? 0;
+                $cliente->metodo_pago = $pago->metodo_pago ?? 'N/A';
                 return $cliente;
-            });
+            })->unique('id');
 
-            // Filtrar por estado si se especificó
             if ($request->estado) {
                 $clientes = $clientes->filter(function ($cliente) use ($request) {
                     return $cliente->estado === $request->estado;
@@ -284,6 +292,7 @@ class ClienteController extends Controller
                 'fecha_fin' => $fechaFin->format('d/m/Y'),
                 'fecha_generacion' => Carbon::now()->format('d/m/Y H:i:s'),
                 'total' => $clientes->count(),
+                'logo_url' => asset('images/logo-gym.png'),
             ];
 
             $pdf = Pdf::loadView('reports.clientes-pdf', $data);
@@ -310,43 +319,35 @@ class ClienteController extends Controller
 
         try {
             $fechaInicio = Carbon::parse($request->fecha_inicio);
-            $fechaFin = Carbon::parse($request->fecha_fin);
+            $fechaFin = Carbon::parse($request->fecha_fin)->endOfDay();
 
-            // Obtener clientes filtrados
-            $query = Cliente::with(['membresiaActual.membresia'])
-                ->whereBetween('created_at', [$fechaInicio, $fechaFin])
-                ->orderBy('nombre_completo');
+            $query = PagoMembresia::with(['cliente', 'membresia'])
+                ->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
+                ->orderBy('cliente_id')
+                ->latest('id');
 
-            $clientes = $query->get()->map(function ($cliente) {
-                if ($cliente->membresiaActual) {
-                    $cliente->estado = $this->calcularEstadoMembresia(
-                        $cliente->membresiaActual->fecha_inicio,
-                        $cliente->membresiaActual->fecha_fin
-                    );
-                    $cliente->membresia_nombre = $cliente->membresiaActual->membresia->nombre ?? 'N/A';
-                    $cliente->fecha_inicio = $cliente->membresiaActual->fecha_inicio->format('d/m/Y');
-                    $cliente->fecha_fin = $cliente->membresiaActual->fecha_fin->format('d/m/Y');
-                    $cliente->monto = $cliente->membresiaActual->monto ?? 0;
-                    $cliente->metodo_pago = $cliente->membresiaActual->metodo_pago ?? 'N/A';
-                } else {
-                    $cliente->estado = 'sin_membresia';
-                    $cliente->membresia_nombre = 'Sin membresía';
-                    $cliente->fecha_inicio = 'N/A';
-                    $cliente->fecha_fin = 'N/A';
-                    $cliente->monto = 0;
-                    $cliente->metodo_pago = 'N/A';
-                }
+            $pagos = $query->get();
+
+            $clientes = $pagos->map(function ($pago) {
+                $cliente = $pago->cliente;
+                $cliente->estado = $this->calcularEstadoMembresia(
+                    $pago->fecha_inicio,
+                    $pago->fecha_fin
+                );
+                $cliente->membresia_nombre = $pago->membresia->nombre ?? 'N/A';
+                $cliente->fecha_inicio = $pago->fecha_inicio->format('d/m/Y');
+                $cliente->fecha_fin = $pago->fecha_fin->format('d/m/Y');
+                $cliente->monto = $pago->monto ?? 0;
+                $cliente->metodo_pago = $pago->metodo_pago ?? 'N/A';
                 return $cliente;
-            });
+            })->unique('id');
 
-            // Filtrar por estado si se especificó
             if ($request->estado) {
                 $clientes = $clientes->filter(function ($cliente) use ($request) {
                     return $cliente->estado === $request->estado;
                 });
             }
 
-            // Crear archivo CSV
             $filename = 'reporte-clientes-' . date('Y-m-d') . '.csv';
             $headers = [
                 'Content-Type' => 'text/csv; charset=UTF-8',
@@ -359,10 +360,8 @@ class ClienteController extends Controller
             $callback = function() use ($clientes) {
                 $file = fopen('php://output', 'w');
                 
-                // BOM para UTF-8 (para que Excel reconozca los acentos)
                 fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
                 
-                // Encabezados
                 fputcsv($file, [
                     'N°',
                     'Nombre Completo',
@@ -378,7 +377,6 @@ class ClienteController extends Controller
                     'Fecha Registro'
                 ], ';');
 
-                // Datos
                 $numero = 1;
                 foreach ($clientes as $cliente) {
                     $estadoTexto = match($cliente->estado) {
@@ -435,7 +433,7 @@ class ClienteController extends Controller
     }
 
     /**
-     * Calcula el estado de la membresía según la fecha actual
+     * Calcula el estado de la membresía
      */
     private function calcularEstadoMembresia($fechaInicio, $fechaFin)
     {

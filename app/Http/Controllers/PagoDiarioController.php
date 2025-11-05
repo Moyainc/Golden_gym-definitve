@@ -11,7 +11,7 @@ class PagoDiarioController extends Controller
     public function index()
     {
         try {
-            $pagos = PagoDiario::orderByDesc('fecha_pago')
+            $pagos = PagoDiario::orderByDesc('fecha')
                 ->orderByDesc('id')
                 ->limit(15)
                 ->get();
@@ -27,9 +27,9 @@ class PagoDiarioController extends Controller
     {
         try {
             $validated = $request->validate([
-                'nombre' => 'required|string|max:255',
+                'nombre_cliente' => 'required|string|max:255',
                 'monto' => 'required|numeric|min:0',
-                'fecha_pago' => 'required|date',
+                'fecha' => 'required|date',
                 'metodo_pago' => 'required|in:efectivo,transferencia,tarjeta',
             ]);
 

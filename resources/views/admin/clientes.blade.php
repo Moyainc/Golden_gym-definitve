@@ -191,7 +191,7 @@
         </div>
       </main>
 
-      <!-- Modal Agregar / Editar Cliente -->
+      <!-- MODAL CREAR CLIENTE -->
       <div class="modal fade" id="clientFormModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content bg-dark border-0 text-white shadow-lg">
@@ -205,7 +205,7 @@
             <form id="clientForm" class="modal-body row g-3" enctype="multipart/form-data">
               <input type="hidden" id="clientId" name="id" />
 
-              <!-- Foto -->
+              <!-- Foto del cliente -->
               <div class="col-12 text-center">
                 <label class="form-label">Foto del cliente</label>
                 <div class="d-flex justify-content-center align-items-center gap-3">
@@ -261,7 +261,7 @@
                   class="form-control text-white border-0"
                   required />
               </div>
-              
+
               <div class="col-md-6">
                 <label class="form-label">Teléfono</label>
                 <input
@@ -308,7 +308,7 @@
                   class="form-control text-white border-0"
                   readonly />
               </div>
-              
+
               <div class="col-md-4">
                 <label class="form-label">Fecha fin</label>
                 <input
@@ -341,67 +341,101 @@
         </div>
       </div>
 
-      <!-- Modal para Pago Diario -->
-      <div class="modal fade" id="dailyPaymentModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+      <!-- MODAL EDITAR CLIENTE -->
+      <div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content bg-dark border-0 text-white shadow-lg">
             <div class="modal-header border-secondary">
-              <h5 class="modal-title text-info">
-                <i data-feather="dollar-sign" class="me-1"></i> Registrar Pago Diario
+              <h5 class="modal-title text-warning" id="editClientModalLabel">
+                <i data-feather="edit" class="me-1"></i> Editar Cliente
               </h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <form id="editClientForm" class="modal-body row g-3" enctype="multipart/form-data">
+              <input type="hidden" id="editClientId" name="id">
 
-            <form id="dailyPaymentForm" class="modal-body">
-              <div class="mb-3">
-                <label class="form-label">Nombre del cliente *</label>
-                <input
-                  id="dailyPaymentName"
-                  name="nombre"
-                  type="text"
-                  class="form-control text-white border-0"
-                  required />
+              <!-- Foto del cliente en modal editar -->
+              <div class="col-12 text-center">
+                <label class="form-label">Foto del cliente</label>
+                <div class="d-flex justify-content-center align-items-center gap-3">
+                  <img
+                    id="editClientPhotoPreview"
+                    src="{{ asset('storage/usuarios/default.png') }}"
+                    alt="Foto del cliente"
+                    class="rounded-circle"
+                    style="width:100px;height:100px;object-fit:cover;" />
+                  <div>
+                    <input
+                      id="editClientPhoto"
+                      name="foto"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      class="form-control text-white border-0 mb-2" />
+                    <small class="text-muted">Selecciona una imagen o toma una foto</small>
+                  </div>
+                </div>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Monto *</label>
-                <input
-                  id="dailyPaymentAmount"
-                  name="monto"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  class="form-control text-white border-0"
-                  required />
+              <hr class="border-secondary" />
+
+              <div class="col-md-6">
+                <label class="form-label">Nombre Completo *</label>
+                <input type="text" class="form-control text-white border-0" id="editClientName" name="nombre_completo" required>
               </div>
 
-              <div class="mb-3">
-                <label class="form-label">Fecha del pago *</label>
-                <input
-                  id="dailyPaymentDate"
-                  name="fecha_pago"
-                  type="date"
-                  class="form-control text-white border-0"
-                  required />
+              <div class="col-md-6">
+                <label class="form-label">Cédula *</label>
+                <input type="text" class="form-control text-white border-0" id="editClientIdNumber" name="cedula" required>
               </div>
 
-              <div class="mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Correo *</label>
+                <input type="email" class="form-control text-white border-0" id="editClientEmail" name="correo" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" class="form-control text-white border-0" id="editClientPhone" name="telefono">
+              </div>
+
+              <hr class="border-secondary" />
+
+              <div class="col-md-6">
+                <label class="form-label">Tipo de Membresía *</label>
+                <select class="form-select text-white border-0" id="editClientMembershipType" name="membresia_id" required>
+                  <option value="">Selecciona una membresía</option>
+                </select>
+              </div>
+
+              <div class="col-md-6">
                 <label class="form-label">Método de pago *</label>
-                <select
-                  id="dailyPaymentMethod"
-                  name="metodo_pago"
-                  class="form-select text-white border-0"
-                  required>
+                <select class="form-select text-white border-0" id="editClientPaymentMethod" name="metodo_pago" required>
                   <option value="efectivo">Efectivo</option>
                   <option value="transferencia">Transferencia</option>
                   <option value="tarjeta">Tarjeta</option>
                 </select>
               </div>
 
+              <div class="col-md-4">
+                <label class="form-label">Fecha Inicio</label>
+                <input type="date" class="form-control text-white border-0" id="editMembershipStart" name="fecha_inicio" readonly>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Fecha Fin</label>
+                <input type="date" class="form-control text-white border-0" id="editMembershipEnd" name="fecha_fin" readonly>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label">Precio</label>
+                <input type="text" class="form-control text-warning fw-bold border-0" id="editMembershipPrice" readonly>
+              </div>
+
               <div class="modal-footer border-secondary">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-info">
-                  <i data-feather="save" class="me-1"></i> Guardar pago
+                <button type="submit" id="editClientSaveBtn" class="btn btn-warning">
+                  <i data-feather="save" class="me-1"></i> Guardar cambios
                 </button>
               </div>
             </form>
@@ -409,70 +443,138 @@
         </div>
       </div>
 
-      <!-- Modal para Reportes -->
-      <div class="modal fade" id="reportsModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content bg-dark border-0 text-white shadow-lg">
-            <div class="modal-header border-secondary">
-              <h5 class="modal-title text-success">
-                <i data-feather="file-text" class="me-1"></i> Generar Reporte de Clientes
-              </h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-
-            <form id="reportsForm" class="modal-body">
-              <div class="alert alert-info bg-opacity-10 border-info text-info">
-                <i data-feather="info" class="me-1"></i>
-                Selecciona un rango de fechas para filtrar los clientes por fecha de registro
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Fecha inicio</label>
-                <input
-                  id="reportStartDate"
-                  name="fecha_inicio"
-                  type="date"
-                  class="form-control text-white border-0"
-                  required />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Fecha fin</label>
-                <input
-                  id="reportEndDate"
-                  name="fecha_fin"
-                  type="date"
-                  class="form-control text-white border-0"
-                  required />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Estado de membresía (opcional)</label>
-                <select
-                  id="reportEstado"
-                  name="estado"
-                  class="form-select text-white border-0">
-                  <option value="">Todos los estados</option>
-                  <option value="activa">Activas</option>
-                  <option value="proxima">Próximas a vencer</option>
-                  <option value="vencida">Vencidas</option>
-                </select>
-              </div>
-
-              <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" id="exportPdfBtn" class="btn btn-danger">
-                  <i data-feather="file" class="me-1"></i> Exportar PDF
-                </button>
-                <button type="button" id="exportExcelBtn" class="btn btn-success">
-                  <i data-feather="download" class="me-1"></i> Exportar Excel
-                </button>
-              </div>
-            </form>
-          </div>
+  <!-- Modal para Pago Diario -->
+  <div class="modal fade" id="dailyPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-0 text-white shadow-lg">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-info">
+            <i data-feather="dollar-sign" class="me-1"></i> Registrar Pago Diario
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
+
+        <form id="dailyPaymentForm" class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre del cliente *</label>
+            <input
+              id="dailyPaymentName"
+              name="nombre_cliente"
+              type="text"
+              class="form-control text-white border-0"
+              required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Monto *</label>
+            <input
+              id="dailyPaymentAmount"
+              name="monto"
+              type="number"
+              step="0.01"
+              min="0"
+              class="form-control text-white border-0"
+              required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Fecha del pago *</label>
+            <input
+              id="dailyPaymentDate"
+              name="fecha"
+              value="{{ now()->format('Y-m-d') }}"
+              type="date"
+              class="form-control text-white border-0"
+              required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Método de pago *</label>
+            <select
+              id="dailyPaymentMethod"
+              name="metodo_pago"
+              class="form-select text-white border-0"
+              required>
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+            </select>
+          </div>
+
+          <div class="modal-footer border-secondary">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-info">
+              <i data-feather="save" class="me-1"></i> Guardar pago
+            </button>
+          </div>
+        </form>
       </div>
     </div>
+  </div>
+
+  <!-- Modal para Reportes -->
+  <div class="modal fade" id="reportsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark border-0 text-white shadow-lg">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-success">
+            <i data-feather="file-text" class="me-1"></i> Generar Reporte de Clientes
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+
+        <form id="reportsForm" class="modal-body">
+          <div class="alert alert-info bg-opacity-10 border-info text-info">
+            <i data-feather="info" class="me-1"></i>
+            Selecciona un rango de fechas para filtrar los clientes por fecha de registro
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Fecha inicio</label>
+            <input
+              id="reportStartDate"
+              name="fecha_inicio"
+              type="date"
+              class="form-control text-white border-0"
+              required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Fecha fin</label>
+            <input
+              id="reportEndDate"
+              name="fecha_fin"
+              type="date"
+              class="form-control text-white border-0"
+              required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Estado de membresía (opcional)</label>
+            <select
+              id="reportEstado"
+              name="estado"
+              class="form-select text-white border-0">
+              <option value="">Todos los estados</option>
+              <option value="activa">Activas</option>
+              <option value="proxima">Próximas a vencer</option>
+              <option value="vencida">Vencidas</option>
+            </select>
+          </div>
+
+          <div class="modal-footer border-secondary">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" id="exportPdfBtn" class="btn btn-danger">
+              <i data-feather="file" class="me-1"></i> Exportar PDF
+            </button>
+            <button type="button" id="exportExcelBtn" class="btn btn-success">
+              <i data-feather="download" class="me-1"></i> Exportar Excel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  </div>
   </div>
   <script src="{{ asset('js/clientes.js') }}"></script>
 </body>

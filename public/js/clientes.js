@@ -1,3 +1,25 @@
+
+function closeModalProperly(modalId) {
+    const modalEl = document.getElementById(modalId)
+    if (!modalEl) return
+
+    const modalInstance = bootstrap.Modal.getInstance(modalEl)
+    if (modalInstance) {
+        modalInstance.hide()
+
+        // Esperar a que termine la animación antes de eliminar la instancia
+        modalEl.addEventListener(
+            "hidden.bs.modal",
+            () => {
+                modalInstance.dispose() // 💥 destruye la instancia para permitir reabrir
+                const form = modalEl.querySelector("form")
+                if (form) form.reset()
+            },
+            { once: true }
+        )
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("clientForm")
     const dailyPaymentForm = document.getElementById("dailyPaymentForm")
@@ -17,13 +39,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const Swal = window.Swal
     const feather = window.feather
     const bootstrap = window.bootstrap
+    const editClientPhotoPreview = document.getElementById("editClientPhotoPreview") // Declare the variable here
 
     let allClients = []
     let currentFilter = "todas"
     let editingClientId = null
 
     if (dailyPaymentDate) {
-        dailyPaymentDate.valueAsDate = new Date()
+        const now = new Date()
+        // Ajustar por el offset de zona horaria para evitar que el toISOString suba un día
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
+        dailyPaymentDate.value = now.toISOString().split("T")[0]
     }
 
     // === Helpers ===
@@ -50,8 +76,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function formatDateDisplay(dateString) {
         if (!dateString) return "N/A"
-        const date = new Date(dateString)
-        return date.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" })
+        const parts = dateString.split("-")
+        if (parts.length === 3) {
+            const date = new Date(parts[0], Number.parseInt(parts[1]) - 1, parts[2])
+            return date.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" })
+        }
+        return "N/A"
     }
 
     function getEstadoBadge(estado) {
@@ -85,6 +115,21 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
 
+    const editClientPhoto = document.getElementById("editClientPhoto")
+    if (editClientPhoto) {
+        editClientPhoto.addEventListener("change", (e) => {
+            const file = e.target.files[0]
+            if (file) {
+                const reader = new FileReader()
+                reader.onload = (ev) => {
+                    editClientPhotoPreview.src = ev.target.result
+                    editClientPhotoPreview.style.display = "block"
+                }
+                reader.readAsDataURL(file)
+            }
+        })
+    }
+
     // === Cargar membresías ===
     async function loadMemberships() {
         try {
@@ -102,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
             membershipSelect.innerHTML = `<option value="">-- Seleccione una membresía --</option>`
             data.forEach((m) => {
                 const duracionTexto = m.duracion
-                    ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "es" : ""}`
+                    ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
                     : "Sin duración"
 
                 membershipSelect.innerHTML += `
@@ -117,6 +162,42 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.error("Error cargando membresías:", err)
             membershipSelect.innerHTML = `<option value="">Error al cargar membresías</option>`
+        }
+    }
+
+    async function loadEditMemberships() {
+        try {
+            const res = await fetch(apiUrl("admin/membresias/list/json"))
+            if (!res.ok) throw new Error("Error en la solicitud")
+            const data = await res.json()
+
+            const editMembershipSelect = document.getElementById("editClientMembershipType")
+            editMembershipSelect.innerHTML = `<option value="">Selecciona una membresía</option>`
+
+            if (!data.length) {
+                editMembershipSelect.innerHTML = `<option value="">No hay membresías disponibles</option>`
+                return data
+            }
+
+            data.forEach((m) => {
+                const duracionTexto = m.duracion
+                    ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
+                    : "Sin duración"
+
+                editMembershipSelect.innerHTML += `
+          <option value="${m.id}"
+            data-precio="${m.precio}"
+            data-duracion="${m.duracion}"
+            data-tipo="${m.tipo_duracion}"
+            data-nombre="${m.nombre}">
+            ${m.nombre} (${duracionTexto})
+          </option>`
+            })
+
+            return data
+        } catch (err) {
+            console.error("Error cargando membresías:", err)
+            return []
         }
     }
 
@@ -200,25 +281,58 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadDailyPayments() {
         try {
             const res = await fetch(apiUrl("admin/pagos-diarios/list/json"))
-            if (!res.ok) throw new Error("Error al cargar pagos diarios")
-            const pagos = await res.json()
+            if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
 
+            const contentType = res.headers.get("content-type")
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("El servidor no devolvió JSON válido")
+            }
+
+            const pagos = await res.json()
             renderDailyPayments(pagos)
         } catch (err) {
-            console.error("Error cargando pagos diarios:", err)
+            console.error("[v0] Error cargando pagos diarios:", err)
             dailyPaymentsTableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center text-danger">Error al cargar pagos diarios</td>
+          <td colspan="6" class="text-center text-danger">
+            <strong>Error al cargar pagos diarios:</strong> ${err.message}
+          </td>
         </tr>`
         }
     }
+
+    function formatDateDisplay(dateString) {
+        if (!dateString) return "—";
+
+        let date;
+
+        // Si viene con hora (ej: 2025-11-04T05:00:00.000000Z)
+        if (dateString.includes("T")) {
+            date = new Date(dateString);
+        } else {
+            // Si viene como '2025-11-04'
+            date = new Date(dateString + "T00:00:00");
+        }
+
+        if (isNaN(date)) return "—";
+
+        return date.toLocaleDateString("es-CO", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+        });
+    }
+
 
     function renderDailyPayments(pagos) {
         if (!pagos.length) {
             dailyPaymentsTableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center text-muted">No hay pagos diarios registrados</td>
+            <td colspan="6" class="text-center text-muted">
+                <i data-feather="info" class="me-1"></i> No hay pagos diarios registrados
+            </td>
         </tr>`
+            feather.replace()
             return
         }
 
@@ -231,30 +345,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 return `
-        <tr>
-          <td>${index + 1}</td>
-          <td class="fw-semibold text-white">${pago.nombre}</td>
-          <td class="text-warning fw-bold">${new Intl.NumberFormat("es-CO", {
+            <tr>
+                <td>${index + 1}</td>
+                <td class="fw-semibold text-white">${pago.nombre_cliente}</td>
+                <td class="text-warning fw-bold">
+                    ${new Intl.NumberFormat("es-CO", {
                     style: "currency",
                     currency: "COP",
                     minimumFractionDigits: 0,
-                }).format(pago.monto)}</td>
-          <td class="text-muted small">${formatDateDisplay(pago.fecha_pago)}</td>
-          <td>${metodoBadge[pago.metodo_pago] || pago.metodo_pago}</td>
-          <td class="text-end">
-            <button
-              class="btn btn-sm btn-outline-danger btn-delete-payment"
-              data-id="${pago.id}"
-              title="Eliminar">
-              <i data-feather="trash-2"></i>
-            </button>
-          </td>
-        </tr>`
+                }).format(pago.monto)}
+                </td>
+                <td class="text-muted small">
+                    ${formatDateDisplay(pago.fecha)}
+                </td>
+                <td>${metodoBadge[pago.metodo_pago] || pago.metodo_pago}</td>
+                <td class="text-end">
+                    <button
+                        class="btn btn-sm btn-outline-danger btn-delete-payment"
+                        data-id="${pago.id}"
+                        title="Eliminar">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </td>
+            </tr>`
             })
             .join("")
 
         feather.replace()
     }
+
 
     // === Filtros ===
     function applyCurrentFilter() {
@@ -325,20 +444,27 @@ document.addEventListener("DOMContentLoaded", () => {
             const tipoDuracion = option.getAttribute("data-tipo")
             const precio = Number.parseFloat(option.getAttribute("data-precio")) || 0
 
-            const startDate = new Date()
-            let endDate
+            const today = new Date()
+            const yyyy = today.getFullYear()
+            const mm = String(today.getMonth() + 1).padStart(2, "0")
+            const dd = String(today.getDate()).padStart(2, "0")
+            const startDate = `${yyyy}-${mm}-${dd}`
 
+            let endDate = today
             if (tipoDuracion === "meses") {
-                endDate = addMonthsSafe(startDate, duracion)
+                endDate = addMonthsSafe(today, duracion)
             } else if (tipoDuracion === "dias") {
-                endDate = new Date(startDate)
-                endDate.setDate(startDate.getDate() + duracion)
-            } else {
-                endDate = new Date(startDate)
+                endDate = new Date(today)
+                endDate.setDate(today.getDate() + duracion)
             }
 
-            startInput.value = formatDateLocalYMD(startDate)
-            endInput.value = formatDateLocalYMD(endDate)
+            const endYyyy = endDate.getFullYear()
+            const endMm = String(endDate.getMonth() + 1).padStart(2, "0")
+            const endDd = String(endDate.getDate()).padStart(2, "0")
+            const endDateStr = `${endYyyy}-${endMm}-${endDd}`
+
+            startInput.value = startDate
+            endInput.value = endDateStr
 
             priceInput.value = new Intl.NumberFormat("es-CO", {
                 style: "currency",
@@ -348,13 +474,22 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
 
+    const createClientFormModal = new bootstrap.Modal(document.getElementById("clientFormModal"))
+    const editClientFormModal = new bootstrap.Modal(document.getElementById("editClientModal"))
+
+    // === Modal para CREAR cliente ===
     document.getElementById("clientFormModal")?.addEventListener("show.bs.modal", (e) => {
-        if (!editingClientId) {
-            modalTitle.textContent = "Registrar Cliente"
-            form.reset()
-            photoPreview.src = getDefaultPhoto()
-            document.getElementById("clientId").value = ""
-        }
+        modalTitle.textContent = "Registrar Cliente"
+        form.reset()
+        photoPreview.src = getDefaultPhoto()
+        photoPreview.style.display = "none"
+        document.getElementById("clientId").value = ""
+        editingClientId = null
+    })
+
+    // === Modal para EDITAR cliente ===
+    document.getElementById("editClientModal")?.addEventListener("show.bs.modal", (e) => {
+        // No resetear nada aquí - los datos ya fueron cargados por el botón editar
     })
 
     // === Enviar formulario (crear/editar) ===
@@ -392,23 +527,114 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.success) {
                     Swal.fire({
                         icon: "success",
-                        title: clientId ? "Cliente actualizado correctamente" : "Cliente registrado correctamente",
+                        title: "Cliente registrado correctamente",
                         timer: 1500,
                         showConfirmButton: false,
                         background: "#1a1a1a",
                         color: "#fff",
                     })
 
-                    const modal = bootstrap.Modal.getInstance(document.getElementById("clientFormModal"))
-                    modal.hide()
-                    form.reset()
-                    photoPreview.src = getDefaultPhoto()
-                    editingClientId = null
-                    loadClients()
+                    createClientFormModal.hide()
+
+                    document.getElementById("clientFormModal").addEventListener(
+                        "hidden.bs.modal",
+                        () => {
+                            form.reset()
+                            photoPreview.src = getDefaultPhoto()
+                            photoPreview.style.display = "none"
+                            document.getElementById("clientId").value = ""
+                            editingClientId = null
+                            loadClients()
+                        },
+                        { once: true },
+                    )
                 } else {
                     Swal.fire({
                         icon: "error",
                         title: "Error al guardar el cliente",
+                        text: data.message || "Revisa los campos e inténtalo de nuevo.",
+                        background: "#1a1a1a",
+                        color: "#fff",
+                    })
+                }
+            } catch (error) {
+                console.error("Error en la solicitud:", error)
+                Swal.fire({
+                    icon: "error",
+                    title: "Error en la solicitud",
+                    text: error.message || "No se pudo enviar el formulario.",
+                    background: "#1a1a1a",
+                    color: "#fff",
+                })
+            }
+        })
+    }
+
+    const editClientForm = document.getElementById("editClientForm")
+    if (editClientForm) {
+        editClientForm.addEventListener("submit", async (e) => {
+            e.preventDefault()
+
+            const formData = new FormData(editClientForm)
+            const clientId = document.getElementById("editClientId")?.value
+
+            if (!clientId) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "No se encontró el ID del cliente",
+                    background: "#1a1a1a",
+                    color: "#fff",
+                })
+                return
+            }
+
+            formData.append("_method", "PUT")
+
+            try {
+                const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`), {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                        Accept: "application/json",
+                    },
+                    body: formData,
+                })
+
+                const contentType = res.headers.get("content-type")
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("El servidor devolvió una respuesta inválida")
+                }
+
+                const data = await res.json()
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Cliente actualizado correctamente",
+                        timer: 1500,
+                        showConfirmButton: false,
+                        background: "#1a1a1a",
+                        color: "#fff",
+                    })
+
+                    editClientFormModal.hide()
+
+                    document.getElementById("editClientModal").addEventListener(
+                        "hidden.bs.modal",
+                        () => {
+                            editClientForm.reset()
+                            editClientPhotoPreview.src = getDefaultPhoto()
+                            editClientPhotoPreview.style.display = "none"
+                            editingClientId = null
+                            loadClients()
+                        },
+                        { once: true },
+                    )
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error al actualizar",
                         text: data.message || "Revisa los campos e inténtalo de nuevo.",
                         background: "#1a1a1a",
                         color: "#fff",
@@ -497,32 +723,32 @@ document.addEventListener("DOMContentLoaded", () => {
                     const cliente = await res.json()
 
                     editingClientId = clientId
-                    modalTitle.textContent = "Editar Cliente"
 
-                    document.getElementById("clientId").value = cliente.id
-                    document.getElementById("clientName").value = cliente.nombre_completo
-                    document.getElementById("clientEmail").value = cliente.correo || ""
-                    document.getElementById("clientPhone").value = cliente.telefono || ""
-                    document.getElementById("clientIdNumber").value = cliente.cedula || ""
+                    document.getElementById("editClientId").value = cliente.id
+                    document.getElementById("editClientName").value = cliente.nombre_completo
+                    document.getElementById("editClientEmail").value = cliente.correo || ""
+                    document.getElementById("editClientPhone").value = cliente.telefono || ""
+                    document.getElementById("editClientIdNumber").value = cliente.cedula || ""
 
-                    if (cliente.membresia_actual) {
-                        await loadMemberships()
-                        document.getElementById("clientMembershipType").value = cliente.membresia_actual.membresia_id
-                        document.getElementById("clientPaymentMethod").value = cliente.membresia_actual.metodo_pago || "efectivo"
+                    await loadEditMemberships()
 
-                        // Trigger change para actualizar fechas y precio
+                    const editMembershipSelect = document.getElementById("editClientMembershipType")
+                    if (editMembershipSelect && cliente.membresia_actual) {
+                        editMembershipSelect.value = cliente.membresia_actual.membresia_id
+
                         const event = new Event("change")
-                        membershipSelect.dispatchEvent(event)
+                        editMembershipSelect.dispatchEvent(event)
                     }
 
                     if (cliente.foto) {
-                        photoPreview.src = `${window.app.baseUrl}/storage/${cliente.foto}`
+                        editClientPhotoPreview.src = `${window.app.baseUrl}/storage/${cliente.foto}`
+                        editClientPhotoPreview.style.display = "block"
                     } else {
-                        photoPreview.src = getDefaultPhoto()
+                        editClientPhotoPreview.src = getDefaultPhoto()
+                        editClientPhotoPreview.style.display = "none"
                     }
 
-                    const modal = new bootstrap.Modal(document.getElementById("clientFormModal"))
-                    modal.show()
+                    editClientFormModal.show()
                 } catch (err) {
                     console.error("Error cargando cliente:", err)
                     Swal.fire({
@@ -535,55 +761,55 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            // RENOVAR
+            // RENOVAR MEMBRESÍA
             if (btn.classList.contains("btn-renew")) {
-                const { value: formValues } = await Swal.fire({
-                    title: "Renovar membresía",
-                    html: `
-            <select id="swal-membresia" class="swal2-input">
-              <option value="">Cargando membresías...</option>
-            </select>
-            <select id="swal-metodo" class="swal2-input">
-              <option value="efectivo">Efectivo</option>
-              <option value="transferencia">Transferencia</option>
-              <option value="tarjeta">Tarjeta</option>
-            </select>
-          `,
-                    background: "#1a1a1a",
-                    color: "#fff",
-                    focusConfirm: false,
-                    didOpen: async () => {
-                        const selectMembresia = document.getElementById("swal-membresia")
-                        try {
-                            const res = await fetch(apiUrl("admin/membresias/list/json"))
-                            const membresias = await res.json()
-                            selectMembresia.innerHTML = membresias
-                                .map(
-                                    (m) =>
-                                        `<option value="${m.id}">${m.nombre} - ${new Intl.NumberFormat("es-CO", {
-                                            style: "currency",
-                                            currency: "COP",
-                                            minimumFractionDigits: 0,
-                                        }).format(m.precio)}</option>`,
-                                )
-                                .join("")
-                        } catch (err) {
-                            selectMembresia.innerHTML = '<option value="">Error al cargar</option>'
-                        }
-                    },
-                    preConfirm: () => {
-                        return {
-                            membresia_id: document.getElementById("swal-membresia").value,
-                            metodo_pago: document.getElementById("swal-metodo").value,
-                        }
-                    },
-                })
+                try {
+                    const resMem = await fetch(apiUrl("admin/membresias/list/json"))
+                    const membresias = await resMem.json()
 
-                if (formValues && formValues.membresia_id) {
-                    try {
+                    const inputOptions = {}
+                    membresias.forEach((m) => {
+                        const duracionTexto = m.duracion
+                            ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
+                            : "Sin duración"
+
+                        inputOptions[m.id.toString()] = `${m.nombre} - ${duracionTexto} - ${new Intl.NumberFormat("es-CO", {
+                            style: "currency",
+                            currency: "COP",
+                            minimumFractionDigits: 0,
+                        }).format(m.precio)}`
+                    })
+
+                    const { value: membresia_id } = await Swal.fire({
+                        title: "Renovar membresía",
+                        input: "select",
+                        inputOptions: inputOptions,
+                        inputPlaceholder: "Selecciona una membresía",
+                        inputAttributes: {
+                            style: "color: #333; background-color: #fff; padding: 8px; border-radius: 4px;",
+                        },
+                        showCancelButton: true,
+                        confirmButtonText: "Renovar",
+                        confirmButtonColor: "#ffc107",
+                        cancelButtonColor: "#6c757d",
+                        background: "#2d2d2d",
+                        color: "#fff",
+                        iconColor: "#ffc107",
+                        didOpen: (modal) => {
+                            const selectElement = modal.querySelector("select")
+                            if (selectElement) {
+                                selectElement.style.color = "#333"
+                                selectElement.style.backgroundColor = "#fff"
+                                selectElement.style.padding = "8px"
+                                selectElement.style.borderRadius = "4px"
+                                selectElement.style.border = "1px solid #ddd"
+                            }
+                        },
+                    })
+
+                    if (membresia_id && membresia_id.toString() !== "") {
                         const formData = new FormData()
-                        formData.append("membresia_id", formValues.membresia_id)
-                        formData.append("metodo_pago", formValues.metodo_pago)
+                        formData.append("membresia_id", membresia_id.toString())
 
                         const res = await fetch(apiUrl(`admin/clientes/json/${clientId}/renovar`), {
                             method: "POST",
@@ -599,24 +825,25 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (data.success) {
                             Swal.fire({
                                 icon: "success",
-                                title: "Membresía renovada",
-                                text: "La membresía se renovó correctamente",
+                                title: "Membresía renovada correctamente",
+                                timer: 1500,
+                                showConfirmButton: false,
                                 background: "#1a1a1a",
                                 color: "#fff",
                             })
                             loadClients()
                         } else {
-                            throw new Error(data.message)
+                            throw new Error(data.message || "Error al renovar membresía")
                         }
-                    } catch (err) {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: err.message || "No se pudo renovar la membresía",
-                            background: "#1a1a1a",
-                            color: "#fff",
-                        })
                     }
+                } catch (err) {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: err.message || "No se pudo renovar la membresía",
+                        background: "#1a1a1a",
+                        color: "#fff",
+                    })
                 }
             }
 
@@ -772,7 +999,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return
             }
 
-            // Construir URL con parámetros
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
@@ -782,10 +1008,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 params.append("estado", estado)
             }
 
-            // Abrir en nueva ventana para descargar
             window.open(apiUrl(`admin/clientes/export/pdf?${params.toString()}`), "_blank")
 
-            // Cerrar modal
             const modal = bootstrap.Modal.getInstance(document.getElementById("reportsModal"))
             modal.hide()
         })
@@ -808,7 +1032,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return
             }
 
-            // Construir URL con parámetros
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
@@ -818,12 +1041,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 params.append("estado", estado)
             }
 
-            // Abrir en nueva ventana para descargar
             window.open(apiUrl(`admin/clientes/export/excel?${params.toString()}`), "_blank")
 
-            // Cerrar modal
             const modal = bootstrap.Modal.getInstance(document.getElementById("reportsModal"))
             modal.hide()
+        })
+    }
+
+    // === Evento change para membresía en modal EDITAR
+    const editMembershipSelect = document.getElementById("editClientMembershipType")
+    if (editMembershipSelect) {
+        editMembershipSelect.addEventListener("change", (e) => {
+            const option = e.target.selectedOptions[0]
+            if (!option || !option.value) {
+                document.getElementById("editMembershipStart").value = ""
+                document.getElementById("editMembershipEnd").value = ""
+                document.getElementById("editMembershipPrice").value = ""
+                return
+            }
+
+            const duracion = Number.parseInt(option.getAttribute("data-duracion")) || 0
+            const tipoDuracion = option.getAttribute("data-tipo")
+            const precio = Number.parseFloat(option.getAttribute("data-precio")) || 0
+
+            const today = new Date()
+            const yyyy = today.getFullYear()
+            const mm = String(today.getMonth() + 1).padStart(2, "0")
+            const dd = String(today.getDate()).padStart(2, "0")
+            const startDate = `${yyyy}-${mm}-${dd}`
+
+            let endDate = today
+            if (tipoDuracion === "meses") {
+                endDate = addMonthsSafe(today, duracion)
+            } else if (tipoDuracion === "dias") {
+                endDate = new Date(today)
+                endDate.setDate(today.getDate() + duracion)
+            }
+
+            const endYyyy = endDate.getFullYear()
+            const endMm = String(endDate.getMonth() + 1).padStart(2, "0")
+            const endDd = String(endDate.getDate()).padStart(2, "0")
+            const endDateStr = `${endYyyy}-${endMm}-${endDd}`
+
+            document.getElementById("editMembershipStart").value = startDate
+            document.getElementById("editMembershipEnd").value = endDateStr
+
+            document.getElementById("editMembershipPrice").value = new Intl.NumberFormat("es-CO", {
+                style: "currency",
+                currency: "COP",
+                minimumFractionDigits: 0,
+            }).format(precio)
         })
     }
 

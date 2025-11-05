@@ -12,14 +12,14 @@ class PagoDiario extends Model
     protected $table = 'pagos_diarios';
 
     protected $fillable = [
-        'nombre',
+        'nombre_cliente',
         'monto',
-        'fecha_pago',
+        'fecha',
         'metodo_pago',
     ];
 
     protected $casts = [
-        'fecha_pago' => 'date',
+        'fecha' => 'date:Y-m-d',
         'monto' => 'decimal:2',
     ];
 }
