@@ -12,7 +12,7 @@
           class="col-sm-10 col-md-8 col-lg-6 col-xl-5 mx-auto d-table">
           <div class="d-table-cell align-middle">
             <a class="sidebar-brand">
-              <img src="../img/icons/golden_gym.png" class="sidebar-logo" />
+              <img src="{{ asset('img/icons/golden_gym.png') }}" class="sidebar-logo" />
             </a>
             <div class="text-center mt-4">
               <h1 class="text-light fw-bolder h2">Bienvenido de nuevo!</h1>

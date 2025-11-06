@@ -27,95 +27,81 @@
           <div class="card-body text-light">
             <h5 class="text-warning mb-3">Nueva Venta Detallada</h5>
             <form id="ventaDetalladaForm">
-              <div class="row g-2 mb-3 align-items-end">
-                <div class="col-3 position-relative">
-                  <label class="form-label">Identificación del Cliente</label>
-                  <input
-                    type="text"
-                    id="identificacionCliente"
-                    class="form-control text-light border-0"
-                    placeholder="Cédula o documento"
-                    autocomplete="off" />
-                  <ul
-                    id="suggestionBox"
-                    class="list-group position-absolute w-100 mt-1"
-                    style="z-index: 1050; display: none;"></ul>
 
+              <div class="row g-2 mb-3 align-items-end">
+                <div class="col-12 col-md-3 position-relative">
+                  <label class="form-label">Identificación del Cliente</label>
+                  <input type="text" id="identificacionCliente" class="form-control text-light border-0" placeholder="Cédula o documento" autocomplete="off" />
+                  <ul id="suggestionBox" class="list-group position-absolute w-100 mt-1" style="z-index: 1050; display: none;"></ul>
                   <input type="hidden" id="cliente_id" name="cliente_id" />
                 </div>
 
-                <div class="col-4">
+                <div class="col-12 col-md-4">
                   <label class="form-label">Nombre del Cliente</label>
-                  <input
-                    type="text"
-                    id="nombreCliente"
-                    class="form-control text-light border-0"
-                    placeholder="Nombre del cliente"
-                    readonly />
+                  <input type="text" id="nombreCliente" class="form-control text-light border-0" placeholder="Nombre del cliente" readonly />
                 </div>
               </div>
 
-
               <div id="productosContainer">
                 <div class="row g-2 mb-3 producto-item align-items-end">
-                  <!-- Foto del producto, inicialmente oculta -->
 
-                  <div class="col-2 categoria-col">
+                  <div class="col-12 col-sm-6 col-md-2 categoria-col">
                     <label class="form-label">Categoría</label>
                     <select name="categoria[]" class="form-select text-light border-0 categoria">
                       <option value="">Seleccione</option>
                     </select>
                   </div>
 
-                  <div class="col-4 producto-col">
+                  <div class="col-12 col-sm-6 col-md-4 producto-col">
                     <label class="form-label">Producto</label>
                     <select name="producto[]" class="form-select text-light border-0 producto">
                       <option value="">Seleccione</option>
                     </select>
                   </div>
 
-                  <div class="col-2">
+                  <div class="col-12 col-sm-6 col-md-2">
                     <label class="form-label">Cantidad</label>
                     <input type="number" name="cantidad[]" class="form-control text-light border-0 cantidad" min="1" value="1" />
                   </div>
 
-                  <div class="col-2">
+                  <div class="col-12 col-sm-6 col-md-2">
                     <label class="form-label">Subtotal</label>
                     <input type="text" name="subtotal[]" class="form-control text-light border-0 subtotal" readonly value="$0" />
                   </div>
 
-                  <div class="col-1 mb-1 d-flex align-items-end">
+                  <div class="col-12 col-sm-6 col-md-1 mb-1 d-flex align-items-end">
                     <button type="button" class="btn btn-danger btn-sm eliminarProducto">X</button>
                   </div>
+
                 </div>
               </div>
-
-
 
               <button type="button" class="btn btn-secondary mb-3" id="agregarProductoBtn">Agregar Producto</button>
 
               <div class="row g-2 align-items-end mb-3">
-                <div class="col-3">
+                <div class="col-12 col-md-3">
                   <label class="form-label">Total Final</label>
                   <input type="text" id="totalVenta" class="form-control text-light border-0" readonly value="$0" />
                   <input type="hidden" id="usuarioVenta" value="{{ auth()->user()->id }}" />
                 </div>
-                <div class="col-2">
+
+                <div class="col-12 col-md-2">
                   <label class="form-label">Método de Pago</label>
                   <select id="metodoPago" class="form-select text-light border-0">
                     <option value="Efectivo">Efectivo</option>
                     <option value="Transferencia">Transferencia</option>
                   </select>
                 </div>
-                <div class="col-auto mb-1">
-                  <button type="button" class="btn btn-warning text-dark fw-bold" id="guardarVentaDetalladaBtn">
-                    Guardar Venta
-                  </button>
+
+                <div class="col-12 mb-1">
+                  <button type="button" class="btn btn-warning text-dark fw-bold" id="guardarVentaDetalladaBtn">Guardar Venta</button>
                 </div>
               </div>
+
             </form>
           </div>
         </div>
+
 
 
         <!-- TABLA DE VENTAS -->
@@ -125,7 +111,7 @@
               <span><i data-feather="list" class="me-1"></i>Últimas Ventas</span>
             </h5>
 
-            <div class="ventas-scroll">
+            <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
                 <thead class="text-warning border-secondary">
                   <tr>
@@ -172,7 +158,7 @@
               <div id="productosRapidosContainer">
                 <!-- Producto inicial -->
                 <div class="row g-2 mb-3 producto-item align-items-end">
-                  <div class="col-3 categoria-col">
+                  <div class="col-12 col-sm-6 col-md-3 categoria-col">
                     <label class="form-label">Categoría</label>
                     <select
                       name="categoria[]"
@@ -181,7 +167,7 @@
                     </select>
                   </div>
 
-                  <div class="col-4 producto-col">
+                  <div class="col-12 col-sm-6 col-md-4 producto-col">
                     <label class="form-label">Producto</label>
                     <select
                       name="producto[]"
@@ -190,7 +176,7 @@
                     </select>
                   </div>
 
-                  <div class="col-2">
+                  <div class="col-12 col-sm-6 col-md-2">
                     <label class="form-label">Precio</label>
                     <input
                       type="text"
@@ -200,7 +186,7 @@
                       value="$0" />
                   </div>
 
-                  <div class="col-2">
+                  <div class="col-12 col-sm-6 col-md-2">
                     <label class="form-label">Cantidad</label>
                     <input
                       type="number"

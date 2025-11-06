@@ -32,6 +32,10 @@ class HomeController extends Controller
     {
         return view('admin/soporte');
     }
+    public function pageBlank()
+    {
+        return view('errors/page-blank');
+    }
     public function resumen_general()
     {
         return view('admin/contabilidad/resumen-general');

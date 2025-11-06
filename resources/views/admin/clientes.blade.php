@@ -14,10 +14,9 @@
             <i data-feather="users" class="me-2 tittle-color"></i>Clientes
           </h1>
 
-          <div class="d-flex gap-2">
-            <div class="input-group input-group-sm">
-              <span
-                class="input-group-text bg-secondary border-0 text-muted">
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <div class="input-group input-group-sm flex-md-grow-0 w-100 w-md-auto" style="max-width: 170px;">
+              <span class="input-group-text bg-secondary border-0 text-muted">
                 <i data-feather="search" class="feather-sm"></i>
               </span>
               <input
@@ -26,7 +25,6 @@
                 placeholder="Buscar cliente por nombre, correo o identificación..." />
             </div>
 
-            <!-- Agregando botón de reportes -->
             <button
               type="button"
               class="btn btn-success btn-sm"
@@ -51,6 +49,8 @@
               <i data-feather="user-plus" class="me-1"></i> Nuevo cliente
             </button>
           </div>
+
+
         </div>
 
         <!-- Reorganizando layout: filtros arriba, tabla abajo -->

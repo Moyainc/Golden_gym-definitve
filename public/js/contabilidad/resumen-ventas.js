@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const mesData = Object.values(data.ventasPorMes).map(Number);
 
-
             // 🥧 Gráfica Categoría
             if (chartCategoria) chartCategoria.destroy();
             chartCategoria = new Chart(ctxCategoria, {
@@ -101,6 +100,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     ],
                 },
                 options: {
+                    responsive: true, // 🔹 hace que se ajuste al contenedor
+                    maintainAspectRatio: false, // 🔹 ocupa todo el alto de la card
                     plugins: {
                         tooltip: {
                             callbacks: {
@@ -130,6 +131,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     ],
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔹 importante para llenar la card
                     indexAxis: "y",
                     plugins: {
                         tooltip: {
@@ -176,6 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false, // 🔹 ocupa todo el alto de la card
                     plugins: {
                         tooltip: {
                             callbacks: {

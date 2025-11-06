@@ -106,11 +106,13 @@
 
 
 
-                    <div class="col-md-4 d-flex flex-column justify-content-end">
-                      <button type="button" class="btn btn-outline-warning mb-1" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <div class="col-md-4 d-flex align-items-end mb-1">
+                      <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
                         <i data-feather="key" class="me-1"></i> Cambiar contraseña
                       </button>
                     </div>
+
+
                   </div>
 
                   <div class="mt-2">

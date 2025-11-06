@@ -39,7 +39,7 @@
             {{-- Navbar --}}
             @include('layouts.navbar')
             {{-- Contenido dinámico --}}
-            <main class="p-4">
+            <main>
                 @yield('content')
             </main>
             {{-- Footer --}}

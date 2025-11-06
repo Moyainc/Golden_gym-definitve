@@ -241,109 +241,110 @@
                 </h5>
                 <small class="text-muted">Resumen reciente</small>
               </div>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle my-0 text-light">
+                  <thead class="text-warning">
+                    <tr>
+                      <th>Tipo</th>
+                      <th>Cliente</th>
+                      <th>Detalle</th>
+                      <th>Monto</th>
+                      <th>Fecha</th>
+                      <th class="text-center">Estado</th>
+                    </tr>
+                  </thead>
 
-              <table class="table table-hover align-middle my-0 text-light">
-                <thead class="text-warning">
-                  <tr>
-                    <th>Tipo</th>
-                    <th>Cliente</th>
-                    <th>Detalle</th>
-                    <th>Monto</th>
-                    <th>Fecha</th>
-                    <th class="text-center">Estado</th>
-                  </tr>
-                </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <i
+                          data-feather="user-check"
+                          class="me-2 text-success"></i>
+                        Membresía
+                      </td>
+                      <td>Andrés Gómez</td>
+                      <td>
+                        <span class="badge bg-secondary">Mensual</span>
+                      </td>
+                      <td>$120.000</td>
+                      <td>12 Oct 2025</td>
+                      <td class="text-center">
+                        <span class="badge bg-success">Pagado</span>
+                      </td>
+                    </tr>
 
-                <tbody>
-                  <tr>
-                    <td>
-                      <i
-                        data-feather="user-check"
-                        class="me-2 text-success"></i>
-                      Membresía
-                    </td>
-                    <td>Andrés Gómez</td>
-                    <td>
-                      <span class="badge bg-secondary">Mensual</span>
-                    </td>
-                    <td>$120.000</td>
-                    <td>12 Oct 2025</td>
-                    <td class="text-center">
-                      <span class="badge bg-success">Pagado</span>
-                    </td>
-                  </tr>
+                    <tr>
+                      <td>
+                        <i
+                          data-feather="shopping-bag"
+                          class="me-2 text-primary"></i>
+                        Producto
+                      </td>
+                      <td>Laura Torres</td>
+                      <td>
+                        <span class="badge bg-info text-dark">Proteína 2lb</span>
+                      </td>
+                      <td>$45.000</td>
+                      <td>11 Oct 2025</td>
+                      <td class="text-center">
+                        <span class="badge bg-warning text-dark">Pendiente</span>
+                      </td>
+                    </tr>
 
-                  <tr>
-                    <td>
-                      <i
-                        data-feather="shopping-bag"
-                        class="me-2 text-primary"></i>
-                      Producto
-                    </td>
-                    <td>Laura Torres</td>
-                    <td>
-                      <span class="badge bg-info text-dark">Proteína 2lb</span>
-                    </td>
-                    <td>$45.000</td>
-                    <td>11 Oct 2025</td>
-                    <td class="text-center">
-                      <span class="badge bg-warning text-dark">Pendiente</span>
-                    </td>
-                  </tr>
+                    <tr>
+                      <td>
+                        <i
+                          data-feather="dollar-sign"
+                          class="me-2 text-info"></i>
+                        Pago Diario
+                      </td>
+                      <td>Juan Pérez</td>
+                      <td>
+                        <span class="badge bg-light text-dark">Ingreso puntual</span>
+                      </td>
+                      <td>$10.000</td>
+                      <td>11 Oct 2025</td>
+                      <td class="text-center">
+                        <span class="badge bg-success">Pagado</span>
+                      </td>
+                    </tr>
 
-                  <tr>
-                    <td>
-                      <i
-                        data-feather="dollar-sign"
-                        class="me-2 text-info"></i>
-                      Pago Diario
-                    </td>
-                    <td>Juan Pérez</td>
-                    <td>
-                      <span class="badge bg-light text-dark">Ingreso puntual</span>
-                    </td>
-                    <td>$10.000</td>
-                    <td>11 Oct 2025</td>
-                    <td class="text-center">
-                      <span class="badge bg-success">Pagado</span>
-                    </td>
-                  </tr>
+                    <tr>
+                      <td>
+                        <i data-feather="user-x" class="me-2 text-danger"></i>
+                        Membresía
+                      </td>
+                      <td>María López</td>
+                      <td>
+                        <span class="badge bg-danger">Anual</span>
+                      </td>
+                      <td>$1.200.000</td>
+                      <td>10 Oct 2025</td>
+                      <td class="text-center">
+                        <span class="badge bg-danger">Vencida</span>
+                      </td>
+                    </tr>
 
-                  <tr>
-                    <td>
-                      <i data-feather="user-x" class="me-2 text-danger"></i>
-                      Membresía
-                    </td>
-                    <td>María López</td>
-                    <td>
-                      <span class="badge bg-danger">Anual</span>
-                    </td>
-                    <td>$1.200.000</td>
-                    <td>10 Oct 2025</td>
-                    <td class="text-center">
-                      <span class="badge bg-danger">Vencida</span>
-                    </td>
-                  </tr>
-
-                  <tr>
-                    <td>
-                      <i
-                        data-feather="shopping-bag"
-                        class="me-2 text-warning"></i>
-                      Producto
-                    </td>
-                    <td>Carlos Díaz</td>
-                    <td>
-                      <span class="badge bg-secondary">Guantes Gym</span>
-                    </td>
-                    <td>$30.000</td>
-                    <td>09 Oct 2025</td>
-                    <td class="text-center">
-                      <span class="badge bg-success">Pagado</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                    <tr>
+                      <td>
+                        <i
+                          data-feather="shopping-bag"
+                          class="me-2 text-warning"></i>
+                        Producto
+                      </td>
+                      <td>Carlos Díaz</td>
+                      <td>
+                        <span class="badge bg-secondary">Guantes Gym</span>
+                      </td>
+                      <td>$30.000</td>
+                      <td>09 Oct 2025</td>
+                      <td class="text-center">
+                        <span class="badge bg-success">Pagado</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>

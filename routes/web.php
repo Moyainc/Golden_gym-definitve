@@ -153,12 +153,6 @@ Route::middleware(['auth'])->group(function () {
 
 
   //Logout (todos los roles)
+  Route::get('errors/page-blank', [HomeController::class, 'pageBlank'])->name('errors.page-blank');
   Route::post('/logout', [LoginController::class, 'logoutUsuario'])->name('usuario.logout');
-
-  Route::get('/logout', function () {
-    \Illuminate\Support\Facades\Auth::logout();
-    session()->invalidate();
-    session()->regenerateToken();
-    return redirect('/sign-in');
-  });
 });

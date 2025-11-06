@@ -98,7 +98,7 @@
                   <i data-feather="pie-chart" class="me-1"></i>Ventas por Categoría
                 </h5>
               </div>
-              <div class="card-body" style="height: 350px">
+              <div class="card-body" style="height: 100%; min-height: 350px;">
                 <canvas id="ventasCategoriaChart"></canvas>
               </div>
             </div>
@@ -111,7 +111,7 @@
                   <i data-feather="trending-up" class="me-1"></i>Ventas por Producto
                 </h5>
               </div>
-              <div class="card-body" style="height: 350px">
+              <div class="card-body" style="height: 100%; min-height: 350px;">
                 <canvas id="ventasProductosChart"></canvas>
               </div>
             </div>
@@ -124,7 +124,7 @@
               <i data-feather="bar-chart-2" class="me-1"></i>Total de Ventas por Mes
             </h5>
           </div>
-          <div class="card-body" style="height: 400px">
+          <div class="card-body" style="height: 100%; min-height: 350px;">
             <canvas id="ventasTotalesChart"></canvas>
           </div>
         </div>
