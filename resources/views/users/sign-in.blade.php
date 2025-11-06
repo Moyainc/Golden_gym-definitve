@@ -45,17 +45,7 @@
                         required />
                     </div>
 
-                    <div class="form-check align-items-center mb-3">
-                      <input
-                        id="rememberMe"
-                        type="checkbox"
-                        class="form-check-input text-black"
-                        name="remember"
-                        checked />
-                      <label class="form-check-label text-small" for="rememberMe">Recordar</label>
-                    </div>
-
-                    <div class="d-grid gap-2 mt-3">
+                    <div class="d-grid gap-2 mt-4">
                       <button type="submit" class="btn btn-md btn-primary text-black">Iniciar sesión</button>
                     </div>
                   </form>
@@ -64,8 +54,8 @@
               </div>
             </div>
             <div class="text-center mb-3">
-              No tienes una cuenta?
-              <a class="tittle-color" href="">Registrar</a>
+              Volver a
+              <a class="tittle-color" href="">Inicio</a>
             </div>
           </div>
         </div>

@@ -40,8 +40,9 @@ Route::middleware(['auth'])->group(function () {
 
   Route::middleware(['checkrole:Administrador'])->group(function () {
 
+    //Usuarios
 
-    //Usuarioss
+    Route::get('/admin/soporte', [HomeController::class, 'soporte'])->name('admin.soporte');
     Route::get('/admin/usuarios', [HomeController::class, 'usuarios'])->name('admin.usuarios');
     Route::post('/admin/usuarios', [HomeController::class, 'store'])->name('admin.usuarios.store');
     Route::get('/admin/usuarios/{id}/edit', [HomeController::class, 'editUsuario'])->name('admin.usuarios.edit');
@@ -62,7 +63,6 @@ Route::middleware(['auth'])->group(function () {
 
 
     //contabilidad y pagos
-    Route::get('admin/contabilidad', [HomeController::class, 'contabilidad'])->name('admin.contabilidad');
     Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
     Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
     Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
@@ -133,7 +133,6 @@ Route::middleware(['auth'])->group(function () {
 
   Route::middleware(['checkrole:Administrador,Contador'])->group(function () {
     // Acceso solo a contabilidad / resumen
-    Route::get('admin/contabilidad', [HomeController::class, 'contabilidad'])->name('admin.contabilidad');
     Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
     Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
     Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
