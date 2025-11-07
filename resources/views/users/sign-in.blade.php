@@ -1,11 +1,41 @@
-@extends('layouts.auth')
-@section('title', 'Iniciar Sesion - Golden Gym')
+<!DOCTYPE html>
+<html lang="es">
 
-@section('content')
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fi
+    <meta
+        name=" description
+    content="Responsive Admin &amp; Dashboard Template based on Bootstrap 5" />
+  <meta name="author" content="Golden Gym" />
+  <meta
+    name="keywords"
+    content="Golden Gym, gimnasio, administración, panel, membresías, clientes, ventas, dashboard, Bootstrap 5, AdminKit" />
+  <meta name="description" content="Panel de administración de Golden Gym. Gestiona clientes, membresías, ventas y métricas del gimnasio de manera rápida y segura." />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link rel="shortcut icon" href="../img/icons/golden_gym.png" />
+
+  <title>@yield('title', 'Golden Gym')</title>
+
+  <link href="{{ asset('css/app.css') }}" rel="stylesheet" />
+  <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+
+</head>
 
 <body>
 
-  <main class="d-flex align-items-center py-3">
+  <main class="d-flex align-items-start justify-content-center min-vh-100 pt-6">
+
+
     <div class="container d-flex flex-column">
       <div class="row">
         <div
@@ -48,8 +78,8 @@
                     <div class="d-grid gap-2 mt-4">
                       <button type="submit" class="btn btn-md btn-primary text-black">Iniciar sesión</button>
                     </div>
+                    <div id="loginAttempts" class="text-warning small mt-2"></div>
                   </form>
-
                 </div>
               </div>
             </div>
@@ -57,6 +87,10 @@
               Volver a
               <a class="tittle-color" href="">Inicio</a>
             </div>
+            <div class="text-center mt-4 text-secondary small">
+              Golden Gym © 2025. Todos los derechos reservados.
+            </div>
+
           </div>
         </div>
       </div>
@@ -68,4 +102,4 @@
   <script src="{{ asset('js/inicio.js') }}"></script>
 </body>
 
-@endsection
+</html>

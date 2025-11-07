@@ -4,6 +4,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const initializePage = () => {
     // -----------------------------
+    // Configuración base SweetAlert2
+    // -----------------------------
+    const swalConfig = {
+        background: "#1a1a1a",
+        color: "#fff",
+        confirmButtonColor: "#fcd52b",
+        confirmButtonText: "Aceptar",
+        customClass: {
+            confirmButton: "text-black font-bold",
+        },
+    };
+
+    // -----------------------------
     // Utilidades y API
     // -----------------------------
     const apiUrl = (path) => {
@@ -31,11 +44,6 @@ const initializePage = () => {
     const newCategoryModalEl = document.getElementById("newCategoryModal");
     const newCategoryModal = new bootstrap.Modal(newCategoryModalEl);
 
-    const deleteCategoryModalEl = document.getElementById(
-        "deleteCategoryModal"
-    );
-    const deleteCategoryModal = new bootstrap.Modal(deleteCategoryModalEl);
-
     // -----------------------------
     // Formularios
     // -----------------------------
@@ -47,13 +55,11 @@ const initializePage = () => {
     // -----------------------------
     // LIMPIAR MODALES AL ABRIR NUEVO
     // -----------------------------
-    // Modal Categoría
     newCategoryModalEl.addEventListener("show.bs.modal", (event) => {
         const button = event.relatedTarget;
         const modalTitle = newCategoryModalEl.querySelector(".modal-title");
 
         if (button && button.dataset.mode === "edit") {
-            // 👉 Modo editar
             editingCategoryId = button.dataset.id;
             document.getElementById("categoryName").value =
                 button.dataset.nombre;
@@ -63,7 +69,6 @@ const initializePage = () => {
             saveCategoryBtn.innerHTML =
                 '<i data-feather="edit" class="me-1"></i>Actualizar';
         } else {
-            // 👉 Modo crear (nuevo)
             editingCategoryId = null;
             newCategoryForm.reset();
             modalTitle.textContent = "Nueva Categoría";
@@ -74,9 +79,8 @@ const initializePage = () => {
         if (typeof feather !== "undefined") feather.replace();
     });
 
-    // ✅ Cuando se cierra el modal (en cualquier caso)
     newCategoryModalEl.addEventListener("hidden.bs.modal", () => {
-        editingCategoryId = null; // Reinicia el estado
+        editingCategoryId = null;
         newCategoryForm.reset();
         const modalTitle = newCategoryModalEl.querySelector(".modal-title");
         modalTitle.textContent = "Nueva Categoría";
@@ -84,7 +88,6 @@ const initializePage = () => {
             '<i data-feather="plus" class="me-1"></i>Guardar';
     });
 
-    // Modal Producto
     productModalEl.addEventListener("show.bs.modal", async (event) => {
         await loadCategoriasForProducts();
         const button = event.relatedTarget;
@@ -141,9 +144,7 @@ const initializePage = () => {
                     </button>
                     <button class="btn btn-sm btn-outline-danger delete-category-btn"
                         data-id="${cat.id}"
-                        data-nombre="${cat.nombre}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteCategoryModal">
+                        data-nombre="${cat.nombre}">
                         <i data-feather="trash-2"></i>
                     </button>
                 </td>`;
@@ -160,7 +161,12 @@ const initializePage = () => {
             renderCategories(data);
         } catch (err) {
             console.error(err);
-            Swal.fire("Error", "No se pudieron cargar las categorías", "error");
+            Swal.fire({
+                ...swalConfig,
+                icon: "error",
+                title: "Error",
+                text: "No se pudieron cargar las categorías",
+            });
         }
     };
 
@@ -181,167 +187,129 @@ const initializePage = () => {
             });
         });
 
+        // --------- ELIMINAR CATEGORÍA ---------
         document.querySelectorAll(".delete-category-btn").forEach((btn) => {
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", async () => {
                 categoryIdToDelete = btn.dataset.id;
-                const modalBody = document.querySelector(
-                    "#deleteCategoryModal .modal-body"
-                );
-                modalBody.textContent = `¿Deseas eliminar la categoría "${btn.dataset.nombre}"?`;
+                const nombre = btn.dataset.nombre;
 
-                // Escuchamos el botón de confirmar eliminación dentro del modal
-                const confirmDeleteBtn = document.querySelector(
-                    "#deleteCategoryModal .btn-danger"
-                );
+                const result = await Swal.fire({
+                    ...swalConfig,
+                    icon: "warning",
+                    title: "Eliminar Categoría",
+                    text: `¿Deseas eliminar la categoría "${nombre}"?`,
+                    showCancelButton: true,
+                    cancelButtonText: "Cancelar",
+                    confirmButtonText: "Sí, eliminar",
+                });
 
-                // Remover listeners previos para evitar duplicados
-                confirmDeleteBtn.replaceWith(confirmDeleteBtn.cloneNode(true));
-
-                document
-                    .querySelector("#deleteCategoryModal .btn-danger")
-                    .addEventListener("click", async () => {
-                        if (!categoryIdToDelete) return;
-
-                        const csrfToken = document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content");
-
-                        try {
-                            const res = await fetch(
-                                apiUrl(
-                                    `/admin/categorias/${categoryIdToDelete}`
-                                ),
-                                {
-                                    method: "DELETE",
-                                    headers: { "X-CSRF-TOKEN": csrfToken },
-                                }
-                            );
-
-                            const data = await res.json();
-
-                            if (res.ok) {
-                                Swal.fire({
-                                    icon: "success",
-                                    title: "Eliminado",
-                                    text:
-                                        data.message ||
-                                        "Categoría eliminada con éxito",
-                                    confirmButtonColor: "#ffc107",
-                                }).then(() => {
-                                    // ✅ Cierra el modal nativamente
-                                    document
-                                        .querySelector(
-                                            '#deleteCategoryModal [data-bs-dismiss="modal"]'
-                                        )
-                                        .click();
-
-                                    // ✅ Recargar tabla
-                                    loadCategories();
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Error",
-                                    text:
-                                        data.message ||
-                                        "No se pudo eliminar la categoría.",
-                                });
+                if (result.isConfirmed && categoryIdToDelete) {
+                    const csrfToken = document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content");
+                    try {
+                        const res = await fetch(
+                            apiUrl(`/admin/categorias/${categoryIdToDelete}`),
+                            {
+                                method: "DELETE",
+                                headers: { "X-CSRF-TOKEN": csrfToken },
                             }
-                        } catch (err) {
-                            console.error(err);
+                        );
+                        const data = await res.json();
+                        if (res.ok) {
                             Swal.fire({
+                                ...swalConfig,
+                                icon: "success",
+                                title: "Eliminado",
+                                text:
+                                    data.message ||
+                                    "Categoría eliminada con éxito",
+                            });
+                            loadCategories();
+                        } else {
+                            Swal.fire({
+                                ...swalConfig,
                                 icon: "error",
                                 title: "Error",
-                                text: "Error al conectar con el servidor.",
+                                text:
+                                    data.message ||
+                                    "No se pudo eliminar la categoría",
                             });
                         }
-                    });
+                    } catch (err) {
+                        console.error(err);
+                        Swal.fire({
+                            ...swalConfig,
+                            icon: "error",
+                            title: "Error",
+                            text: "Error al conectar con el servidor.",
+                        });
+                    }
+                }
             });
         });
     };
 
+    // -----------------------------
+    // GUARDAR CATEGORÍA
+    // -----------------------------
     saveCategoryBtn.addEventListener("click", async (e) => {
         e.preventDefault();
-        const formData = new FormData(newCategoryForm);
-        formData.set(
-            "nombre",
-            document.getElementById("categoryName").value.trim()
-        );
-        formData.set(
-            "descripcion",
-            document.getElementById("categoryDescription").value.trim()
-        );
+
+        const nombre = document.getElementById("categoryName").value.trim();
+        const descripcion = document
+            .getElementById("categoryDescription")
+            .value.trim();
+        if (!nombre) return;
+
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
+        const url = editingCategoryId
+            ? apiUrl(`/admin/categorias/${editingCategoryId}`)
+            : apiUrl("/admin/categorias");
+        const method = editingCategoryId ? "PUT" : "POST";
 
         try {
-            const csrfToken = document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute("content");
-            let url = apiUrl("/admin/categorias");
-            let method = "POST";
-
-            if (editingCategoryId) {
-                url = apiUrl(`/admin/categorias/${editingCategoryId}`);
-                method = "POST";
-                formData.append("_method", "PUT");
-            }
-
             const res = await fetch(url, {
                 method,
-                headers: { "X-CSRF-TOKEN": csrfToken },
-                body: formData,
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ nombre, descripcion }),
             });
 
-            const data = await res.json().catch(() => ({}));
+            const data = await res.json();
 
             if (res.ok) {
                 Swal.fire({
+                    ...swalConfig,
                     icon: "success",
-                    title: "¡Éxito!",
-                    text: data.message || "Operación exitosa",
-                    confirmButtonColor: "#ffc107",
-                }).then(() => {
-                    // ✅ Cierra el modal con click nativo
-                    document
-                        .querySelector(
-                            '#newCategoryModal [data-bs-dismiss="modal"]'
-                        )
-                        .click();
-                    loadCategories();
+                    title: editingCategoryId ? "Actualizado" : "Creado",
+                    text: data.message,
                 });
+                loadCategories(); // recarga la tabla sin tocar el modal
             } else {
                 Swal.fire({
+                    ...swalConfig,
                     icon: "error",
                     title: "Error",
-                    text: data.message || "No se pudo guardar la categoría",
+                    text:
+                        data.errors?.nombre?.[0] ||
+                        data.message ||
+                        "No se pudo guardar la categoría",
                 });
             }
         } catch (err) {
             console.error(err);
             Swal.fire({
+                ...swalConfig,
                 icon: "error",
                 title: "Error",
-                text: "Error al conectar con el servidor.",
+                text: "Error al conectar con el servidor",
             });
         }
-    });
-
-    newCategoryModalEl.addEventListener("show.bs.modal", () => {
-        // Si no se está editando, limpia todo
-        if (!editingCategoryId) {
-            newCategoryForm.reset();
-            document.getElementById("categoryModalLabel").textContent =
-                "Nueva Categoría";
-            saveCategoryBtn.textContent = "Guardar";
-        }
-    });
-
-    // Cuando se cierra el modal (en cualquier caso)
-    newCategoryModalEl.addEventListener("hidden.bs.modal", () => {
-        editingCategoryId = null; // 🔥 Reinicia el estado de edición
-        newCategoryForm.reset(); // Limpia el formulario
-        document.getElementById("categoryModalLabel").textContent =
-            "Nueva Categoría";
-        saveCategoryBtn.textContent = "Guardar";
     });
 
     // -----------------------------
@@ -398,8 +366,7 @@ const initializePage = () => {
                     </button>
                     <button class="btn btn-sm btn-outline-danger delete-product-btn"
                         data-id="${prod.id}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteProductModal">
+                        data-nombre="${prod.nombre}">
                         <i data-feather="trash-2"></i>
                     </button>
                 </td>`;
@@ -409,6 +376,8 @@ const initializePage = () => {
         totalProductsEl.textContent = productos.length;
         totalStockEl.textContent = totalStock;
         if (typeof feather !== "undefined") feather.replace();
+
+        attachProductEvents();
     };
 
     const loadProducts = async () => {
@@ -420,12 +389,83 @@ const initializePage = () => {
             renderProducts(allProducts);
         } catch (err) {
             console.error(err);
-            Swal.fire("Error", "No se pudieron cargar los productos", "error");
+            Swal.fire({
+                ...swalConfig,
+                icon: "error",
+                title: "Error",
+                text: "No se pudieron cargar los productos",
+            });
         }
     };
 
     // -----------------------------
-    // FILTROS Y GUARDADO
+    // ELIMINAR PRODUCTOS
+    // -----------------------------
+    const attachProductEvents = () => {
+        document.querySelectorAll(".delete-product-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                productIdToDelete = btn.dataset.id;
+                const nombre = btn.dataset.nombre;
+
+                const result = await Swal.fire({
+                    ...swalConfig,
+                    icon: "warning",
+                    title: "Eliminar Producto",
+                    text: `¿Deseas eliminar el producto "${nombre}"?`,
+                    showCancelButton: true,
+                    cancelButtonText: "Cancelar",
+                    confirmButtonText: "Sí, eliminar",
+                });
+
+                if (result.isConfirmed && productIdToDelete) {
+                    const csrfToken = document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content");
+                    try {
+                        const res = await fetch(
+                            apiUrl(`/admin/productos/${productIdToDelete}`),
+                            {
+                                method: "DELETE",
+                                headers: { "X-CSRF-TOKEN": csrfToken },
+                            }
+                        );
+                        const data = await res.json();
+                        if (res.ok) {
+                            Swal.fire({
+                                ...swalConfig,
+                                icon: "success",
+                                title: "Eliminado",
+                                text:
+                                    data.message ||
+                                    "Producto eliminado con éxito",
+                            });
+                            loadProducts();
+                        } else {
+                            Swal.fire({
+                                ...swalConfig,
+                                icon: "error",
+                                title: "Error",
+                                text:
+                                    data.message ||
+                                    "No se pudo eliminar el producto",
+                            });
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        Swal.fire({
+                            ...swalConfig,
+                            icon: "error",
+                            title: "Error",
+                            text: "Error al conectar con el servidor.",
+                        });
+                    }
+                }
+            });
+        });
+    };
+
+    // -----------------------------
+    // FILTROS
     // -----------------------------
     const filterProducts = () => {
         const category = filterCategory.value;
@@ -489,90 +529,48 @@ const initializePage = () => {
 
             if (res.ok) {
                 Swal.fire({
+                    ...swalConfig,
                     icon: "success",
                     title: editingProductId ? "Actualizado" : "Creado",
                     text: data.message,
-                    confirmButtonColor: "#ffc107",
-                }).then(() => {
-                    document
-                        .querySelector(
-                            '#productModal [data-bs-dismiss="modal"]'
-                        )
-                        .click();
-                    loadProducts();
                 });
+                document
+                    .querySelector('#productModal [data-bs-dismiss="modal"]')
+                    .click();
+                loadProducts();
             } else {
-                Swal.fire(
-                    "Error",
-                    data.message || "No se pudo guardar el producto",
-                    "error"
-                );
+                // -----------------------------
+                // Manejo robusto de errores
+                // -----------------------------
+                let mensaje = data.message || "No se pudo guardar el producto";
+
+                // Validación de nombre duplicado
+                if (data.errors?.nombre?.[0]) {
+                    if (
+                        data.errors.nombre[0].toLowerCase().includes("unique")
+                    ) {
+                        mensaje =
+                            "Ya existe un producto con ese nombre. Por favor, elige otro.";
+                    } else {
+                        mensaje = data.errors.nombre[0];
+                    }
+                }
+
+                Swal.fire({
+                    ...swalConfig,
+                    icon: "error",
+                    title: "Error",
+                    text: mensaje,
+                });
             }
         } catch (err) {
             console.error(err);
-            Swal.fire("Error", "Error al conectar con el servidor", "error");
-        }
-    });
-
-    // -----------------------------
-    // ELIMINAR PRODUCTOS
-    // -----------------------------
-    document.body.addEventListener("click", async (e) => {
-        if (e.target.closest(".delete-product-btn")) {
-            const btn = e.target.closest(".delete-product-btn");
-            productIdToDelete = btn.dataset.id;
-        }
-
-        if (e.target.matches("#deleteProductModal .btn-danger")) {
-            if (!productIdToDelete) return;
-
-            const csrfToken = document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute("content");
-
-            try {
-                const res = await fetch(
-                    apiUrl(`/admin/productos/${productIdToDelete}`),
-                    {
-                        method: "DELETE",
-                        headers: { "X-CSRF-TOKEN": csrfToken },
-                    }
-                );
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Eliminado",
-                        text: data.message || "Producto eliminado con éxito",
-                        confirmButtonColor: "#ffc107",
-                    }).then(() => {
-                        // ✅ Cierra el modal correcto (deleteProductModal)
-                        document
-                            .querySelector(
-                                '#deleteProductModal [data-bs-dismiss="modal"]'
-                            )
-                            .click();
-
-                        // ✅ Recarga productos
-                        loadProducts();
-                    });
-                } else {
-                    Swal.fire(
-                        "Error",
-                        data.message || "No se pudo eliminar",
-                        "error"
-                    );
-                }
-            } catch (err) {
-                console.error(err);
-                Swal.fire(
-                    "Error",
-                    "Error al conectar con el servidor",
-                    "error"
-                );
-            }
+            Swal.fire({
+                ...swalConfig,
+                icon: "error",
+                title: "Error",
+                text: "Error al conectar con el servidor",
+            });
         }
     });
 

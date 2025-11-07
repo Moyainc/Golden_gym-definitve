@@ -1,4 +1,36 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // 🧩 Configuración global de SweetAlert2
+    const SwalGlobal = Swal.mixin({
+        background: "#1a1a1a",
+        color: "#fff",
+        confirmButtonColor: "#fcd52b",
+        confirmButtonText: "Aceptar",
+        customClass: {
+            confirmButton: "text-black font-bold",
+        },
+    });
+
+    const showAlert = (type, message, title = null) => {
+        const icons = {
+            error: "error",
+            warning: "warning",
+            success: "success",
+            info: "info",
+        };
+        const colors = {
+            error: "#e63946",
+            warning: "#f8b400",
+            success: "#fcd52b",
+            info: "#4db6ac",
+        };
+        SwalGlobal.fire({
+            icon: icons[type] || "info",
+            title: title || (type === "success" ? "Éxito" : "Error"),
+            text: message,
+            confirmButtonColor: colors[type] || "#fcd52b",
+        });
+    };
+
     const identificacionInput = document.getElementById(
         "identificacionCliente"
     );
@@ -187,11 +219,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const clienteId = clienteIdInput.value || null;
 
         if (!clienteId) {
-            Swal.fire({
-                icon: "warning",
-                title: "Cliente faltante",
-                text: "Seleccione un cliente válido antes de registrar la venta.",
-            });
+            showAlert(
+                "warning",
+                "Seleccione un cliente válido antes de registrar la venta.",
+                "Cliente faltante"
+            );
+
             return;
         }
 
@@ -228,32 +261,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 🚫 Si hay campos vacíos o incompletos, no deja enviar
         if (camposIncompletos) {
-            Swal.fire({
-                icon: "warning",
-                title: "Campos incompletos",
-                text: "Asegúrate de que todos los productos tengan categoría, producto y cantidad válida antes de registrar la venta.",
-            });
+            showAlert(
+                "warning",
+                "Asegúrate de que todos los productos tengan categoría, producto y cantidad válida antes de registrar la venta.",
+                "Campos incompletos"
+            );
+
             return;
         }
 
         if (productos.length === 0) {
-            Swal.fire({
-                icon: "warning",
-                title: "Productos inválidos",
-                text: "Agrega al menos un producto válido con cantidad mayor a 0.",
-            });
+            showAlert(
+                "warning",
+                "Agrega al menos un producto válido con cantidad mayor a 0.",
+                "Productos inválidos"
+            );
+
             return;
         }
 
         const total = recalcularTotal();
 
-        const result = await Swal.fire({
+        const result = await SwalGlobal.fire({
             title: "Confirmar venta",
             html: `Total: <strong>${totalInput.value}</strong>`,
             icon: "question",
             showCancelButton: true,
             confirmButtonText: "Registrar",
             cancelButtonText: "Cancelar",
+            confirmButtonColor: "#fcd52b",
+            cancelButtonColor: "#555",
+            customClass: {
+                confirmButton: "text-black font-bold",
+                cancelButton: "text-white font-semibold",
+            },
         });
 
         if (!result.isConfirmed) return;
@@ -284,11 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
 
             if (res.ok && data.success) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Venta registrada",
-                    text: data.message,
-                });
+                showAlert("success", data.message, "Venta registrada");
 
                 // ✅ Resetear formulario tras enviar exitosamente
                 identificacionInput.value = "";
@@ -316,19 +353,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Volver a cargar categorías
                 cargarCategorias();
             } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: data.message || "Error al registrar la venta.",
-                });
+                showAlert(
+                    "error",
+                    data.message || "Error al registrar la venta.",
+                    "Error"
+                );
             }
         } catch (err) {
             console.error(err);
-            Swal.fire({
-                icon: "error",
-                title: "Error de conexión",
-                text: "No se pudo registrar la venta. Intenta nuevamente.",
-            });
+            showAlert(
+                "error",
+                "No se pudo registrar la venta. Intenta nuevamente.",
+                "Error de conexión"
+            );
         }
     });
 
@@ -410,12 +447,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // 🔸 Evitar agregar más del máximo permitido
             if (totalProductos >= MAX_PRODUCTOS_RAPIDA) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Límite alcanzado",
-                    text: `No puedes agregar más de ${MAX_PRODUCTOS_RAPIDA} productos.`,
-                    confirmButtonColor: "#f0ad4e",
-                });
+                showAlert(
+                    "warning",
+                    `No puedes agregar más de ${MAX_PRODUCTOS_RAPIDA} productos.`,
+                    "Límite alcanzado"
+                );
+
                 return;
             }
 
@@ -468,12 +505,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     ).length > 1;
 
                 if (duplicado) {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Producto repetido",
-                        text: "Este producto ya fue agregado. Por favor elige otro.",
-                        confirmButtonColor: "#f0ad4e",
-                    });
+                    showAlert(
+                        "warning",
+                        "Este producto ya fue agregado. Por favor elige otro.",
+                        "Producto repetido"
+                    );
+
                     e.target.value = ""; // limpiar selección duplicada
                     item.querySelector(".precioRapida").value = "$0";
                     calcularTotalRapida();
@@ -504,12 +541,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     e.target.closest(".producto-item").remove();
                     calcularTotalRapida();
                 } else {
-                    Swal.fire({
-                        icon: "info",
-                        title: "Atención",
-                        text: "Debe quedar al menos un producto.",
-                        confirmButtonColor: "#5bc0de",
-                    });
+                    showAlert(
+                        "info",
+                        "Debe quedar al menos un producto.",
+                        "Atención"
+                    );
                 }
             }
         });
@@ -558,11 +594,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const data = await res.json();
 
                 if (res.ok && data.success) {
-                    Swal.fire(
-                        "✅ Venta rápida registrada",
+                    showAlert(
+                        "success",
                         data.message,
-                        "success"
+                        "Venta rápida registrada"
                     );
+
                     form.reset();
                     calcularTotalRapida();
                     const modal = bootstrap.Modal.getInstance(
@@ -570,18 +607,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     );
                     if (btnClose) btnClose.click();
                 } else {
-                    Swal.fire(
-                        "Error",
+                    showAlert(
+                        "error",
                         data.message || "Error al registrar venta rápida.",
-                        "error"
+                        "Error"
                     );
                 }
             } catch (error) {
                 console.error("Error al registrar venta rápida:", error);
-                Swal.fire(
-                    "Error",
+                showAlert(
+                    "error",
                     "No se pudo registrar la venta rápida.",
-                    "error"
+                    "Error"
                 );
             }
         });
@@ -640,7 +677,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 btn.className = "btn btn-warning mt-3 fw-bold";
                 btn.textContent = "Ver más ventas";
                 btn.addEventListener("click", () => {
-                    window.location.href = apiUrl("/admin/ventas/administrador");
+                    window.location.href = apiUrl(
+                        "/admin/ventas/administrador"
+                    );
                 });
                 container.appendChild(btn);
             }

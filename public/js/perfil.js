@@ -1,4 +1,40 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // ---------------------- CONFIGURACIÓN GLOBAL SWEETALERT ----------------------
+    const SwalGlobal = Swal.mixin({
+        background: "#1a1a1a",
+        color: "#fff",
+        confirmButtonColor: "#fcd52b",
+        confirmButtonText: "Aceptar",
+        customClass: {
+            confirmButton: "text-black font-bold",
+        },
+    });
+
+    // Helper reusable para alertas
+    const showAlert = (type, message, title = null) => {
+        const icons = {
+            error: "error",
+            warning: "warning",
+            success: "success",
+            info: "info",
+        };
+
+        const colors = {
+            error: "#e63946",
+            warning: "#f8b400",
+            success: "#f8b400",
+            info: "#4db6ac",
+        };
+
+        SwalGlobal.fire({
+            icon: icons[type] || "info",
+            title: title || (type === "success" ? "Éxito" : "Error"),
+            text: message,
+            confirmButtonColor: colors[type] || "#fcd52b",
+        });
+    };
+
+    // ---------------------- UTILIDADES ----------------------
     const profileForm = document.getElementById("profileForm");
     const inputPhoto = document.getElementById("inputPhoto");
     const profileImagePreview = document.getElementById("profileImagePreview");
@@ -17,10 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${base}/${path.replace(/^\/+/, "")}`;
     };
 
-    // ---------------------- UTILIDADES ----------------------
     const isEmailValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const isPhoneValid = (phone) => /^\d{7,15}$/.test(phone); // ajusta según tus reglas
-
+    const isPhoneValid = (phone) => /^\d{7,15}$/.test(phone);
     const evaluatePasswordStrength = (password) => {
         let score = 0;
         if (password.length >= 8) score++;
@@ -51,12 +85,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     "Último acceso: " + user.ultimo_acceso || "N/A";
                 profileImagePreview.src =
                     user.foto_url || "{{ asset('img/avatars/avatar-4.jpg') }}";
-                if (user.foto_url) {
-                    const btnDeletePhoto =
-                        document.getElementById("btnDeletePhoto");
+                if (user.foto_url && btnDeletePhoto) {
                     btnDeletePhoto.classList.remove("d-none");
                 }
             }
+        })
+        .catch((error) => {
+            console.error("❌ Error al cargar usuario:", error);
+            showAlert("error", "No se pudieron cargar los datos del usuario.");
         });
 
     // ---------------------- FOTO DE PERFIL ----------------------
@@ -69,38 +105,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (btnDeletePhoto) {
         btnDeletePhoto.addEventListener("click", async () => {
-            const confirmDelete = await Swal.fire({
+            const confirmDelete = await SwalGlobal.fire({
                 title: "Eliminar foto",
                 text: "¿Seguro que deseas eliminar tu foto de perfil?",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonText: "Sí, eliminar",
                 cancelButtonText: "Cancelar",
+                confirmButtonColor: "#fcd52b",
+                cancelButtonColor: "#e63946",
+                customClass: {
+                    confirmButton: "text-black font-bold",
+                    cancelButton: "text-white font-bold",
+                },
             });
 
             if (!confirmDelete.isConfirmed) return;
 
-            const res = await fetch(apiUrl("/admin/perfil/eliminar-foto"), {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector(
-                        'meta[name="csrf-token"]'
-                    ).content,
-                },
-            });
-            const data = await res.json();
+            try {
+                const res = await fetch(apiUrl("/admin/perfil/eliminar-foto"), {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector(
+                            'meta[name="csrf-token"]'
+                        ).content,
+                    },
+                });
+                const data = await res.json();
 
-            if (data.success) {
-                profileImagePreview.src =
-                    "{{ asset('img/avatars/avatar-4.jpg') }}";
-                btnDeletePhoto.remove();
-                Swal.fire("Eliminada", data.message, "success");
-            } else {
-                Swal.fire(
-                    "Error",
-                    data.message || "Error al eliminar la foto",
-                    "error"
-                );
+                if (data.success) {
+                    profileImagePreview.src =
+                        "{{ asset('img/avatars/avatar-4.jpg') }}";
+                    btnDeletePhoto.remove();
+                    showAlert(
+                        "success",
+                        data.message || "Foto eliminada correctamente"
+                    );
+                } else
+                    showAlert(
+                        "error",
+                        data.message || "Error al eliminar la foto"
+                    );
+            } catch (err) {
+                console.error(err);
+                showAlert("error", "Error al eliminar la foto");
             }
         });
     }
@@ -119,14 +167,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const telefono = telefonoInput.value.trim();
         const cedula = cedulaInput.value.trim();
 
-        if (!nombre)
-            return Swal.fire("Error", "El nombre es obligatorio", "error");
+        if (!nombre) return showAlert("error", "El nombre es obligatorio");
         if (!correo || !isEmailValid(correo))
-            return Swal.fire("Error", "Correo inválido", "error");
+            return showAlert("error", "Correo inválido");
         if (!telefono || !isPhoneValid(telefono))
-            return Swal.fire("Error", "Teléfono inválido", "error");
+            return showAlert("error", "Teléfono inválido");
 
-        // Detectar cambios reales
         const originalNombre = nombreInput.dataset.original || "";
         const originalCorreo = correoInput.dataset.original || "";
         const originalTelefono = telefonoInput.dataset.original || "";
@@ -139,46 +185,44 @@ document.addEventListener("DOMContentLoaded", () => {
             telefono !== originalTelefono ||
             cedula !== originalCedula;
 
-        if (!fotoCambiada && !datosCambiados) {
-            return Swal.fire(
-                "Aviso",
+        if (!fotoCambiada && !datosCambiados)
+            return showAlert(
+                "info",
                 "No se detectaron cambios para actualizar",
-                "info"
+                "Aviso"
             );
-        }
 
-        // Preparar formData
         const formData = new FormData(profileForm);
         if (inputPhoto.files[0]) formData.append("foto", inputPhoto.files[0]);
 
-        const res = await fetch(apiUrl("/admin/perfil/actualizar"), {
-            method: "POST",
-            body: formData,
-            headers: {
-                "X-CSRF-TOKEN": document.querySelector(
-                    'meta[name="csrf-token"]'
-                ).content,
-            },
-        });
-
-        const data = await res.json();
-
-        if (data.success) Swal.fire("Éxito", data.message, "success");
-        else
-            Swal.fire(
-                "Error",
-                data.message || "Error al actualizar perfil",
-                "error"
-            );
+        try {
+            const res = await fetch(apiUrl("/admin/perfil/actualizar"), {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRF-TOKEN": document.querySelector(
+                        'meta[name="csrf-token"]'
+                    ).content,
+                },
+            });
+            const data = await res.json();
+            if (data.success) showAlert("success", data.message);
+            else
+                showAlert(
+                    "error",
+                    data.message || "Error al actualizar perfil"
+                );
+        } catch (err) {
+            console.error(err);
+            showAlert("error", "Error al actualizar perfil");
+        }
     });
 
     // ---------------------- CONTRASEÑA ----------------------
-    // Mostrar/Ocultar contraseñas
     document.querySelectorAll(".toggle-password").forEach((icon) => {
         icon.addEventListener("click", () => {
             const target = document.getElementById(icon.dataset.target);
-            if (target.type === "password") target.type = "text";
-            else target.type = "password";
+            target.type = target.type === "password" ? "text" : "password";
             icon.classList.toggle("feather-eye-off");
         });
     });
@@ -197,16 +241,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     passwordForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-
-        // Validaciones
         if (!currentPassword.value)
-            return Swal.fire("Error", "Ingresa tu contraseña actual", "error");
+            return showAlert("error", "Ingresa tu contraseña actual");
         if (!newPassword.value)
-            return Swal.fire("Error", "Ingresa nueva contraseña", "error");
+            return showAlert("error", "Ingresa nueva contraseña");
         if (newPassword.value !== confirmPassword.value)
-            return Swal.fire("Error", "Las contraseñas no coinciden", "error");
+            return showAlert("error", "Las contraseñas no coinciden");
         if (evaluatePasswordStrength(newPassword.value) === "Débil")
-            return Swal.fire("Error", "Contraseña demasiado débil", "error");
+            return showAlert("error", "Contraseña demasiado débil");
 
         const payload = {
             current_password: currentPassword.value,
@@ -214,30 +256,34 @@ document.addEventListener("DOMContentLoaded", () => {
             new_password_confirmation: confirmPassword.value,
         };
 
-        const res = await fetch(apiUrl("/admin/perfil/cambiar-contrasena"), {
-            method: "POST",
-            body: JSON.stringify(payload),
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRF-TOKEN": document.querySelector(
-                    'meta[name="csrf-token"]'
-                ).content,
-            },
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-            Swal.fire("Éxito", data.message, "success");
-            passwordForm.reset();
-            passwordStrength.innerText = "Fuerza: Débil";
-            passwordMatch.innerText = "";
-        } else {
-            Swal.fire(
-                "Error",
-                data.message || "Error al cambiar contraseña",
-                "error"
+        try {
+            const res = await fetch(
+                apiUrl("/admin/perfil/cambiar-contrasena"),
+                {
+                    method: "POST",
+                    body: JSON.stringify(payload),
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector(
+                            'meta[name="csrf-token"]'
+                        ).content,
+                    },
+                }
             );
+            const data = await res.json();
+            if (data.success) {
+                showAlert("success", data.message);
+                passwordForm.reset();
+                passwordStrength.innerText = "Fuerza: Débil";
+                passwordMatch.innerText = "";
+            } else
+                showAlert(
+                    "error",
+                    data.message || "Error al cambiar contraseña"
+                );
+        } catch (err) {
+            console.error(err);
+            showAlert("error", "Error al cambiar contraseña");
         }
     });
 });

@@ -1,5 +1,34 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const usuarioId = document.getElementById("usuarioVenta")?.value || null;
+    const SwalGlobal = Swal.mixin({
+        background: "#1a1a1a",
+        color: "#fff",
+        confirmButtonColor: "#fcd52b",
+        confirmButtonText: "Aceptar",
+        customClass: {
+            confirmButton: "text-black font-bold",
+        },
+    });
+
+    const showAlert = (type, message, title = null) => {
+        const icons = {
+            error: "error",
+            warning: "warning",
+            success: "success",
+            info: "info",
+        };
+        const colors = {
+            error: "#e63946",
+            warning: "#f8b400",
+            success: "#fcd52b",
+            info: "#4db6ac",
+        };
+        SwalGlobal.fire({
+            icon: icons[type] || "info",
+            title: title || (type === "success" ? "Éxito" : "Error"),
+            text: message,
+            confirmButtonColor: colors[type] || "#fcd52b",
+        });
+    };
 
     const productosContainer = document.getElementById("productosContainer");
     const agregarBtn = document.getElementById("agregarProductoBtn");
@@ -32,12 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalProductos =
             productosContainer.querySelectorAll(".producto-item").length;
         if (totalProductos >= MAX_PRODUCTOS) {
-            Swal.fire({
-                icon: "warning",
-                title: "Límite alcanzado",
-                text: `No puedes agregar más de ${MAX_PRODUCTOS} productos por venta.`,
-                confirmButtonColor: "#f0ad4e",
-            });
+            showAlert(
+                "warning",
+                `No puedes agregar más de ${MAX_PRODUCTOS} productos por venta.`,
+                "Límite alcanzado"
+            );
+
             return;
         }
 
@@ -62,12 +91,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 e.target.closest(".producto-item").remove();
                 recalcularTotal();
             } else {
-                Swal.fire({
-                    icon: "info",
-                    title: "Atención",
-                    text: "Debe quedar al menos un producto.",
-                    confirmButtonColor: "#5bc0de",
-                });
+                showAlert(
+                    "info",
+                    "Debe quedar al menos un producto.",
+                    "Atención"
+                );
             }
         }
     });
@@ -93,12 +121,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     productosSeleccionados.includes(seleccionado) &&
                     seleccionado !== ""
                 ) {
-                    Swal.fire({
-                        icon: "warning",
-                        title: "Producto duplicado",
-                        text: "Ya agregaste este producto en otra casilla.",
-                        confirmButtonColor: "#f0ad4e",
-                    });
+                    showAlert(
+                        "warning",
+                        "Ya agregaste este producto en otra casilla.",
+                        "Producto duplicado"
+                    );
 
                     // Resetear el select
                     e.target.value = "";

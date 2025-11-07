@@ -331,46 +331,6 @@
       </div>
     </div>
 
-
-    <!-- Modal Eliminar Usuario -->
-    <div
-      class="modal fade"
-      id="deleteUserModal"
-      tabindex="-1"
-      aria-labelledby="deleteUserModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-0 shadow-lg">
-          <div class="modal-header border-secondary">
-            <h5 class="modal-title tittle-color" id="deleteUserModalLabel">
-              <i data-feather="trash-2" class="me-1"></i> Eliminar usuario
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <p class="text-white">
-              ¿Estás seguro que deseas eliminar al usuario
-              <strong id="deleteUserName"></strong>?
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal">
-              Cancelar
-            </button>
-            <button type="button" class="btn btn-danger" id="confirmDeleteUser">
-              <i data-feather="trash-2" class="me-1"></i> Eliminar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>
 <script src="{{ asset('js/modaluser.js') }}"></script>
