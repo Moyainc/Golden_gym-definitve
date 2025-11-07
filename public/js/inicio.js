@@ -52,14 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const remaining = maxAttempts - attempts;
 
-                // Mostrar mensaje solo a partir del 2° fallo
-                if (attempts >= 2 && remaining > 0) {
-                    attemptsContainer.textContent = `Te quedan ${remaining} intento(s) antes de que tu cuenta se bloquee.`;
-                } else if (remaining <= 0) {
-                    attemptsContainer.textContent = `Tu cuenta ha sido temporalmente bloqueada. Intenta más tarde.`;
-                } else {
-                    attemptsContainer.textContent = ""; // no mostrar nada en el primer fallo
-                }
 
                 Swal.fire({
                     icon: "error",

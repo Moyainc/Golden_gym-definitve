@@ -58,6 +58,8 @@
 
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
     <script>
         feather.replace();
     </script>

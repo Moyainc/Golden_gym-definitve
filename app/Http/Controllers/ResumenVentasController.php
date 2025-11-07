@@ -8,60 +8,66 @@ use Carbon\Carbon;
 
 class ResumenVentasController extends Controller
 {
+  // ✅ Formatear números sin decimales, solo para mostrar
+  private function formatNumber($value)
+  {
+    return round($value); // Devuelve solo entero
+  }
+
+  public function index()
+  {
+    $anios = Venta::selectRaw('YEAR(fecha_venta) as anio')
+      ->distinct()
+      ->orderBy('anio', 'asc')
+      ->pluck('anio');
+
+    return view('admin.contabilidad.resumen-ventas', compact('anios'));
+  }
+
   public function data(Request $request)
   {
-    // ✅ Validar fechas correctamente
     $request->validate([
       'fecha_inicio' => 'nullable|date',
       'fecha_fin' => 'nullable|date|after_or_equal:fecha_inicio',
     ]);
 
-    // ✅ Query base
     $query = Venta::query();
 
-    if ($request->filled('fecha_inicio')) {
-      $query->whereDate('fecha_venta', '>=', $request->fecha_inicio);
-    }
-    if ($request->filled('fecha_fin')) {
-      $query->whereDate('fecha_venta', '<=', $request->fecha_fin);
-    }
+    if ($request->filled('anio')) $query->whereYear('fecha_venta', $request->anio);
+    if ($request->filled('mes')) $query->whereMonth('fecha_venta', $request->mes);
 
     $ventas = $query->with(['detalles.producto.categoria'])->get();
 
     // ✅ Métricas principales
-    $totalVentas = (float) $ventas->sum('total');
+    $totalVentas = round($ventas->sum('total'));
     $numVentas = $ventas->count();
-    $numProductos = (int) $ventas->sum(fn($v) => $v->detalles->sum('cantidad'));
+    $numProductos = $ventas->sum(fn($v) => $v->detalles->sum('cantidad'));
     $pendientes = $ventas->where('estado', 'Pendiente')->count();
 
-    // ✅ Ventas por Categoría (solo numéricos)
+    // Ventas por Categoría
     $ventasPorCategoria = [];
     foreach ($ventas as $venta) {
       foreach ($venta->detalles as $detalle) {
         $categoria = $detalle->producto->categoria->nombre ?? 'Sin Categoría';
-        $subtotal = (float) $detalle->subtotal;
-        $ventasPorCategoria[$categoria] = ($ventasPorCategoria[$categoria] ?? 0) + $subtotal;
+        $ventasPorCategoria[$categoria] = ($ventasPorCategoria[$categoria] ?? 0) + $detalle->subtotal;
       }
     }
+    $ventasPorCategoria = array_map(fn($v) => round($v), $ventasPorCategoria);
 
-    // ✅ Ventas por Producto (solo numéricos)
+    // Ventas por Producto
     $ventasPorProducto = [];
     foreach ($ventas as $venta) {
       foreach ($venta->detalles as $detalle) {
         $producto = $detalle->producto->nombre ?? 'Producto Eliminado';
-        $subtotal = (float) $detalle->subtotal;
-        $ventasPorProducto[$producto] = ($ventasPorProducto[$producto] ?? 0) + $subtotal;
+        $ventasPorProducto[$producto] = ($ventasPorProducto[$producto] ?? 0) + $detalle->subtotal;
       }
     }
+    $ventasPorProducto = array_map(fn($v) => round($v), $ventasPorProducto);
 
-    // ✅ Ventas por Mes (formateado y numérico)
-    // Total ventas por mes (formato ordenado)
-    $ventasPorMes = $ventas->groupBy(function ($v) {
-      return Carbon::parse($v->fecha_venta)->format('Y-m');
-    })->map(fn($v) => (float) $v->sum('total'));
-
-    $ventasPorMes = collect($ventasPorMes)->sortKeys();
-
+    // Ventas por Mes
+    $ventasPorMes = $ventas->groupBy(fn($v) => Carbon::parse($v->fecha_venta)->format('Y-m'))
+      ->map(fn($v) => round($v->sum('total')))
+      ->sortKeys();
 
     return response()->json([
       'success' => true,
@@ -75,7 +81,6 @@ class ResumenVentasController extends Controller
     ]);
   }
 
-  // ✅ Últimas 5 ventas (valores numéricos)
   public function ultimasVentas()
   {
     $ventas = Venta::with(['detalles.producto.categoria'])
@@ -87,18 +92,16 @@ class ResumenVentasController extends Controller
           'id' => $venta->id,
           'usuario_id' => $venta->usuario_id,
           'cliente_id' => $venta->cliente_id,
-          'total' => (float) $venta->total,
+          'total' => round($venta->total),
           'metodo_pago' => $venta->metodo_pago,
           'estado' => $venta->estado,
-          'fecha_venta' => $venta->fecha_venta
-            ? Carbon::parse($venta->fecha_venta)->format('Y-m-d')
-            : null,
+          'fecha_venta' => $venta->fecha_venta ? Carbon::parse($venta->fecha_venta)->format('Y-m-d') : null,
           'detalles' => $venta->detalles->map(fn($d) => [
             'producto' => $d->producto->nombre ?? 'Producto Eliminado',
             'categoria' => $d->producto->categoria->nombre ?? 'Sin Categoría',
             'cantidad' => (int) $d->cantidad,
-            'subtotal' => (float) $d->subtotal,
-            'precio_unitario' => (float) $d->precio_unitario,
+            'subtotal' => round($d->subtotal),
+            'precio_unitario' => round($d->precio_unitario),
           ]),
         ];
       });

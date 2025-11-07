@@ -9,12 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = new bootstrap.Modal(document.getElementById("detalleModal"));
     const modalBody = document.getElementById("detalleModalBody");
 
-    const apiUrl = (path) =>
-        `${window.location.origin}/golden_gym/public/${path.replace(
-            /^\/+/,
-            ""
-        )}`;
-
     const showLoader = () => {
         const overlay = document.createElement("div");
         overlay.id = "loaderOverlay";

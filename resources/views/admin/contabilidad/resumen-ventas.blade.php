@@ -15,13 +15,25 @@
         </div>
 
         <!-- FILTROS Y EXPORTACIÓN -->
+        <!-- FILTROS Y EXPORTACIÓN -->
         <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center my-4">
           <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center">
             <small class="text-muted me-2">Filtrar ganancias:</small>
-            <input id="filterStart" type="date" class="form-control bg-dark form-control-sm text-white border-0" />
-            <span class="text-muted mx-1">—</span>
-            <input id="filterEnd" type="date" class="form-control bg-dark form-control-sm text-white border-0" />
-            <button id="applyFilter" class="btn btn-sm btn-info ms-md-2 mt-2 mt-md-0">Limpiar</button>
+
+            <!-- Select Mes -->
+            <select id="filterMonth" class="form-select form-select-sm bg-dark text-white border-0">
+              <option value="">Todos los meses</option>
+            </select>
+
+            <!-- Select Año -->
+            <select id="filterYear" class="form-select form-select-sm bg-dark text-white border-0">
+              <option value="">Todos los años</option>
+              @foreach ($anios as $anio)
+              <option value="{{ $anio }}" {{ $anio == date('Y') ? 'selected' : '' }}>{{ $anio }}</option>
+              @endforeach
+            </select>
+
+            <button id="applyFilter" class="btn btn-sm btn-info ms-md-2 mt-2 mt-md-0">Filtrar</button>
           </div>
 
           <div class="btn-group ms-md-3 mt-2 mt-md-0" role="group">
@@ -29,6 +41,7 @@
             <button id="exportExcel" class="btn btn-sm btn-outline-light">Exportar Excel</button>
           </div>
         </div>
+
 
         <!-- MÉTRICAS -->
         <div class="row g-3 mb-4">

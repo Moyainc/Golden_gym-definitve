@@ -119,6 +119,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('admin/ventas/vender', [HomeController::class, 'vender'])->name('admin.vender');
     Route::get('admin/ventas/lista-ventas', [HomeController::class, 'lista_ventas'])->name('admin.lista_ventas');
+    Route::get('admin/ventas/list', [VentaController::class, 'listVentas'])->name('admin.list_ventas');
     Route::get('/admin/ventas/buscar', [VentaController::class, 'buscarCliente'])->name('ventas.buscarCliente');
     Route::post('/admin/ventas/registrar', [VentaController::class, 'store'])->name('ventas.store');
     Route::get('/admin/ventas/sugerir-clientes', [VentaController::class, 'sugerirClientes'])->name('ventas.sugerirClientes');
@@ -133,12 +134,14 @@ Route::middleware(['auth'])->group(function () {
 
   Route::middleware(['checkrole:Administrador,Contador'])->group(function () {
     // Acceso solo a contabilidad / resumen
-    Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
+    Route::get('admin/contabilidad/resumen-ventas', [ResumenVentasController::class, 'index'])->name('admin.resumen.ventas');
     Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
     Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
     Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
     Route::get('admin/resumen-ventas/data', [ResumenVentasController::class, 'data'])->name('resumen.ventas.data');
     Route::get('admin/resumen-ventas/ultimas', [ResumenVentasController::class, 'ultimasVentas'])->name('resumen.ventas.ultimas');
+    Route::get('admin/resumen-ventas/export-pdf', [ResumenVentasController::class, 'exportPdf']);
+    Route::get('admin/resumen-ventas/export-excel', [ResumenVentasController::class, 'exportExcel']);
 
     Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin.dashboard');
 
