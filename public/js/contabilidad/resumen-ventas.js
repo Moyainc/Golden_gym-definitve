@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let chartCategoria, chartProducto, chartMes;
 
+
+    // Formateo en pesos colombianos
     function formatearCOP(valor) {
         if (valor === null || valor === undefined || valor === "") return "$0";
         const entero = Math.round(parseFloat(valor));
@@ -44,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Abreviar valores para ejes
     function formatAbreviado(valor) {
         const entero = Math.round(valor);
         if (entero >= 1000000) return Math.floor(entero / 1000000) + "M";
@@ -86,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 data.ventasPorCategoria
             ).map((v) => Math.round(v));
 
-            // Pie Chart Categoría
+            // --- Pie Chart Categoría ---
             if (chartCategoria) chartCategoria.destroy();
             chartCategoria = new Chart(ctxCategoria, {
                 type: "pie",
@@ -106,10 +109,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     ],
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: (ctx) => formatAbreviado(ctx.raw),
+                                label: (ctx) => formatearCOP(ctx.raw),
                             },
                         },
                         legend: {
@@ -133,8 +138,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
             });
 
-            // Bar Chart Productos
+            // --- Bar Chart Productos ---
             if (chartProducto) chartProducto.destroy();
+            // Limitar altura según cantidad de productos
+            const chartHeight = Math.min(
+                ventasPorProductoValores.length * 40,
+                600
+            );
+            ctxProducto.canvas.parentNode.style.height = chartHeight + "px";
+
             chartProducto = new Chart(ctxProducto, {
                 type: "bar",
                 data: {
@@ -148,11 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     ],
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     indexAxis: "y",
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: (ctx) => formatAbreviado(ctx.raw),
+                                label: (ctx) => formatearCOP(ctx.raw),
                             },
                         },
                         legend: { labels: { color: "#fff" } },
@@ -173,21 +187,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
             });
 
-            // Line Chart Ventas por Mes
+            // --- Line Chart Ventas por Mes ---
             const mesKeys = Object.keys(data.ventasPorMes);
-            const mesLabels = mesKeys.map((k) => {
+
+            const mesLabelsAbreviado = mesKeys.map((k) => {
                 const [year, month] = k.split("-");
-                return new Date(year, month - 1).toLocaleString("es-ES", {
-                    month: "short",
-                    year: "numeric",
-                });
+                const nombreMes = new Date(year, month - 1).toLocaleString(
+                    "es-ES",
+                    {
+                        month: "short", // abreviado
+                    }
+                );
+                return nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+            });
+
+            const mesLabelsCompleto = mesKeys.map((k) => {
+                const [year, month] = k.split("-");
+                const nombreMes = new Date(year, month - 1).toLocaleString(
+                    "es-ES",
+                    {
+                        month: "long", // completo
+                    }
+                );
+                return nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
             });
 
             if (chartMes) chartMes.destroy();
             chartMes = new Chart(ctxMes, {
                 type: "line",
                 data: {
-                    labels: mesLabels,
+                    labels: mesLabelsAbreviado, // Abreviado en eje X
                     datasets: [
                         {
                             label: "Total Ventas",
@@ -202,10 +231,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     ],
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: (ctx) => formatAbreviado(ctx.raw),
+                                label: function (ctx) {
+                                    const mesCompleto =
+                                        mesLabelsCompleto[ctx.dataIndex]; // mes completo
+                                    const valor = ctx.raw;
+                                    return `${mesCompleto}: ${formatearCOP(
+                                        valor
+                                    )}`;
+                                },
                             },
                         },
                         legend: { labels: { color: "#fff" } },
@@ -247,24 +285,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error("Error al obtener últimas ventas");
 
             ventasTable.innerHTML = "";
+            let filas = [];
             data.ventas.forEach((v) => {
                 v.detalles.forEach((d) => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${d.producto}</td>
-                        <td>${d.categoria}</td>
-                        <td>${v.metodo_pago}</td>
-                        <td>${formatearCOP(d.subtotal)}</td>
-                        <td>${new Date(v.fecha_venta).toLocaleDateString()}</td>
-                        <td><span class="badge ${
-                            v.estado === "Completada"
-                                ? "bg-success"
-                                : "bg-warning"
-                        } text-black">${v.estado}</span></td>
-                    `;
-                    ventasTable.appendChild(tr);
+                    filas.push(`
+          <tr>
+            <td>${d.producto}</td>
+            <td>${d.categoria}</td>
+            <td>${v.metodo_pago}</td>
+            <td>${formatearCOP(d.subtotal)}</td>
+            <td>${new Date(v.fecha_venta).toLocaleDateString()}</td>
+            <td><span class="badge ${
+                v.estado === "Completada" ? "bg-success" : "bg-warning"
+            } text-black">${v.estado}</span></td>
+          </tr>
+        `);
                 });
             });
+
+            // Limitar a 10 filas
+            filas = filas.slice(0, 10);
+            ventasTable.innerHTML = filas.join("");
         } catch (err) {
             Swal.fire({
                 icon: "error",

@@ -140,8 +140,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
     Route::get('admin/resumen-ventas/data', [ResumenVentasController::class, 'data'])->name('resumen.ventas.data');
     Route::get('admin/resumen-ventas/ultimas', [ResumenVentasController::class, 'ultimasVentas'])->name('resumen.ventas.ultimas');
-    Route::get('admin/resumen-ventas/export-pdf', [ResumenVentasController::class, 'exportPdf']);
-    Route::get('admin/resumen-ventas/export-excel', [ResumenVentasController::class, 'exportExcel']);
+    Route::get('resumen-ventas/pdf', [ResumenVentasController::class, 'exportVentasPdf'])->name('admin.resumen_ventas.pdf');
+    Route::get('resumen-ventas/excel', [ResumenVentasController::class, 'exportVentasExcel'])->name('admin.resumen_ventas.excel');
 
     Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin.dashboard');
 

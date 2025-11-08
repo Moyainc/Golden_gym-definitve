@@ -110,20 +110,44 @@
 </div>
 
 <!-- Modal para ver detalles de venta -->
+<!-- Modal Detalle de Venta -->
+<!-- Modal Detalle de Venta -->
 <div class="modal fade" id="detalleModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content bg-dark text-light">
-      <div class="modal-header border-0">
-        <h5 class="modal-title text-warning">Detalle de la Venta</h5>
+    <div class="modal-content border-0 shadow-lg rounded-4" id="detalleModalContent">
+
+      <!-- Header -->
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-warning text-uppercase">
+          <i data-feather="info" class="me-2"></i> Detalle de la Venta
+        </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body" id="detalleModalBody">
-        <!-- Contenido cargado dinámicamente -->
+
+      <!-- Línea divisoria -->
+      <hr class="border-warning opacity-25 mx-4 mb-0 mt-2" />
+
+      <!-- Cuerpo -->
+      <div id="detalleModalBody" class="modal-body py-4 px-4"
+        style="max-height: 65vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #fcd52b #1a1a1a;">
+        <div class="text-center text-secondary small fst-italic">Cargando detalle...</div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer border-0 pt-0 d-flex justify-content-end">
+        <button type="button" class="btn fw-bold px-4"
+          style="background-color: #fcd52b; color: #000; border-radius: 10px; font-weight: 600;"
+          data-bs-dismiss="modal">
+          Cerrar
+        </button>
       </div>
     </div>
   </div>
 </div>
 
+
+
 <script src="{{ asset('js/ventas/lista_ventas.js') }}"></script>
+<script src="https://cdn.jsdelivr-npm/flatpickr"></script>
 
 @endsection

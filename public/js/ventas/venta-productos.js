@@ -190,6 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     --------------------------- */
     function recalcularTotal() {
         let total = 0;
+
         productosContainer
             .querySelectorAll(".producto-item")
             .forEach((item) => {
@@ -203,11 +204,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 const cantidad = parseInt(cantidadInput.value || 0, 10);
                 const subtotal = precio * cantidad;
 
-                subtotalInput.value = `$${subtotal.toFixed(1)}`;
+                // Formatear el subtotal a moneda colombiana
+                subtotalInput.value = subtotal.toLocaleString("es-CO", {
+                    style: "currency",
+                    currency: "COP",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                });
+
                 total += subtotal;
             });
 
-        totalInput.value = `$${total.toFixed(1)}`;
+        // Formatear el total general
+        totalInput.value = total.toLocaleString("es-CO", {
+            style: "currency",
+            currency: "COP",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
+
         return total;
     }
 
@@ -282,9 +297,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const total = recalcularTotal();
 
+        const totalFormateado = total.toLocaleString("es-CO", {
+            style: "currency",
+            currency: "COP",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        });
+
         const result = await SwalGlobal.fire({
             title: "Confirmar venta",
-            html: `Total: <strong>${totalInput.value}</strong>`,
+            html: `Total: <strong>${totalFormateado}</strong>`,
             icon: "question",
             showCancelButton: true,
             confirmButtonText: "Registrar",
@@ -333,6 +355,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 clienteIdInput.value = "";
                 metodoPagoSelect.selectedIndex = 0;
                 totalInput.value = "$0";
+
+                await cargarUltimasVentas();
 
                 // Resetear todos los productos al estado inicial
                 const primerItem =
@@ -407,10 +431,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 const filtrados = productos.filter(
                     (p) => p.categoria_id == categoriaId
                 );
+
                 selectProducto.innerHTML =
                     '<option value="">Seleccione producto</option>';
+
                 filtrados.forEach((prod) => {
-                    selectProducto.innerHTML += `<option value="${prod.id}" data-precio="${prod.precio}">${prod.nombre}</option>`;
+                    selectProducto.innerHTML += `
+                <option value="${prod.id}" data-precio="${prod.precio}">
+                    ${prod.nombre}
+                </option>`;
                 });
             } catch (error) {
                 console.error("Error cargando productos", error);
@@ -420,21 +449,20 @@ document.addEventListener("DOMContentLoaded", () => {
         // 💰 Calcular total
         const calcularTotalRapida = () => {
             let total = 0;
+
             productosContainerModal
                 .querySelectorAll(".producto-item")
                 .forEach((item) => {
-                    const precio =
-                        parseFloat(
-                            item
-                                .querySelector(".precioRapida")
-                                .value.replace("$", "")
-                        ) || 0;
-                    const cantidad =
-                        parseInt(item.querySelector(".cantidadRapida").value) ||
-                        1;
-                    total += precio * cantidad;
+                    const precioRaw =
+                        item
+                            .querySelector(".precioRapida")
+                            .value.replace(/\$|\./g, "") || "0";
+                    const subtotal = parseFloat(precioRaw) || 0;
+
+                    total += subtotal;
                 });
-            totalInputModal.value = `$${total.toFixed(1)}`;
+
+            totalInputModal.value = `$${total.toLocaleString("es-CO")}`;
             return total;
         };
 
@@ -474,11 +502,10 @@ document.addEventListener("DOMContentLoaded", () => {
             cargarCategoriasRapida(nuevoItem.querySelector(".categoriaRapida"));
         });
 
-        // 🎛️ Eventos dinámicos
         productosContainerModal.addEventListener("change", async (e) => {
             const item = e.target.closest(".producto-item");
 
-            // 🔹 Cuando cambia la categoría, carga sus productos
+            // 🔹 Cuando cambia la categoría
             if (e.target.classList.contains("categoriaRapida")) {
                 await cargarProductosRapida(
                     e.target.value,
@@ -490,7 +517,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (e.target.classList.contains("productoRapida")) {
                 const productoSeleccionado = e.target.value;
 
-                // 🚫 Validar producto duplicado
+                // 🚫 Validar duplicados
                 const productosSeleccionados = [
                     ...productosContainerModal.querySelectorAll(
                         ".productoRapida"
@@ -511,25 +538,44 @@ document.addEventListener("DOMContentLoaded", () => {
                         "Producto repetido"
                     );
 
-                    e.target.value = ""; // limpiar selección duplicada
+                    e.target.value = "";
                     item.querySelector(".precioRapida").value = "$0";
                     calcularTotalRapida();
                     return;
                 }
 
-                // Si no está duplicado, mostrar precio
-                const precio =
-                    e.target.selectedOptions[0]?.getAttribute("data-precio") ||
-                    0;
-                item.querySelector(".precioRapida").value = `$${parseFloat(
-                    precio
-                ).toFixed(1)}`;
+                // ✅ Calcular subtotal inicial
+                const precioUnitario =
+                    parseFloat(
+                        e.target.selectedOptions[0]?.getAttribute("data-precio")
+                    ) || 0;
+                const cantidad =
+                    parseInt(item.querySelector(".cantidadRapida").value) || 1;
+                const subtotal = precioUnitario * cantidad;
+
+                item.querySelector(
+                    ".precioRapida"
+                ).value = `$${subtotal.toLocaleString("es-CO")}`;
                 calcularTotalRapida();
             }
 
-            // 🔹 Actualizar total al cambiar cantidad
-            if (e.target.classList.contains("cantidadRapida"))
+            // 🔹 Cuando cambia la cantidad
+            if (e.target.classList.contains("cantidadRapida")) {
+                const productoSelect = item.querySelector(".productoRapida");
+                const precioUnitario =
+                    parseFloat(
+                        productoSelect.selectedOptions[0]?.getAttribute(
+                            "data-precio"
+                        )
+                    ) || 0;
+                const cantidad = parseInt(e.target.value) || 1;
+                const subtotal = precioUnitario * cantidad;
+
+                item.querySelector(
+                    ".precioRapida"
+                ).value = `$${subtotal.toLocaleString("es-CO")}`;
                 calcularTotalRapida();
+            }
         });
 
         // ❌ Eliminar producto (sin permitir eliminar el último)
@@ -602,6 +648,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     form.reset();
                     calcularTotalRapida();
+                    await cargarUltimasVentas();
                     const modal = bootstrap.Modal.getInstance(
                         document.getElementById("ventaRapidaModal")
                     );

@@ -35,6 +35,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalInput = document.getElementById("totalVenta");
     const MAX_PRODUCTOS = 4;
 
+    function formatCurrency(value) {
+        // Si el valor no es número, devolver $0
+        if (isNaN(value) || value <= 0) return "$0";
+
+        // Formatear en pesos colombianos (sin decimales)
+        return value.toLocaleString("es-CO", {
+            style: "currency",
+            currency: "COP",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        })
+    }
+
     function recalcularTotal() {
         let total = 0;
         productosContainer
@@ -48,12 +61,16 @@ document.addEventListener("DOMContentLoaded", () => {
                             ?.dataset.precio
                     ) || 0;
                 const subtotal = cantidad * precio;
-                item.querySelector(".subtotal").value = `$${subtotal.toFixed(
-                    2
-                )}`;
+
+                // Mostrar cada subtotal formateado
+                item.querySelector(".subtotal").value =
+                    formatCurrency(subtotal);
+
                 total += subtotal;
             });
-        totalInput.value = `$${total.toFixed(2)}`;
+
+        // Mostrar total general formateado
+        totalInput.value = formatCurrency(total);
     }
 
     // Agregar producto
