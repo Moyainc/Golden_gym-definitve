@@ -15,9 +15,22 @@ class ProductoController extends Controller
   // Listar todos los productos
   public function list()
   {
-    $productos = Producto::with('categoria')->get();
+    $productos = Producto::with('categoria')->get()->map(function ($producto) {
+      return [
+        'id' => $producto->id,
+        'nombre' => $producto->nombre,
+        'categoria' => $producto->categoria,
+        'categoria_id' => $producto->categoria_id,
+        'stock' => $producto->stock,
+        'precio' => $producto->precio,
+        'precio_formatted' => $producto->precioFormatted($producto->precio),
+        'estado' => $producto->estado,
+      ];
+    });
+
     return response()->json($productos);
   }
+
 
   // Crear un nuevo producto
   public function store(Request $request)

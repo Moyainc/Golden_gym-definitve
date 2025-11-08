@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     btnDeletePhoto.remove();
                     showAlert(
                         "success",
-                        data.message || "Foto eliminada correctamente"
+                        data.message || "Foto eliminada correctamente",
                     );
                 } else
                     showAlert(

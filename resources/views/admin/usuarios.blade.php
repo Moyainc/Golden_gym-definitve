@@ -53,7 +53,7 @@
 
                 <!-- Rol: Administrador -->
                 <div class="mb-4 p-3 border rounded border-secondary">
-                  <h6 class="text-warning mb-2">
+                  <h6 class="tittle-color mb-2">
                     <i data-feather="user-check" class="me-1"></i> Administrador
                   </h6>
                   <p class="mb-0 text-light small">
@@ -64,7 +64,7 @@
 
                 <!-- Rol: Recepcionista -->
                 <div class="mb-4 p-3 border rounded border-secondary">
-                  <h6 class="text-warning mb-2">
+                  <h6 class="tittle-color mb-2">
                     <i data-feather="clipboard" class="me-1"></i> Recepcionista
                   </h6>
                   <p class="mb-0 text-light small">
@@ -75,7 +75,7 @@
 
                 <!-- Rol: Contador -->
                 <div class="p-3 border rounded border-secondary">
-                  <h6 class="text-warning mb-2">
+                  <h6 class="tittle-color mb-2">
                     <i data-feather="file-text" class="me-1"></i> Contador
                   </h6>
                   <p class="mb-0 text-light small">
@@ -223,7 +223,7 @@
               <div class="text-center mb-3">
                 <img
                   id="previewUserImage"
-                  src="{{ asset('storage/usuarios/default.png') }}"
+                  src="{{ asset('img/avatars/user.png') }}"
                   alt="Foto de perfil"
                   class="rounded-circle border border-secondary mb-2"
                   width="100"

@@ -16,9 +16,9 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->unsignedBigInteger('producto_id')->nullable();
-            $table->decimal('precio_unitario', 10, 1);
+            $table->decimal('precio_unitario', 11, 0);
             $table->integer('cantidad');
-            $table->decimal('subtotal', 10, 1);
+            $table->decimal('subtotal', 11, 1);
             $table->timestamps();
 
 

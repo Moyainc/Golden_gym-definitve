@@ -22,7 +22,7 @@
               <div class="card-body">
                 {{-- Foto de perfil --}}
                 <img
-                  src="{{ auth()->user()->foto ? asset('storage/' . auth()->user()->foto) : asset('img/avatars/avatar-4.jpg') }}"
+                  src="{{ Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : asset('img/avatars/user.png') }}"
                   alt="Foto de perfil"
                   id="profileImagePreview"
                   class="img-fluid rounded-circle mb-3"

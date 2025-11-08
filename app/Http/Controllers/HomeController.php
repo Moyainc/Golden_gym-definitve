@@ -4,9 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Session;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -71,16 +68,16 @@ class HomeController extends Controller
     }
     public function usuarios()
     {
-        // Obtener todos los usuarios más recientes primero
-        $usuarios = \App\Models\Usuario::select('id', 'nombre_completo', 'correo', 'rol')
+        $usuarios = Usuario::select('id', 'nombre_completo', 'correo', 'rol')
+            ->where('oculto', false) // Solo usuarios visibles
             ->orderBy('id', 'desc')
             ->get();
 
-        // Total general de usuarios
         $totalUsuarios = $usuarios->count();
 
         return view('admin.usuarios', compact('usuarios', 'totalUsuarios'));
     }
+
 
     public function vender()
     {
@@ -206,6 +203,21 @@ class HomeController extends Controller
                 Storage::delete('public/' . $user->foto);
             }
 
+            if ($user->id === auth('web')->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No puedes eliminar tu propio usuario.'
+                ], 403);
+            }
+
+            // Opcional: prevenir eliminar superadmins ocultos
+            if ($user->oculto) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se puede eliminar este usuario.'
+                ], 403);
+            }
+
             $user->delete();
 
             return response()->json([
@@ -218,92 +230,5 @@ class HomeController extends Controller
                 'message' => 'No se pudo eliminar el usuario.'
             ], 500);
         }
-    }
-
-    public function registerUsuario(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                'nombre_completo' => 'required|string|max:150',
-                'correo' => 'required|email|unique:usuarios,correo',
-                'cedula' => 'nullable|string|max:20|unique:usuarios,cedula',
-                'telefono' => 'required|string|max:15',
-                'password' => [
-                    'required',
-                    'confirmed',
-                    Password::min(8)
-                        ->mixedCase()
-                        ->letters()
-                        ->numbers()
-                        ->symbols()
-                ],
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ], 422);
-            }
-
-            $usuario = Usuario::create([
-                'nombre_completo' => $request->nombre_completo,
-                'correo' => $request->correo,
-                'cedula' => $request->cedula,
-                'telefono' => $request->telefono,
-                'rol' => 'Usuario', // siempre Usuario
-                'password' => Hash::make($request->password),
-                'foto' => 'usuarios/default.png',
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Cuenta creada correctamente.',
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Ocurrió un error inesperado: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function loginUsuario(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'correo' => 'required|email|exists:usuarios,correo',
-            'password' => 'required|string',
-        ], [
-            'correo.required' => 'El correo es obligatorio.',
-            'correo.email' => 'El correo debe ser válido.',
-            'correo.exists' => 'No se encontró este correo en la base de datos.',
-            'password.required' => 'La contraseña es obligatoria.'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $credentials = [
-            'correo' => $request->correo,
-            'password' => $request->password,
-        ];
-
-        if (Auth::attempt($credentials, $request->has('remember'))) {
-            $request->session()->regenerate();
-            return response()->json([
-                'success' => true,
-                'message' => 'Inicio de sesión exitoso',
-                'redirect' => route('dashboard') // Ajusta a tu ruta interna
-            ], 200);
-        }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Correo o contraseña incorrectos.'
-        ], 401);
     }
 }

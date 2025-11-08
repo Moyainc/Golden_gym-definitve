@@ -15,7 +15,7 @@ return new class extends Migration
             $table->unsignedBigInteger('usuario_id')->nullable();
             $table->unsignedBigInteger('cliente_id')->nullable();
 
-            $table->decimal('total', 10, 1);
+            $table->decimal('total', 11, 0);
             $table->string('metodo_pago');
             $table->string('estado')->default('Completada');
             $table->text('descripcion')->nullable();

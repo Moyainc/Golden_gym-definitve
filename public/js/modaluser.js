@@ -8,10 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const eyeIcon = document.getElementById("eyeIcon");
     const modalTitle = document.getElementById("addEditUserModalLabel");
     const saveButton = form.querySelector("button[type='submit']");
-    const DEFAULT_IMG = "{{ asset('storage/usuarios/default.png') }}";
+    const DEFAULT_IMG = "{{ asset('img/avatars/user.png') }}";
 
-    // Campos de contraseña
-    const passwordGroup = document.querySelectorAll(".row.mb-3")[2]; // bloque de contraseñas
+    const passwordGroup = document.querySelectorAll(".row.mb-3")[2];
     let changePasswordBtn = null;
 
     const apiUrl = (path) => {
@@ -19,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return `${base}/${path.replace(/^\/+/, "")}`;
     };
 
-    // ---------------------- CONFIGURACIÓN GLOBAL SWEETALERT ----------------------
+    // ---------------------- SWEETALERT ----------------------
     const SwalGlobal = Swal.mixin({
         background: "#1a1a1a",
         color: "#fff",
@@ -190,9 +189,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     text: result.message,
                     background: "#1a1a1a",
                     color: "#fff",
-                    confirmButtonColor: "#fcd52b",
-                    confirmButtonText: "Aceptar",
                     customClass: { confirmButton: "text-black font-bold" },
+                    timer: 1500,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
                 }).then(() => {
                     resetForm();
                     const bsModal = bootstrap.Modal.getInstance(modal);
@@ -217,10 +217,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 🧹 Limpiar formulario al cerrar modal
     modal.addEventListener("hidden.bs.modal", () => resetForm("nuevo"));
 
-    // ---------------------- ELIMINACIÓN DE USUARIOS CON SWEETALERT ----------------------
+    // ---------------------- ELIMINACIÓN DE USUARIOS ----------------------
     document.querySelectorAll(".deleteRole").forEach((btn) => {
         btn.addEventListener("click", async () => {
             const userId = btn.dataset.id;
@@ -272,6 +271,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("❌ Error al eliminar usuario:", error);
                 showAlert("error", "Ocurrió un error al eliminar el usuario.");
             }
+        });
+    });
+
+    // ---------------------- BUSCADOR ----------------------
+    const searchInput = document.getElementById("searchUsers");
+    const usersTableBody = document.getElementById("usersTableBody");
+    const rows = Array.from(usersTableBody.querySelectorAll("tr"));
+
+    searchInput.addEventListener("input", () => {
+        const term = searchInput.value.toLowerCase();
+        rows.forEach((row) => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(term) ? "" : "none";
         });
     });
 });

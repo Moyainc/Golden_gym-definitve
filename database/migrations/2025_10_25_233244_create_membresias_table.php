@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('nombre');
             $table->integer('duracion'); // Ej: 30
             $table->enum('tipo_duracion', ['dias', 'meses']); // solo permite 'dias' o 'meses'
-            $table->decimal('precio', 10, 2);
+            $table->decimal('precio', 11, 0);
             $table->timestamps();
         });
     }

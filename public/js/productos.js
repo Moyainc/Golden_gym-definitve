@@ -16,15 +16,6 @@ const initializePage = () => {
         },
     };
 
-    // -----------------------------
-    // Utilidades y API
-    // -----------------------------
-    const apiUrl = (path) => {
-        const base = window.app?.baseUrl || window.location.origin;
-        return `${base}/${path.replace(/^\/+/, "")}`;
-    };
-
-    // -----------------------------
     // Variables globales
     // -----------------------------
     let editingProductId = null;
@@ -224,6 +215,9 @@ const initializePage = () => {
                                 text:
                                     data.message ||
                                     "Categoría eliminada con éxito",
+                                timer: 1200,
+                                timerProgressBar: true,
+                                showConfirmButton: false,
                             });
                             loadCategories();
                         } else {
@@ -288,8 +282,18 @@ const initializePage = () => {
                     icon: "success",
                     title: editingCategoryId ? "Actualizado" : "Creado",
                     text: data.message,
+                    timer: 1200,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                }).then(() => {
+                    // Cerrar modal, resetear form y recargar página
+                    newCategoryForm.reset();
+                    const modal = document.getElementById("newCategoryModal");
+                    const bsModal = bootstrap.Modal.getInstance(modal);
+                    bsModal.hide();
+                    location.reload();
                 });
-                loadCategories(); // recarga la tabla sin tocar el modal
+                loadCategories();
             } else {
                 Swal.fire({
                     ...swalConfig,
@@ -346,30 +350,30 @@ const initializePage = () => {
             totalStock += Number(prod.stock);
             const row = document.createElement("tr");
             row.innerHTML = `
-                <td>${prod.nombre}</td>
-                <td>${prod.categoria?.nombre || "Sin categoría"}</td>
-                <td>${prod.stock}</td>
-                <td>$${prod.precio}</td>
-                <td>${prod.estado}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-light me-1 edit-product-btn"
-                        data-id="${prod.id}"
-                        data-nombre="${prod.nombre}"
-                        data-categoria="${prod.categoria_id}"
-                        data-stock="${prod.stock}"
-                        data-precio="${prod.precio}"
-                        data-estado="${prod.estado}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#productModal"
-                        data-mode="edit">
-                        <i data-feather="edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-danger delete-product-btn"
-                        data-id="${prod.id}"
-                        data-nombre="${prod.nombre}">
-                        <i data-feather="trash-2"></i>
-                    </button>
-                </td>`;
+            <td>${prod.nombre}</td>
+            <td>${prod.categoria?.nombre || "Sin categoría"}</td>
+            <td>${prod.stock}</td>
+            <td>${prod.precio_formatted}</td>
+            <td>${prod.estado}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-light me-1 edit-product-btn"
+                    data-id="${prod.id}"
+                    data-nombre="${prod.nombre}"
+                    data-categoria="${prod.categoria_id}"
+                    data-stock="${prod.stock}"
+                    data-precio="${prod.precio}"
+                    data-estado="${prod.estado}"
+                    data-bs-toggle="modal"
+                    data-bs-target="#productModal"
+                    data-mode="edit">
+                    <i data-feather="edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-product-btn"
+                    data-id="${prod.id}"
+                    data-nombre="${prod.nombre}">
+                    <i data-feather="trash-2"></i>
+                </button>
+            </td>`;
             productTable.appendChild(row);
         });
 
@@ -438,6 +442,9 @@ const initializePage = () => {
                                 text:
                                     data.message ||
                                     "Producto eliminado con éxito",
+                                timer: 1200,
+                                timerProgressBar: true,
+                                showConfirmButton: false,
                             });
                             loadProducts();
                         } else {
@@ -533,6 +540,9 @@ const initializePage = () => {
                     icon: "success",
                     title: editingProductId ? "Actualizado" : "Creado",
                     text: data.message,
+                    timer: 1200,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
                 });
                 document
                     .querySelector('#productModal [data-bs-dismiss="modal"]')
