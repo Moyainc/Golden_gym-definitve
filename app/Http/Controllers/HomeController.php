@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use App\Models\Membresia;
+
 class HomeController extends Controller
 {
     public function index()
@@ -26,6 +27,14 @@ class HomeController extends Controller
     public function confirmacion_pagos()
     {
         return view('admin/confirmacion-pagos');
+    }
+    public function soporte()
+    {
+        return view('admin/soporte');
+    }
+    public function pageBlank()
+    {
+        return view('errors/page-blank');
     }
     public function resumen_general()
     {

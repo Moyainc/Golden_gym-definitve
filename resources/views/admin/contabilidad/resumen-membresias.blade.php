@@ -6,7 +6,6 @@
   <div class="wrapper">
     <div class="main">
       <div id="navbar"></div>
-
       <main class="content">
         <div class="container-fluid p-0">
           <div class="d-flex justify-content-between align-items-center mb-4">
@@ -42,20 +41,16 @@
                 <option value="2026">2026</option>
               </select>
 
-              <button id="applyFilter" class="btn btn-sm btn-info ms-md-2 mt-2 mt-md-0">
-                Aplicar Filtro
-              </button>
+              <button id="applyFilter" class="btn btn-info py-3 ms-md-2 mt-2 mt-md-0 text-nowrap">Aplicar Filtro</button>
             </div>
 
-            <!-- Botones de exportación -->
-            <div class="btn-group ms-md-3 mt-2 mt-md-0" role="group">
-              <button id="exportPdf" class="btn btn-sm btn-outline-warning">
-                <i data-feather="file-pdf" class="me-1" width="16"></i> PDF
-              </button>
-              <button id="exportExcel" class="btn btn-sm btn-outline-warning">
-                <i data-feather="file" class="me-1" width="16"></i> Excel
-              </button>
-            </div>
+            <!-- Boton de exportación -->
+            <button
+              type="button"
+              class="btn btn-success py-3 ms-md-2 mt-2 mt-md-0"
+              data-report-type="membresias">
+              <i data-feather="file-text" class="me-1"></i> Reportes
+            </button>
           </div>
 
           <!-- TARJETAS DE RESUMEN GENERAL -->
@@ -174,10 +169,55 @@
                       <td colspan="7" class="text-center text-muted">Cargando datos...</td>
                     </tr>
                   </tbody>
-                  
+
                 </table>
                 <div id="paginacionMovimientos" class="text-center mt-3"></div>
               </div>
+            </div>
+          </div>
+        </div>
+        <!-- Modal para Reportes -->
+        <div class="modal fade" id="reportsModal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark border-0 text-white shadow-lg">
+              <div class="modal-header border-secondary">
+                <h5 class="modal-title text-success"> <i data-feather="file-text" class="me-1"></i> Generar Reporte de Clientes </h5> <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <form id="reportsForm" class="modal-body">
+                <div class="alert alert-info bg-opacity-10 border-info text-info">
+                  <i data-feather="info" class="me-1"></i> Selecciona un rango de fechas para filtrar los clientes por fecha de registro
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Fecha inicio</label>
+                  <input id="reportStartDate" name="fecha_inicio" type="date" class="form-control text-white border-0" required />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Fecha fin</label>
+                  <input id="reportEndDate" name="fecha_fin" type="date" class="form-control text-white border-0" required />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Estado de membresía (opcional)</label>
+                  <select id="reportEstado" name="estado" class="form-select text-white border-0">
+                    <option value="">Todos los estados</option>
+                    <option value="activa">Activas</option>
+                    <option value="proxima">Próximas a vencer</option>
+                    <option value="vencida">Vencidas</option>
+                  </select>
+                </div>
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" id="includePagosDiarios" />
+                  <label class="form-check-label" for="includePagosDiarios"> Incluir pagos diarios en el reporte </label>
+                </div>
+                <div class="modal-footer border-secondary">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="button" id="exportPdfBtnModal" class="btn btn-danger">
+                    <i data-feather="file" class="me-1"> </i> Exportar PDF
+                  </button>
+                  <button type="button" id="exportExcelBtnModal" class="btn btn-success">
+                    <i data-feather="download" class="me-1"></i> Exportar Excel
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
@@ -186,10 +226,8 @@
   </div>
 
   <!-- Agregar librería Chart.js para gráficas -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
   <!-- Usando asset() para cargar el JS -->
   <script src="{{ asset('js/resumen-membresias.js') }}"></script>
 

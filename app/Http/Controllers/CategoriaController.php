@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Categoria;
 use Illuminate\Http\Request;
+use App\Traits\HasPrecioFormatted;
 
 class CategoriaController extends Controller
 {
+    use HasPrecioFormatted;
+
     // Listar todas las categorías (puedes usarlo en select o tabla)
     public function getCategorias()
     {

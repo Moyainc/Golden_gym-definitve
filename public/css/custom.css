@@ -1,3 +1,10 @@
+.main {
+    min-height: calc(
+        100vh - 60px - 60px
+    ); /* altura de navbar + footer aproximada */
+    overflow-x: hidden;
+}
+
 /* Bordes suaves y compactos para todas las tablas */
 .table tbody,
 .table td,
@@ -8,6 +15,8 @@
 .table > :not(:last-child) > :last-child > * {
     border-color: #575656 !important; /* borde gris oscuro, menos llamativo */
     border-width: 1px !important; /* grosor uniforme */
+    padding-right: 0 !important;
+    text-align: center !important; /* centrado del texto */
 }
 
 /* Borde inferior suave para cada fila */
@@ -40,6 +49,33 @@
     max-height: 400px; /* Ajusta según necesites */
     overflow-y: auto;
 }
+
+/* 🎨 Intercalado oscuro entre filas */
+.table tbody tr:nth-child(odd) {
+    background-color: rgba(
+        255,
+        255,
+        255,
+        0.03
+    ) !important; /* tono más oscuro */
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.06) !important; /* tono más claro */
+}
+
+/* Hover suave que resalta sin romper el intercalado */
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Mantiene el borde inferior suave */
+.table tbody tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Estilos para el modal personalizado */
 
 .custom-modal {
     display: none;
@@ -106,4 +142,229 @@
         transform: translateY(0);
         opacity: 1;
     }
+}
+
+/*  Animaciones para la columna de foto en la tabla de productos  */
+
+.foto-container {
+    overflow: hidden;
+    width: 0;
+    transition: all 0.3s ease;
+}
+.foto-container img {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.foto-container.visible {
+    width: 80px; /* ancho deseado de la columna de foto */
+}
+.foto-container.visible img {
+    opacity: 1;
+}
+
+/* Estilos para el cuadro de sugerencias */
+
+#suggestionBox {
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    border-radius: 0.4rem !important;
+    background-color: #1d1800 !important; /* 🌈 color de fondo que tú quieras */
+    border: 1px solid #444 !important;
+}
+
+/* Cada sugerencia individual */
+#suggestionBox li {
+    background-color: #494949 !important; /* igual que el fondo del contenedor */
+    color: #f1f1f1 !important; /* texto claro para contraste */
+    transition: background 0.2s ease-in-out !important;
+    cursor: pointer !important;
+}
+
+/* Efecto al pasar el mouse */
+#suggestionBox li:hover {
+    background-color: #3d3d3d !important; /* tono más claro al pasar el mouse */
+}
+
+.sidebar {
+    margin-top: 0 !important;
+}
+
+
+
+/* Desarrolladorress  Soporteeeeeee*/
+
+.magic-title {
+    letter-spacing: 1px;
+    animation: fadeIn 2s ease-in-out;
+}
+
+.dev-card {
+    border-radius: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: linear-gradient(145deg, #0c0c0c, #1a1a1a);
+}
+
+.dev-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 0 25px rgba(255, 193, 7, 0.25);
+}
+
+.glow-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle,
+        rgba(255, 193, 7, 0.1) 0%,
+        rgba(255, 193, 7, 0.03) 80%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2.5s infinite;
+}
+
+.icon-giant {
+    width: 36px;
+    height: 36px;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 25px rgba(255, 193, 7, 0.6);
+    }
+}
+
+
+
+/* Cardss responsives */
+
+@media (max-width: 992px) {
+    .card .card-title {
+        font-size: 1rem;
+    }
+
+    .card h1 {
+        font-size: 1.6rem;
+    }
+
+    .card .btn {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.9rem;
+    }
+}
+
+/* Pantallas pequeñas (móviles, <768px) */
+@media (max-width: 768px) {
+    .card .card-title {
+        font-size: 0.95rem;
+    }
+
+    .card h1 {
+        font-size: 1.4rem;
+    }
+
+    .card .btn {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.8rem;
+    }
+}
+
+/* Pantallas muy pequeñas (<576px) */
+@media (max-width: 576px) {
+    .card .card-title {
+        font-size: 0.9rem;
+    }
+
+    .card h1 {
+        font-size: 1.2rem;
+    }
+
+    .card .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.7rem;
+    }
+}
+
+
+
+/* contrasenia
+ */
+#profileForm .btn-outline-warning {
+    width: auto; /* que no ocupe todo el ancho */
+}
+
+/* Margen superior para separar cuando se apilan */
+@media (max-width: 768px) {
+    #profileForm .btn-outline-warning {
+        margin-top: 0.5rem; /* separa del campo rol */
+    }
+}
+
+
+
+/* Responsive Titulos */
+
+@media (max-width: 768px) {
+  h1.h3 {
+    font-size: 1.2rem;
+  }
+  .tittle-color {
+    font-size: 0.9rem;
+  }
+
+  /* Botones más pequeños y ajustados */
+  .btn, .btn-sm {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.7rem;
+  }
+
+  /* Inputs un poco más compactos */
+  .form-control {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  h1.h3 {
+    font-size: 1.0rem;
+  }
+  .tittle-color {
+    font-size: 0.75rem;
+  }
+  .btn, .btn-sm {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+  .form-control {
+    font-size: 0.85rem;
+  }
+}
+
+
+
+/* Productoss Tarjetass  */
+
+@media (max-width: 400px) {
+  .resumen-card-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
 }

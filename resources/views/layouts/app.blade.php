@@ -18,7 +18,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link rel="shortcut icon" href="../img/icons/golden_gym.png" />
+    <link rel="shortcut icon" href="{{ asset('img/icons/golden_gym.png') }}" />
 
     <title>@yield('title', 'Golden Gym')</title>
 
@@ -39,7 +39,7 @@
             {{-- Navbar --}}
             @include('layouts.navbar')
             {{-- Contenido dinámico --}}
-            <main class="p-4">
+            <main>
                 @yield('content')
             </main>
             {{-- Footer --}}
@@ -55,8 +55,13 @@
         // 🔧 Función global que usa esa base URL
         const apiUrl = (path) => `${window.app.baseUrl}/${path.replace(/^\/+/, '')}`;
     </script>
-    <script src="{{ asset('/js/app.js') }}"></script>"
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        feather.replace();
+    </script>
+
 
 </body>
 

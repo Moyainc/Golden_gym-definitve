@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class ResumenMembresiasController extends Controller
 {
@@ -22,32 +27,27 @@ class ResumenMembresiasController extends Controller
         $anio = $request->input('anio', date('Y'));
 
         try {
-            // Obtener datos de membresías
             $pagosMembresias = PagoMembresia::whereMonth('fecha_inicio', $mes)
                 ->whereYear('fecha_inicio', $anio)
                 ->with('cliente')
                 ->get();
 
-            // Obtener datos de pagos diarios
             $pagosDiarios = PagoDiario::whereMonth('fecha', $mes)
                 ->whereYear('fecha', $anio)
                 ->get();
 
-            // Calcular totales
             $totalMembresias = $pagosMembresias->sum('monto');
             $totalDiarios = $pagosDiarios->sum('monto');
             $totalGeneral = $totalMembresias + $totalDiarios;
             $cantidadMembresias = $pagosMembresias->count();
 
-            // Preparar movimientos
             $movimientos = [];
 
-            // Movimientos de membresías
             foreach ($pagosMembresias as $pago) {
                 $movimientos[] = [
                     'id' => $pago->id,
                     'tipo' => 'Membresía',
-                    'detalle' => $pago->cliente->nombre ?? 'Sin cliente',
+                    'detalle' => $pago->cliente->nombre_completo ?? 'Sin cliente',
                     'metodo_pago' => $pago->metodo_pago ?? 'No especificado',
                     'valor' => $pago->monto,
                     'fecha' => $pago->fecha_inicio,
@@ -55,7 +55,6 @@ class ResumenMembresiasController extends Controller
                 ];
             }
 
-            // Movimientos de pagos diarios
             foreach ($pagosDiarios as $pago) {
                 $movimientos[] = [
                     'id' => $pago->id,
@@ -69,17 +68,13 @@ class ResumenMembresiasController extends Controller
             }
 
             // Ordenar por fecha descendente
-            usort($movimientos, function ($a, $b) {
-                return strtotime($b['fecha']) - strtotime($a['fecha']);
-            });
+            usort($movimientos, fn($a, $b) => strtotime($b['fecha']) - strtotime($a['fecha']));
 
-            // Datos para gráfica de distribución
             $datosDistribucion = [
                 'membresias' => $totalMembresias,
                 'diarios' => $totalDiarios,
             ];
 
-            // Datos para gráfica de tendencia (últimos 30 días)
             $tendenciaDatos = $this->getTendenciaUltimos30Dias($mes, $anio);
 
             return response()->json([
@@ -138,19 +133,27 @@ class ResumenMembresiasController extends Controller
         return $datos;
     }
 
+    // ==================================================
+    // EXPORTACIÓN PDF
+    // ==================================================
     public function exportContabilidadPdf(Request $request)
     {
-        $mes = $request->input('mes', date('m'));
-        $anio = $request->input('anio', date('Y'));
+        $fecha_inicio = $request->input('fecha_inicio', date('Y-m-01'));
+        $fecha_fin = $request->input('fecha_fin', date('Y-m-d'));
+        $incluirPagosDiarios = $request->input('incluir_pagos_diarios', 0);
 
-        $pagosMembresias = PagoMembresia::whereMonth('fecha_inicio', $mes)
-            ->whereYear('fecha_inicio', $anio)
-            ->with('cliente')
+        $pagosMembresias = PagoMembresia::with('cliente')
+            ->whereBetween('fecha_inicio', [$fecha_inicio, $fecha_fin])
             ->get();
 
-        $pagosDiarios = PagoDiario::whereMonth('fecha', $mes)
-            ->whereYear('fecha', $anio)
-            ->get();
+        foreach ($pagosMembresias as $pago) {
+            $pago->estado = $this->determinarEstado($pago->fecha_fin);
+        }
+
+        $pagosDiarios = collect();
+        if ($incluirPagosDiarios) {
+            $pagosDiarios = PagoDiario::whereBetween('fecha', [$fecha_inicio, $fecha_fin])->get();
+        }
 
         $totalMembresias = $pagosMembresias->sum('monto');
         $totalDiarios = $pagosDiarios->sum('monto');
@@ -162,49 +165,157 @@ class ResumenMembresiasController extends Controller
             'totalMembresias' => $totalMembresias,
             'totalDiarios' => $totalDiarios,
             'totalGeneral' => $totalGeneral,
-            'mes' => $mes,
-            'anio' => $anio,
+            'fecha_inicio' => $fecha_inicio,
+            'fecha_fin' => $fecha_fin,
+            'fecha_generacion' => now()->format('d/m/Y'),
         ]);
 
-        return $pdf->download("contabilidad-{$mes}-{$anio}.pdf");
+        return $pdf->download("contabilidad-membresias-{$fecha_inicio}-{$fecha_fin}.pdf");
     }
 
+    // ==================================================
+    // EXPORTACIÓN EXCEL
+    // ==================================================
     public function exportContabilidadExcel(Request $request)
     {
         $mes = $request->input('mes', date('m'));
         $anio = $request->input('anio', date('Y'));
+        $incluirPagosDiarios = $request->input('incluir_pagos_diarios', 0);
 
         $pagosMembresias = PagoMembresia::whereMonth('fecha_inicio', $mes)
             ->whereYear('fecha_inicio', $anio)
             ->with('cliente')
             ->get();
 
-        $pagosDiarios = PagoDiario::whereMonth('fecha', $mes)
-            ->whereYear('fecha', $anio)
-            ->get();
+        $pagosDiarios = collect();
+        if ($incluirPagosDiarios) {
+            $pagosDiarios = PagoDiario::whereMonth('fecha', $mes)
+                ->whereYear('fecha', $anio)
+                ->get();
+        }
 
         $totalMembresias = $pagosMembresias->sum('monto');
         $totalDiarios = $pagosDiarios->sum('monto');
+        $totalGeneral = $totalMembresias + $totalDiarios;
 
-        $csv = "ID,Tipo,Detalle,Método de Pago,Valor,Fecha,Estado\n";
+        $fecha_inicio = Carbon::createFromDate($anio, $mes, 1)->startOfMonth()->format('d/m/Y');
+        $fecha_fin = Carbon::createFromDate($anio, $mes, 1)->endOfMonth()->format('d/m/Y');
 
+        $spreadsheet = new Spreadsheet();
+
+        /*
+    |--------------------------------------------------------------------------
+    | Hoja 1 - Membresías
+    |--------------------------------------------------------------------------
+    */
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle('Membresías');
+
+        $sheet1->fromArray(['ID', 'Cliente', 'Monto', 'Método de Pago', 'Fecha Inicio', 'Fecha Fin', 'Estado'], null, 'A1');
+
+        $row = 2;
         foreach ($pagosMembresias as $pago) {
-            $clienteNombre = $pago->cliente ? $pago->cliente->nombre : 'Sin cliente';
-            $csv .= "{$pago->id},Membresía,{$clienteNombre},{$pago->metodo_pago},\${$pago->monto},{$pago->fecha_inicio},{$this->determinarEstado($pago->fecha_fin)}\n";
+            $sheet1->fromArray([
+                $pago->id,
+                $pago->cliente->nombre_completo ?? 'Sin cliente',
+                $pago->monto,
+                $pago->metodo_pago,
+                Carbon::parse($pago->fecha_inicio)->format('d/m/Y'),
+                Carbon::parse($pago->fecha_fin)->format('d/m/Y'),
+                $this->determinarEstado($pago->fecha_fin)
+            ], null, "A{$row}");
+            $row++;
         }
 
+        $sheet1->setCellValue("A{$row}", 'TOTAL');
+        $sheet1->setCellValue("C{$row}", $totalMembresias);
+        $sheet1->getStyle("A{$row}:G{$row}")->getFont()->setBold(true);
+
+        // Estilos generales hoja 1
+        $sheet1->getStyle('A1:G1')->getFont()->setBold(true);
+        $sheet1->getStyle('A1:G1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFD9E1F2');
+        $sheet1->getStyle("A1:G{$row}")
+            ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet1->getStyle("A1:G{$row}")
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        foreach (range('A', 'G') as $col) $sheet1->getColumnDimension($col)->setAutoSize(true);
+
+        /*
+    |--------------------------------------------------------------------------
+    | Hoja 2 - Pagos Diarios
+    |--------------------------------------------------------------------------
+    */
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Pagos Diarios');
+        $sheet2->fromArray(['ID', 'Cliente', 'Monto', 'Método de Pago', 'Fecha', 'Estado'], null, 'A1');
+
+        $row = 2;
         foreach ($pagosDiarios as $pago) {
-            $nombre = $pago->nombre_cliente ?? 'Sin nombre';
-            $metodo = $pago->metodo_pago ?? 'No especificado';
-            $csv .= "{$pago->id},Pago Diario,{$nombre},{$metodo},\${$pago->monto},{$pago->fecha},Completado\n";
+            $sheet2->fromArray([
+                $pago->id,
+                $pago->nombre_cliente ?? 'Sin nombre',
+                $pago->monto,
+                $pago->metodo_pago ?? 'No especificado',
+                Carbon::parse($pago->fecha)->format('d/m/Y'),
+                'Completado'
+            ], null, "A{$row}");
+            $row++;
         }
 
-        $csv .= "\nTotal Membresías,,,\${$totalMembresias}\n";
-        $csv .= "Total Pagos Diarios,,,\${$totalDiarios}\n";
-        $csv .= "Total General,,,\$" . ($totalMembresias + $totalDiarios) . "\n";
+        $sheet2->setCellValue("A{$row}", 'TOTAL');
+        $sheet2->setCellValue("C{$row}", $totalDiarios);
+        $sheet2->getStyle("A{$row}:F{$row}")->getFont()->setBold(true);
 
-        return response()->streamDownload(function () use ($csv) {
-            echo "\xEF\xBB\xBF" . $csv;
-        }, "contabilidad-{$mes}-{$anio}.csv", ['Content-Type' => 'text/csv']);
+        $sheet2->getStyle('A1:F1')->getFont()->setBold(true);
+        $sheet2->getStyle('A1:F1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFD9E1F2');
+        $sheet2->getStyle("A1:F{$row}")
+            ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet2->getStyle("A1:F{$row}")
+            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        foreach (range('A', 'F') as $col) $sheet2->getColumnDimension($col)->setAutoSize(true);
+
+        /*
+    |--------------------------------------------------------------------------
+    | Hoja 3 - Resumen General
+    |--------------------------------------------------------------------------
+    */
+        $sheet3 = $spreadsheet->createSheet();
+        $sheet3->setTitle('Resumen General');
+
+        $sheet3->fromArray([
+            ['Concepto', 'Total ($)'],
+            ['Total Membresías', $totalMembresias],
+            ['Total Pagos Diarios', $totalDiarios],
+            ['Total General', $totalGeneral],
+            ['Período', "{$fecha_inicio} al {$fecha_fin}"]
+        ], null, 'A1');
+
+        $sheet3->getStyle('A1:B1')->getFont()->setBold(true);
+        $sheet3->getStyle('A1:B1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFCD52B');
+        $sheet3->getStyle('A1:B5')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet3->getStyle('A1:B5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        foreach (range('A', 'B') as $col) $sheet3->getColumnDimension($col)->setAutoSize(true);
+
+        // === Exportar archivo ===
+        $writer = new Xlsx($spreadsheet);
+        $filename = "contabilidad_membresias_{$mes}_{$anio}.xlsx";
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
+
+    //AÑOS
+    public function getAniosDisponibles()
+    {
+        $aniosMembresias = PagoMembresia::selectRaw('YEAR(fecha_inicio) as anio')->distinct()->pluck('anio');
+        $aniosDiarios = PagoDiario::selectRaw('YEAR(fecha) as anio')->distinct()->pluck('anio');
+
+        $anios = $aniosMembresias->merge($aniosDiarios)->unique()->sort()->values();
+
+        return response()->json(['success' => true, 'anios' => $anios]);
     }
 }

@@ -10,17 +10,21 @@ return new class extends Migration
     {
         Schema::create('ventas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('usuario_id')->constrained('usuarios');
-            $table->foreignId('cliente_id')
-                ->nullable()
-                ->nullOnDelete();
-                // ->constrained('cliente_id')
+
+            // Relaciones con usuario y cliente, sin borrar la venta si se eliminan
+            $table->unsignedBigInteger('usuario_id')->nullable();
+            $table->unsignedBigInteger('cliente_id')->nullable();
 
             $table->decimal('total', 10, 1);
             $table->string('metodo_pago');
+            $table->string('estado')->default('Completada');
             $table->text('descripcion')->nullable();
             $table->timestamp('fecha_venta')->useCurrent();
             $table->timestamps();
+
+            // Si usuario o cliente se eliminan, los campos quedan nulos pero la venta sigue
+            $table->foreign('usuario_id')->references('id')->on('usuarios')->nullOnDelete();
+            $table->foreign('cliente_id')->references('id')->on('clientes')->nullOnDelete();
         });
     }
 

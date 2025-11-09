@@ -1,4 +1,3 @@
-
 function closeModalProperly(modalId) {
     const modalEl = document.getElementById(modalId)
     if (!modalEl) return
@@ -22,7 +21,6 @@ function closeModalProperly(modalId) {
 
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("clientForm")
-    const dailyPaymentForm = document.getElementById("dailyPaymentForm")
     const photoInput = document.getElementById("clientPhoto")
     const photoPreview = document.getElementById("clientPhotoPreview")
     const membershipSelect = document.getElementById("clientMembershipType")
@@ -30,27 +28,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const endInput = document.getElementById("clientMembershipEnd")
     const priceInput = document.getElementById("membershipPrice")
     const tableBody = document.getElementById("clientsTableBody")
-    const dailyPaymentsTableBody = document.getElementById("dailyPaymentsTableBody")
     const searchInput = document.getElementById("searchClients")
     const clientsCountSpan = document.getElementById("clientsCount")
     const clientsFilteredLabel = document.getElementById("clientsFilteredLabel")
     const modalTitle = document.getElementById("modalTitle")
-    const dailyPaymentDate = document.getElementById("dailyPaymentDate")
     const Swal = window.Swal
     const feather = window.feather
     const bootstrap = window.bootstrap
-    const editClientPhotoPreview = document.getElementById("editClientPhotoPreview") // Declare the variable here
+    const editClientPhotoPreview = document.getElementById("editClientPhotoPreview")
 
     let allClients = []
     let currentFilter = "todas"
     let editingClientId = null
-
-    if (dailyPaymentDate) {
-        const now = new Date()
-        // Ajustar por el offset de zona horaria para evitar que el toISOString suba un día
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset())
-        dailyPaymentDate.value = now.toISOString().split("T")[0]
-    }
 
     // === Helpers ===
     function apiUrl(path) {
@@ -202,14 +191,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // === Cargar clientes ===
-    async function loadClients() {
+    let currentPage = 1
+
+    async function loadClients(page = 1) {
         try {
-            const res = await fetch(apiUrl("admin/clientes/list/json"))
+            const res = await fetch(apiUrl(`admin/clientes/list/json?page=${page}`))
             if (!res.ok) throw new Error("Error al cargar clientes")
-            allClients = await res.json()
+
+            const data = await res.json()
+            allClients = data.data || []
 
             clientsCountSpan.textContent = allClients.length
             applyCurrentFilter()
+
+            // Renderizar la paginación
+            renderClientPagination(data.pagination)
         } catch (err) {
             console.error("Error cargando clientes:", err)
             tableBody.innerHTML = `
@@ -218,6 +214,60 @@ document.addEventListener("DOMContentLoaded", () => {
         </tr>`
         }
     }
+
+    function renderClientPagination(pagination) {
+        const totalPaginas = pagination.total_pages || 1
+        const paginacionContainer = document.getElementById("paginacionClientes")
+        if (!paginacionContainer) return
+
+        let html = ""
+
+        // Botón anterior
+        if (pagination.current_page > 1) {
+            html += `
+            <button class="btn btn-sm btn-outline-warning text-light mx-1"
+                    data-page="${pagination.current_page - 1}">
+                &laquo;
+            </button>`
+        }
+
+        // Botones numerados
+        for (let i = 1; i <= totalPaginas; i++) {
+            const isActive = i === pagination.current_page
+            html += `
+            <button class="btn btn-sm mx-1 ${isActive
+                    ? "btn-warning fw-bold text-dark"
+                    : "btn-outline-warning text-light"
+                }" 
+            data-page="${i}"
+            style="${isActive ? 'color:#000 !important;' : ''}">
+                ${i}
+            </button>`
+        }
+
+        // Botón siguiente
+        if (pagination.current_page < totalPaginas) {
+            html += `
+            <button class="btn btn-sm btn-outline-warning text-light mx-1"
+                    data-page="${pagination.current_page + 1}">
+                &raquo;
+            </button>`
+        }
+
+        paginacionContainer.innerHTML = html
+
+        // Delegación de eventos
+        paginacionContainer.querySelectorAll("button[data-page]").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const page = parseInt(e.target.getAttribute("data-page"))
+                if (!isNaN(page)) {
+                    currentPage = page
+                    loadClients(page)
+                }
+            })
+        })
+    }
+
 
     function renderClients(clients) {
         if (!clients.length) {
@@ -252,23 +302,17 @@ document.addEventListener("DOMContentLoaded", () => {
           <td class="text-muted small">${formatDateDisplay(cliente.fecha_fin)}</td>
           <td>${getEstadoBadge(cliente.estado)}</td>
           <td class="text-end">
-            <button
-              class="btn btn-sm btn-outline-warning me-1 btn-edit"
-              data-id="${cliente.id}"
-              title="Editar">
-              <i data-feather="edit"></i>
+            <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${cliente.id}" title="Ver cliente">
+            <i data-feather="eye"></i>
             </button>
-            <button
-              class="btn btn-sm btn-outline-info me-1 btn-renew"
-              data-id="${cliente.id}"
-              title="Renovar membresía">
-              <i data-feather="refresh-cw"></i>
+            <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${cliente.id}" title="Editar">
+            <i data-feather="edit"></i>
             </button>
-            <button
-              class="btn btn-sm btn-outline-danger btn-delete"
-              data-id="${cliente.id}"
-              title="Eliminar">
-              <i data-feather="trash-2"></i>
+            <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${cliente.id}" title="Renovar membresía">
+            <i data-feather="refresh-cw"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${cliente.id}" title="Eliminar">
+            <i data-feather="trash-2"></i>
             </button>
           </td>
         </tr>`
@@ -277,103 +321,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         feather.replace()
     }
-
-    async function loadDailyPayments() {
-        try {
-            const res = await fetch(apiUrl("admin/pagos-diarios/list/json"))
-            if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-
-            const contentType = res.headers.get("content-type")
-            if (!contentType || !contentType.includes("application/json")) {
-                throw new Error("El servidor no devolvió JSON válido")
-            }
-
-            const pagos = await res.json()
-            renderDailyPayments(pagos)
-        } catch (err) {
-            console.error("[v0] Error cargando pagos diarios:", err)
-            dailyPaymentsTableBody.innerHTML = `
-        <tr>
-          <td colspan="6" class="text-center text-danger">
-            <strong>Error al cargar pagos diarios:</strong> ${err.message}
-          </td>
-        </tr>`
-        }
-    }
-
-    function formatDateDisplay(dateString) {
-        if (!dateString) return "—";
-
-        let date;
-
-        // Si viene con hora (ej: 2025-11-04T05:00:00.000000Z)
-        if (dateString.includes("T")) {
-            date = new Date(dateString);
-        } else {
-            // Si viene como '2025-11-04'
-            date = new Date(dateString + "T00:00:00");
-        }
-
-        if (isNaN(date)) return "—";
-
-        return date.toLocaleDateString("es-CO", {
-            day: "2-digit",
-            month: "long",
-            year: "numeric",
-        });
-    }
-
-
-    function renderDailyPayments(pagos) {
-        if (!pagos.length) {
-            dailyPaymentsTableBody.innerHTML = `
-        <tr>
-            <td colspan="6" class="text-center text-muted">
-                <i data-feather="info" class="me-1"></i> No hay pagos diarios registrados
-            </td>
-        </tr>`
-            feather.replace()
-            return
-        }
-
-        dailyPaymentsTableBody.innerHTML = pagos
-            .map((pago, index) => {
-                const metodoBadge = {
-                    efectivo: '<span class="badge bg-success">Efectivo</span>',
-                    transferencia: '<span class="badge bg-info">Transferencia</span>',
-                    tarjeta: '<span class="badge bg-warning text-dark">Tarjeta</span>',
-                }
-
-                return `
-            <tr>
-                <td>${index + 1}</td>
-                <td class="fw-semibold text-white">${pago.nombre_cliente}</td>
-                <td class="text-warning fw-bold">
-                    ${new Intl.NumberFormat("es-CO", {
-                    style: "currency",
-                    currency: "COP",
-                    minimumFractionDigits: 0,
-                }).format(pago.monto)}
-                </td>
-                <td class="text-muted small">
-                    ${formatDateDisplay(pago.fecha)}
-                </td>
-                <td>${metodoBadge[pago.metodo_pago] || pago.metodo_pago}</td>
-                <td class="text-end">
-                    <button
-                        class="btn btn-sm btn-outline-danger btn-delete-payment"
-                        data-id="${pago.id}"
-                        title="Eliminar">
-                        <i data-feather="trash-2"></i>
-                    </button>
-                </td>
-            </tr>`
-            })
-            .join("")
-
-        feather.replace()
-    }
-
 
     // === Filtros ===
     function applyCurrentFilter() {
@@ -423,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 (c) =>
                     c.nombre_completo.toLowerCase().includes(query) ||
                     (c.correo && c.correo.toLowerCase().includes(query)) ||
-                    (c.cedula && c.cedula.toLowerCase().includes(query)),
+                    (c.cedula && c.cedula.toLowerCase().includes(query))
             )
             renderClients(filtered)
         })
@@ -477,7 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const createClientFormModal = new bootstrap.Modal(document.getElementById("clientFormModal"))
     const editClientFormModal = new bootstrap.Modal(document.getElementById("editClientModal"))
 
-    // === Modal para CREAR cliente ===
+    // === Modal CREAR ===
     document.getElementById("clientFormModal")?.addEventListener("show.bs.modal", (e) => {
         modalTitle.textContent = "Registrar Cliente"
         form.reset()
@@ -487,12 +434,10 @@ document.addEventListener("DOMContentLoaded", () => {
         editingClientId = null
     })
 
-    // === Modal para EDITAR cliente ===
-    document.getElementById("editClientModal")?.addEventListener("show.bs.modal", (e) => {
-        // No resetear nada aquí - los datos ya fueron cargados por el botón editar
-    })
+    // === Modal EDITAR ===
+    document.getElementById("editClientModal")?.addEventListener("show.bs.modal", (e) => { })
 
-    // === Enviar formulario (crear/editar) ===
+    // === Crear/editar cliente ===
     if (form) {
         form.addEventListener("submit", async (e) => {
             e.preventDefault()
@@ -501,9 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const clientId = document.getElementById("clientId")?.value
             const url = clientId ? apiUrl(`admin/clientes/json/${clientId}`) : apiUrl("admin/clientes/json")
 
-            if (clientId) {
-                formData.append("_method", "PUT")
-            }
+            if (clientId) formData.append("_method", "PUT")
 
             try {
                 const res = await fetch(url, {
@@ -514,13 +457,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     body: formData,
                 })
-
-                const contentType = res.headers.get("content-type")
-                if (!contentType || !contentType.includes("application/json")) {
-                    const textResponse = await res.text()
-                    console.error("Respuesta no es JSON:", textResponse.substring(0, 200))
-                    throw new Error(`El servidor devolvió HTML en lugar de JSON. Status: ${res.status}`)
-                }
 
                 const data = await res.json()
 
@@ -535,19 +471,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
 
                     createClientFormModal.hide()
-
-                    document.getElementById("clientFormModal").addEventListener(
-                        "hidden.bs.modal",
-                        () => {
-                            form.reset()
-                            photoPreview.src = getDefaultPhoto()
-                            photoPreview.style.display = "none"
-                            document.getElementById("clientId").value = ""
-                            editingClientId = null
-                            loadClients()
-                        },
-                        { once: true },
-                    )
+                    form.reset()
+                    photoPreview.src = getDefaultPhoto()
+                    loadClients()
                 } else {
                     Swal.fire({
                         icon: "error",
@@ -558,11 +484,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                 }
             } catch (error) {
-                console.error("Error en la solicitud:", error)
                 Swal.fire({
                     icon: "error",
                     title: "Error en la solicitud",
-                    text: error.message || "No se pudo enviar el formulario.",
+                    text: error.message,
                     background: "#1a1a1a",
                     color: "#fff",
                 })
@@ -574,20 +499,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (editClientForm) {
         editClientForm.addEventListener("submit", async (e) => {
             e.preventDefault()
-
             const formData = new FormData(editClientForm)
             const clientId = document.getElementById("editClientId")?.value
-
-            if (!clientId) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "No se encontró el ID del cliente",
-                    background: "#1a1a1a",
-                    color: "#fff",
-                })
-                return
-            }
+            if (!clientId) return
 
             formData.append("_method", "PUT")
 
@@ -600,12 +514,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     body: formData,
                 })
-
-                const contentType = res.headers.get("content-type")
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("El servidor devolvió una respuesta inválida")
-                }
-
                 const data = await res.json()
 
                 if (data.success) {
@@ -617,35 +525,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         background: "#1a1a1a",
                         color: "#fff",
                     })
-
                     editClientFormModal.hide()
-
-                    document.getElementById("editClientModal").addEventListener(
-                        "hidden.bs.modal",
-                        () => {
-                            editClientForm.reset()
-                            editClientPhotoPreview.src = getDefaultPhoto()
-                            editClientPhotoPreview.style.display = "none"
-                            editingClientId = null
-                            loadClients()
-                        },
-                        { once: true },
-                    )
+                    loadClients()
                 } else {
                     Swal.fire({
                         icon: "error",
                         title: "Error al actualizar",
-                        text: data.message || "Revisa los campos e inténtalo de nuevo.",
+                        text: data.message,
                         background: "#1a1a1a",
                         color: "#fff",
                     })
                 }
             } catch (error) {
-                console.error("Error en la solicitud:", error)
                 Swal.fire({
                     icon: "error",
                     title: "Error en la solicitud",
-                    text: error.message || "No se pudo enviar el formulario.",
+                    text: error.message,
                     background: "#1a1a1a",
                     color: "#fff",
                 })
@@ -653,62 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
 
-    if (dailyPaymentForm) {
-        dailyPaymentForm.addEventListener("submit", async (e) => {
-            e.preventDefault()
-
-            const formData = new FormData(dailyPaymentForm)
-
-            try {
-                const res = await fetch(apiUrl("admin/pagos-diarios/json"), {
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        Accept: "application/json",
-                    },
-                    body: formData,
-                })
-
-                const data = await res.json()
-
-                if (data.success) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Pago diario registrado",
-                        timer: 1500,
-                        showConfirmButton: false,
-                        background: "#1a1a1a",
-                        color: "#fff",
-                    })
-
-                    const modal = bootstrap.Modal.getInstance(document.getElementById("dailyPaymentModal"))
-                    modal.hide()
-                    dailyPaymentForm.reset()
-                    dailyPaymentDate.valueAsDate = new Date()
-                    loadDailyPayments()
-                } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error al guardar el pago",
-                        text: data.message || "Revisa los campos e inténtalo de nuevo.",
-                        background: "#1a1a1a",
-                        color: "#fff",
-                    })
-                }
-            } catch (error) {
-                console.error("Error en la solicitud:", error)
-                Swal.fire({
-                    icon: "error",
-                    title: "Error en la solicitud",
-                    text: error.message || "No se pudo enviar el formulario.",
-                    background: "#1a1a1a",
-                    color: "#fff",
-                })
-            }
-        })
-    }
-
-    // === Botones de acción en la tabla ===
+    // === Botones en tabla ===
     if (tableBody) {
         tableBody.addEventListener("click", async (e) => {
             const btn = e.target.closest("button")
@@ -721,7 +561,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`))
                     const cliente = await res.json()
-
                     editingClientId = clientId
 
                     document.getElementById("editClientId").value = cliente.id
@@ -729,15 +568,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("editClientEmail").value = cliente.correo || ""
                     document.getElementById("editClientPhone").value = cliente.telefono || ""
                     document.getElementById("editClientIdNumber").value = cliente.cedula || ""
+                    document.getElementById("editClientEps").value = cliente.eps || ""
+                    document.getElementById("editClientEmergency").value = cliente.numero_emergencia || ""
 
                     await loadEditMemberships()
-
                     const editMembershipSelect = document.getElementById("editClientMembershipType")
                     if (editMembershipSelect && cliente.membresia_actual) {
                         editMembershipSelect.value = cliente.membresia_actual.membresia_id
-
-                        const event = new Event("change")
-                        editMembershipSelect.dispatchEvent(event)
                     }
 
                     if (cliente.foto) {
@@ -750,7 +587,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     editClientFormModal.show()
                 } catch (err) {
-                    console.error("Error cargando cliente:", err)
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "No se pudo cargar la información del cliente",
+                        background: "#1a1a1a",
+                        color: "#fff",
+                    })
+                }
+            }
+            // VER CLIENTE
+            if (btn.classList.contains("btn-view")) {
+                try {
+                    const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`))
+                    const cliente = await res.json()
+
+                    // Mostrar modal de visualización
+                    const viewModal = new bootstrap.Modal(document.getElementById("viewClientModal"))
+                    document.getElementById("viewClientName").textContent = cliente.nombre_completo
+                    document.getElementById("viewClientIdNumber").textContent = cliente.cedula || "N/A"
+                    document.getElementById("viewClientEmail").textContent = cliente.correo || "N/A"
+                    document.getElementById("viewClientPhone").textContent = cliente.telefono || "N/A"
+                    document.getElementById("viewClientEps").textContent = cliente.eps || "N/A"
+                    document.getElementById("viewClientEmergency").textContent = cliente.numero_emergencia || "N/A"
+                    document.getElementById("viewClientMembership").textContent = cliente.membresia_actual?.membresia?.nombre || "Sin membresía"
+                    document.getElementById("viewClientStart").textContent = cliente.fecha_inicio || "N/A"
+                    document.getElementById("viewClientEnd").textContent = cliente.fecha_fin || "N/A"
+                    document.getElementById("viewClientEstado").innerHTML = getEstadoBadge(cliente.estado)
+                    document.getElementById("viewClientPhoto").src = cliente.foto
+                        ? `${window.app.baseUrl}/storage/${cliente.foto}`
+                        : getDefaultPhoto()
+
+                    viewModal.show()
+                } catch (err) {
                     Swal.fire({
                         icon: "error",
                         title: "Error",
@@ -761,18 +630,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-            // RENOVAR MEMBRESÍA
+            // RENOVAR
             if (btn.classList.contains("btn-renew")) {
                 try {
                     const resMem = await fetch(apiUrl("admin/membresias/list/json"))
                     const membresias = await resMem.json()
-
                     const inputOptions = {}
                     membresias.forEach((m) => {
                         const duracionTexto = m.duracion
                             ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
                             : "Sin duración"
-
                         inputOptions[m.id.toString()] = `${m.nombre} - ${duracionTexto} - ${new Intl.NumberFormat("es-CO", {
                             style: "currency",
                             currency: "COP",
@@ -784,33 +651,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         title: "Renovar membresía",
                         input: "select",
                         inputOptions: inputOptions,
-                        inputPlaceholder: "Selecciona una membresía",
-                        inputAttributes: {
-                            style: "color: #333; background-color: #fff; padding: 8px; border-radius: 4px;",
-                        },
                         showCancelButton: true,
                         confirmButtonText: "Renovar",
-                        confirmButtonColor: "#ffc107",
-                        cancelButtonColor: "#6c757d",
                         background: "#2d2d2d",
                         color: "#fff",
-                        iconColor: "#ffc107",
-                        didOpen: (modal) => {
-                            const selectElement = modal.querySelector("select")
-                            if (selectElement) {
-                                selectElement.style.color = "#333"
-                                selectElement.style.backgroundColor = "#fff"
-                                selectElement.style.padding = "8px"
-                                selectElement.style.borderRadius = "4px"
-                                selectElement.style.border = "1px solid #ddd"
-                            }
-                        },
                     })
 
-                    if (membresia_id && membresia_id.toString() !== "") {
+                    if (membresia_id) {
                         const formData = new FormData()
-                        formData.append("membresia_id", membresia_id.toString())
-
+                        formData.append("membresia_id", membresia_id)
                         const res = await fetch(apiUrl(`admin/clientes/json/${clientId}/renovar`), {
                             method: "POST",
                             headers: {
@@ -819,9 +668,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             },
                             body: formData,
                         })
-
                         const data = await res.json()
-
                         if (data.success) {
                             Swal.fire({
                                 icon: "success",
@@ -832,15 +679,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 color: "#fff",
                             })
                             loadClients()
-                        } else {
-                            throw new Error(data.message || "Error al renovar membresía")
                         }
                     }
                 } catch (err) {
                     Swal.fire({
                         icon: "error",
                         title: "Error",
-                        text: err.message || "No se pudo renovar la membresía",
+                        text: err.message,
                         background: "#1a1a1a",
                         color: "#fff",
                     })
@@ -864,7 +709,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     try {
                         const formData = new FormData()
                         formData.append("_method", "DELETE")
-
                         const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`), {
                             method: "POST",
                             headers: {
@@ -873,9 +717,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             },
                             body: formData,
                         })
-
                         const data = await res.json()
-
                         if (data.success) {
                             Swal.fire({
                                 icon: "success",
@@ -886,8 +728,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                 color: "#fff",
                             })
                             loadClients()
-                        } else {
-                            throw new Error("Error al eliminar")
                         }
                     } catch (err) {
                         Swal.fire({
@@ -903,81 +743,18 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
 
-    if (dailyPaymentsTableBody) {
-        dailyPaymentsTableBody.addEventListener("click", async (e) => {
-            const btn = e.target.closest("button")
-            if (!btn) return
-
-            const paymentId = btn.dataset.id
-
-            if (btn.classList.contains("btn-delete-payment")) {
-                const result = await Swal.fire({
-                    title: "¿Eliminar este pago?",
-                    text: "Esta acción no se puede deshacer",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Sí, eliminar",
-                    cancelButtonText: "Cancelar",
-                    background: "#1a1a1a",
-                    color: "#fff",
-                })
-
-                if (result.isConfirmed) {
-                    try {
-                        const formData = new FormData()
-                        formData.append("_method", "DELETE")
-
-                        const res = await fetch(apiUrl(`admin/pagos-diarios/json/${paymentId}`), {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                Accept: "application/json",
-                            },
-                            body: formData,
-                        })
-
-                        const data = await res.json()
-
-                        if (data.success) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Pago eliminado",
-                                timer: 1500,
-                                showConfirmButton: false,
-                                background: "#1a1a1a",
-                                color: "#fff",
-                            })
-                            loadDailyPayments()
-                        } else {
-                            throw new Error("Error al eliminar")
-                        }
-                    } catch (err) {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "No se pudo eliminar el pago",
-                            background: "#1a1a1a",
-                            color: "#fff",
-                        })
-                    }
-                }
-            }
-        })
-    }
-
     // === Exportar reportes ===
     const exportPdfBtn = document.getElementById("exportPdfBtn")
     const exportExcelBtn = document.getElementById("exportExcelBtn")
     const reportStartDate = document.getElementById("reportStartDate")
     const reportEndDate = document.getElementById("reportEndDate")
     const reportEstado = document.getElementById("reportEstado")
+    const includePagosDiarios = document.getElementById("includePagosDiarios") // 🔹 nuevo
 
-    // Establecer fechas por defecto (último mes)
     if (reportStartDate && reportEndDate) {
         const today = new Date()
         const lastMonth = new Date()
         lastMonth.setMonth(today.getMonth() - 1)
-
         reportStartDate.valueAsDate = lastMonth
         reportEndDate.valueAsDate = today
     }
@@ -987,12 +764,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const fechaInicio = reportStartDate.value
             const fechaFin = reportEndDate.value
             const estado = reportEstado.value
+            const incluirPagosDiarios = includePagosDiarios.checked ? 1 : 0 // 🔹 nuevo
 
             if (!fechaInicio || !fechaFin) {
                 Swal.fire({
                     icon: "warning",
                     title: "Campos requeridos",
-                    text: "Por favor selecciona un rango de fechas",
+                    text: "Selecciona un rango de fechas",
                     background: "#1a1a1a",
                     color: "#fff",
                 })
@@ -1002,16 +780,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
+                incluir_pagos_diarios: incluirPagosDiarios, // 🔹 nuevo
             })
-
-            if (estado) {
-                params.append("estado", estado)
-            }
-
+            if (estado) params.append("estado", estado)
             window.open(apiUrl(`admin/clientes/export/pdf?${params.toString()}`), "_blank")
-
-            const modal = bootstrap.Modal.getInstance(document.getElementById("reportsModal"))
-            modal.hide()
+            bootstrap.Modal.getInstance(document.getElementById("reportsModal")).hide()
         })
     }
 
@@ -1020,12 +793,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const fechaInicio = reportStartDate.value
             const fechaFin = reportEndDate.value
             const estado = reportEstado.value
+            const incluirPagosDiarios = includePagosDiarios.checked ? 1 : 0 // 🔹 nuevo
 
             if (!fechaInicio || !fechaFin) {
                 Swal.fire({
                     icon: "warning",
                     title: "Campos requeridos",
-                    text: "Por favor selecciona un rango de fechas",
+                    text: "Selecciona un rango de fechas",
                     background: "#1a1a1a",
                     color: "#fff",
                 })
@@ -1035,67 +809,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
+                incluir_pagos_diarios: incluirPagosDiarios, // 🔹 nuevo
             })
-
-            if (estado) {
-                params.append("estado", estado)
-            }
-
+            if (estado) params.append("estado", estado)
             window.open(apiUrl(`admin/clientes/export/excel?${params.toString()}`), "_blank")
-
-            const modal = bootstrap.Modal.getInstance(document.getElementById("reportsModal"))
-            modal.hide()
+            bootstrap.Modal.getInstance(document.getElementById("reportsModal")).hide()
         })
     }
 
-    // === Evento change para membresía en modal EDITAR
-    const editMembershipSelect = document.getElementById("editClientMembershipType")
-    if (editMembershipSelect) {
-        editMembershipSelect.addEventListener("change", (e) => {
-            const option = e.target.selectedOptions[0]
-            if (!option || !option.value) {
-                document.getElementById("editMembershipStart").value = ""
-                document.getElementById("editMembershipEnd").value = ""
-                document.getElementById("editMembershipPrice").value = ""
-                return
-            }
-
-            const duracion = Number.parseInt(option.getAttribute("data-duracion")) || 0
-            const tipoDuracion = option.getAttribute("data-tipo")
-            const precio = Number.parseFloat(option.getAttribute("data-precio")) || 0
-
-            const today = new Date()
-            const yyyy = today.getFullYear()
-            const mm = String(today.getMonth() + 1).padStart(2, "0")
-            const dd = String(today.getDate()).padStart(2, "0")
-            const startDate = `${yyyy}-${mm}-${dd}`
-
-            let endDate = today
-            if (tipoDuracion === "meses") {
-                endDate = addMonthsSafe(today, duracion)
-            } else if (tipoDuracion === "dias") {
-                endDate = new Date(today)
-                endDate.setDate(today.getDate() + duracion)
-            }
-
-            const endYyyy = endDate.getFullYear()
-            const endMm = String(endDate.getMonth() + 1).padStart(2, "0")
-            const endDd = String(endDate.getDate()).padStart(2, "0")
-            const endDateStr = `${endYyyy}-${endMm}-${endDd}`
-
-            document.getElementById("editMembershipStart").value = startDate
-            document.getElementById("editMembershipEnd").value = endDateStr
-
-            document.getElementById("editMembershipPrice").value = new Intl.NumberFormat("es-CO", {
-                style: "currency",
-                currency: "COP",
-                minimumFractionDigits: 0,
-            }).format(precio)
-        })
-    }
 
     // === Inicializar ===
     loadMemberships()
     loadClients()
-    loadDailyPayments()
 })

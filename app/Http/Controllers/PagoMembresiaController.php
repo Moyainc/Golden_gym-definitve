@@ -8,9 +8,12 @@ use App\Models\Membresia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Traits\HasPrecioFormatted;
 
 class PagoMembresiaController extends Controller
 {
+    use HasPrecioFormatted;
+
     // 📋 Listar todos los pagos (para JSON/AJAX)
     public function index()
     {

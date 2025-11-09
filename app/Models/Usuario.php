@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Carbon\Carbon;
 
 class Usuario extends Authenticatable
 {
@@ -30,5 +31,16 @@ class Usuario extends Authenticatable
     protected $casts = [
         'ultimo_acceso' => 'datetime',
     ];
+
+    protected $dates = ['ultimo_acceso'];
+
+    public function getUltimoAccesoFormateadoAttribute()
+    {
+        return $this->ultimo_acceso
+            ? Carbon::parse($this->ultimo_acceso)
+            ->locale('es')
+            ->isoFormat('DD/MM/YYYY HH:mm')
+            : 'N/A';
+    }
 }
 

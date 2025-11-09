@@ -12,7 +12,7 @@
           class="col-sm-10 col-md-8 col-lg-6 col-xl-5 mx-auto d-table">
           <div class="d-table-cell align-middle">
             <a class="sidebar-brand">
-              <img src="../img/icons/golden_gym.png" class="sidebar-logo" />
+              <img src="{{ asset('img/icons/golden_gym.png') }}" class="sidebar-logo" />
             </a>
             <div class="text-center mt-4">
               <h1 class="text-light fw-bolder h2">Bienvenido de nuevo!</h1>
@@ -45,17 +45,7 @@
                         required />
                     </div>
 
-                    <div class="form-check align-items-center mb-3">
-                      <input
-                        id="rememberMe"
-                        type="checkbox"
-                        class="form-check-input text-black"
-                        name="remember"
-                        checked />
-                      <label class="form-check-label text-small" for="rememberMe">Recordar</label>
-                    </div>
-
-                    <div class="d-grid gap-2 mt-3">
+                    <div class="d-grid gap-2 mt-4">
                       <button type="submit" class="btn btn-md btn-primary text-black">Iniciar sesión</button>
                     </div>
                   </form>
@@ -64,8 +54,8 @@
               </div>
             </div>
             <div class="text-center mb-3">
-              No tienes una cuenta?
-              <a class="tittle-color" href="">Registrar</a>
+              Volver a
+              <a class="tittle-color" href="">Inicio</a>
             </div>
           </div>
         </div>

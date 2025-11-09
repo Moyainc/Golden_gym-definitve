@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Membresia;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\DB;
 class MembresiaController extends Controller
 {
   public function list()
@@ -106,5 +106,71 @@ class MembresiaController extends Controller
     } catch (\Exception $e) {
       return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     }
+  }
+
+  public function estadisticas()
+  {
+    // Total de membresías
+    $totalMembresias = \App\Models\Membresia::count();
+
+    // Clientes activos: contarlos desde la tabla clientes (que tengan al menos un pago activo)
+    $totalClientesActivos = \App\Models\Cliente::whereHas('pagosMembresias', function ($q) {
+      $q->where('estado', 'activa');
+    })->count();
+
+    // Ingresos totales por membresías (suma de monto en pagos_membresias)
+    $ingresosMembresias = \App\Models\PagoMembresia::sum(DB::raw('COALESCE(monto,0)'));
+    $ingresosMembresias = (float) $ingresosMembresias;
+
+    // Datos de membresías (nombre y precio) para el gráfico de precios
+    $membresias = \App\Models\Membresia::select('id', 'nombre', 'precio')->get();
+
+    // Popularidad: contar pagos por membresia_id y luego mapear sobre todas las membresías
+    $counts = \App\Models\PagoMembresia::select('membresia_id', DB::raw('COUNT(*) as total'))
+      ->groupBy('membresia_id')
+      ->pluck('total', 'membresia_id') // retorna [membresia_id => total]
+      ->toArray();
+
+    $popularidad = $membresias->map(function ($m) use ($counts) {
+      $total = isset($counts[$m->id]) ? (int) $counts[$m->id] : 0;
+      return [
+        'nombre' => $m->nombre,
+        'total' => $total,
+      ];
+    })->values()->all();
+
+    // Determinar la membresía más popular (por total)
+    $membresiaMasPopular = null;
+    if (!empty($popularidad)) {
+      usort($popularidad, function ($a, $b) {
+        return $b['total'] <=> $a['total'];
+      });
+      $top = $popularidad[0];
+      $membresiaMasPopular = [
+        'nombre' => $top['nombre'],
+        'total' => (int) $top['total'],
+      ];
+    } else {
+      $membresiaMasPopular = ['nombre' => null, 'total' => 0];
+    }
+
+    // Precios: devolver nombre y precio (asegurando tipo numérico)
+    $precios = $membresias->map(function ($m) {
+      return [
+        'nombre' => $m->nombre,
+        'precio' => (float) $m->precio,
+      ];
+    })->values()->all();
+
+    return response()->json([
+      'resumen' => [
+        'total_membresias' => (int) $totalMembresias,
+        'clientes_activos' => (int) $totalClientesActivos,
+        'ingresos_membresias' => $ingresosMembresias,
+        'membresia_mas_popular' => $membresiaMasPopular,
+      ],
+      'precios' => $precios,
+      'popularidad' => $popularidad,
+    ]);
   }
 }

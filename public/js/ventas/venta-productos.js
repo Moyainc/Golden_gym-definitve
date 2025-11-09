@@ -1,0 +1,653 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const identificacionInput = document.getElementById(
+        "identificacionCliente"
+    );
+    const token = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
+    const nombreClienteInput = document.getElementById("nombreCliente");
+    const clienteIdInput = document.getElementById("cliente_id");
+    const productosContainer = document.getElementById("productosContainer");
+    const totalInput = document.getElementById("totalVenta");
+    const guardarBtn = document.getElementById("guardarVentaDetalladaBtn");
+    const metodoPagoSelect = document.getElementById("metodoPago");
+    const usuarioId = document.getElementById("usuarioVenta").value;
+    const btnClose = document.querySelector("#ventaRapidaModal .btn-close");
+    let timeout = null;
+    const suggestionBox = document.getElementById("suggestionBox");
+    const apiUrl = (path) => {
+        const base = `${window.location.origin}/golden_gym/public`;
+        return `${base}/${path.replace(/^\/+/, "")}`;
+    };
+
+    // 🔍 Búsqueda dinámica
+    identificacionInput.addEventListener("input", () => {
+        clearTimeout(timeout);
+        const identificacion = identificacionInput.value.trim();
+
+        if (identificacion.length < 3) {
+            suggestionBox.style.display = "none";
+            suggestionBox.innerHTML = "";
+            nombreClienteInput.value = "";
+            clienteIdInput.value = "";
+            return;
+        }
+
+        timeout = setTimeout(async () => {
+            try {
+                const res = await fetch(
+                    apiUrl(
+                        `/admin/ventas/sugerir-clientes?identificacion=${identificacion}`
+                    )
+                );
+                const data = await res.json();
+
+                // Si no hay clientes, ocultar lista
+                if (!data.success || data.clientes.length === 0) {
+                    suggestionBox.style.display = "none";
+                    suggestionBox.innerHTML = "";
+                    return;
+                }
+
+                // Mostrar lista
+                suggestionBox.style.display = "block";
+                suggestionBox.innerHTML = data.clientes
+                    .map(
+                        (c) => `
+            <li class="list-group-item list-group-item-action bg-dark text-light"
+                data-id="${c.id}"
+                data-nombre="${c.nombre_completo}"
+                data-cedula="${c.cedula}">
+              ${c.cedula} - ${c.nombre_completo}
+            </li>`
+                    )
+                    .join("");
+            } catch (err) {
+                console.error("Error en sugerencias:", err);
+            }
+        }, 400);
+    });
+
+    // 👆 Seleccionar cliente de la lista
+    suggestionBox.addEventListener("click", (e) => {
+        if (e.target.matches("li[data-id]")) {
+            identificacionInput.value = e.target.dataset.cedula;
+            nombreClienteInput.value = e.target.dataset.nombre;
+            clienteIdInput.value = e.target.dataset.id;
+
+            suggestionBox.style.display = "none";
+            suggestionBox.innerHTML = "";
+        }
+    });
+
+    // Cerrar sugerencias si se hace clic afuera
+    document.addEventListener("click", (e) => {
+        if (
+            !suggestionBox.contains(e.target) &&
+            e.target !== identificacionInput
+        ) {
+            suggestionBox.style.display = "none";
+        }
+    });
+
+    /* --------------------------
+     🧩 CARGAR CATEGORÍAS
+    --------------------------- */
+    async function cargarCategorias() {
+        try {
+            const res = await fetch(apiUrl("/admin/categorias/list"));
+            const categorias = await res.json();
+            document.querySelectorAll(".categoria").forEach((select) => {
+                select.innerHTML = '<option value="">Seleccione</option>';
+                categorias.forEach((cat) => {
+                    const opt = document.createElement("option");
+                    opt.value = cat.id;
+                    opt.textContent = cat.nombre;
+                    select.appendChild(opt);
+                });
+            });
+        } catch (err) {
+            console.error("Error cargando categorías", err);
+        }
+    }
+
+    cargarCategorias();
+
+    /* --------------------------
+     🧩 CARGAR PRODUCTOS SEGÚN CATEGORÍA
+    --------------------------- */
+    productosContainer.addEventListener("change", async (e) => {
+        if (e.target.classList.contains("categoria")) {
+            const categoriaId = e.target.value;
+            const productoSelect = e.target
+                .closest(".producto-item")
+                .querySelector(".producto");
+            productoSelect.innerHTML = '<option value="">Seleccione</option>';
+
+            if (!categoriaId) return;
+
+            try {
+                const res = await fetch(apiUrl(`/admin/productos/list`));
+                const productos = await res.json();
+                const filtrados = productos.filter(
+                    (p) => p.categoria_id == categoriaId
+                );
+
+                filtrados.forEach((p) => {
+                    const opt = document.createElement("option");
+                    opt.value = p.id;
+                    opt.textContent = p.nombre;
+                    opt.dataset.precio = p.precio;
+                    productoSelect.appendChild(opt);
+                });
+            } catch (err) {
+                console.error("Error cargando productos", err);
+            }
+        }
+
+        if (
+            e.target.classList.contains("producto") ||
+            e.target.classList.contains("cantidad")
+        ) {
+            recalcularTotal();
+        }
+    });
+
+    /* --------------------------
+     🧩 CALCULAR SUBTOTAL Y TOTAL
+    --------------------------- */
+    function recalcularTotal() {
+        let total = 0;
+        productosContainer
+            .querySelectorAll(".producto-item")
+            .forEach((item) => {
+                const productoSelect = item.querySelector(".producto");
+                const cantidadInput = item.querySelector(".cantidad");
+                const subtotalInput = item.querySelector(".subtotal");
+
+                const precio = parseFloat(
+                    productoSelect.selectedOptions[0]?.dataset.precio || 0
+                );
+                const cantidad = parseInt(cantidadInput.value || 0, 10);
+                const subtotal = precio * cantidad;
+
+                subtotalInput.value = `$${subtotal.toFixed(1)}`;
+                total += subtotal;
+            });
+
+        totalInput.value = `$${total.toFixed(1)}`;
+        return total;
+    }
+
+    /* --------------------------
+     🧩 GUARDAR VENTA DETALLADA
+    --------------------------- */
+
+    guardarBtn.addEventListener("click", async () => {
+        const clienteId = clienteIdInput.value || null;
+
+        if (!clienteId) {
+            Swal.fire({
+                icon: "warning",
+                title: "Cliente faltante",
+                text: "Seleccione un cliente válido antes de registrar la venta.",
+            });
+            return;
+        }
+
+        const productos = [];
+        let camposIncompletos = false;
+
+        productosContainer
+            .querySelectorAll(".producto-item")
+            .forEach((item) => {
+                const categoria = item.querySelector(".categoria").value;
+                const productoId = item.querySelector(".producto").value;
+                const cantidad = parseInt(
+                    item.querySelector(".cantidad").value || 0,
+                    10
+                );
+                const subtotal =
+                    parseFloat(
+                        item.querySelector(".subtotal").value.replace("$", "")
+                    ) || 0;
+
+                // Verifica que todos los campos estén completos
+                if (!categoria || !productoId || cantidad <= 0) {
+                    camposIncompletos = true;
+                }
+
+                if (productoId && cantidad > 0) {
+                    productos.push({
+                        producto_id: productoId,
+                        cantidad,
+                        subtotal,
+                    });
+                }
+            });
+
+        // 🚫 Si hay campos vacíos o incompletos, no deja enviar
+        if (camposIncompletos) {
+            Swal.fire({
+                icon: "warning",
+                title: "Campos incompletos",
+                text: "Asegúrate de que todos los productos tengan categoría, producto y cantidad válida antes de registrar la venta.",
+            });
+            return;
+        }
+
+        if (productos.length === 0) {
+            Swal.fire({
+                icon: "warning",
+                title: "Productos inválidos",
+                text: "Agrega al menos un producto válido con cantidad mayor a 0.",
+            });
+            return;
+        }
+
+        const total = recalcularTotal();
+
+        const result = await Swal.fire({
+            title: "Confirmar venta",
+            html: `Total: <strong>${totalInput.value}</strong>`,
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Registrar",
+            cancelButtonText: "Cancelar",
+        });
+
+        if (!result.isConfirmed) return;
+
+        const payload = {
+            cliente_id: clienteId,
+            usuario_id: usuarioId,
+            metodo_pago: metodoPagoSelect.value,
+            total,
+            productos,
+        };
+
+        try {
+            const token = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
+
+            const res = await fetch(apiUrl("/admin/ventas/registrar"), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": token,
+                    Accept: "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Venta registrada",
+                    text: data.message,
+                });
+
+                // ✅ Resetear formulario tras enviar exitosamente
+                identificacionInput.value = "";
+                nombreClienteInput.value = "";
+                clienteIdInput.value = "";
+                metodoPagoSelect.selectedIndex = 0;
+                totalInput.value = "$0";
+
+                // Resetear todos los productos al estado inicial
+                const primerItem =
+                    productosContainer.querySelector(".producto-item");
+                productosContainer.innerHTML = ""; // borra todos
+                productosContainer.appendChild(primerItem.cloneNode(true)); // deja uno vacío
+
+                // Vaciar valores del producto clonado
+                const nuevo =
+                    productosContainer.querySelector(".producto-item");
+                nuevo.querySelectorAll("input, select").forEach((el) => {
+                    if (el.tagName === "SELECT")
+                        el.innerHTML = '<option value="">Seleccione</option>';
+                    if (el.tagName === "INPUT")
+                        el.value = el.classList.contains("cantidad") ? 1 : "$0";
+                });
+
+                // Volver a cargar categorías
+                cargarCategorias();
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: data.message || "Error al registrar la venta.",
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire({
+                icon: "error",
+                title: "Error de conexión",
+                text: "No se pudo registrar la venta. Intenta nuevamente.",
+            });
+        }
+    });
+
+    // ==============================
+    // ⚡ VENTA RÁPIDA
+    // ==============================
+    const productosContainerModal = document.getElementById(
+        "productosRapidosContainer"
+    );
+    const agregarBtnModal = document.getElementById("agregarProductoRapidaBtn");
+    const totalInputModal = document.getElementById("totalRapida");
+    const guardarBtnModal = document.getElementById("guardarRapidaBtn");
+    const usuarioIdRapida = document.getElementById("usuario_id_rapida").value;
+    const MAX_PRODUCTOS_RAPIDA = 3; // 🔹 límite máximo de productos
+
+    // Evitar múltiples listeners (por si el script se ejecuta más de una vez)
+    if (!window._ventaRapidaListenersAdded) {
+        window._ventaRapidaListenersAdded = true;
+
+        // 🧩 Cargar categorías y productos
+        async function cargarCategoriasRapida(select) {
+            try {
+                const res = await fetch(apiUrl("/admin/categorias/list"));
+                const data = await res.json();
+                select.innerHTML =
+                    '<option value="">Seleccione categoría</option>';
+                data.forEach((cat) => {
+                    select.innerHTML += `<option value="${cat.id}">${cat.nombre}</option>`;
+                });
+            } catch (error) {
+                console.error("Error cargando categorías", error);
+            }
+        }
+
+        async function cargarProductosRapida(categoriaId, selectProducto) {
+            try {
+                const res = await fetch(apiUrl(`/admin/productos/list`));
+                const productos = await res.json();
+                const filtrados = productos.filter(
+                    (p) => p.categoria_id == categoriaId
+                );
+                selectProducto.innerHTML =
+                    '<option value="">Seleccione producto</option>';
+                filtrados.forEach((prod) => {
+                    selectProducto.innerHTML += `<option value="${prod.id}" data-precio="${prod.precio}">${prod.nombre}</option>`;
+                });
+            } catch (error) {
+                console.error("Error cargando productos", error);
+            }
+        }
+
+        // 💰 Calcular total
+        const calcularTotalRapida = () => {
+            let total = 0;
+            productosContainerModal
+                .querySelectorAll(".producto-item")
+                .forEach((item) => {
+                    const precio =
+                        parseFloat(
+                            item
+                                .querySelector(".precioRapida")
+                                .value.replace("$", "")
+                        ) || 0;
+                    const cantidad =
+                        parseInt(item.querySelector(".cantidadRapida").value) ||
+                        1;
+                    total += precio * cantidad;
+                });
+            totalInputModal.value = `$${total.toFixed(1)}`;
+            return total;
+        };
+
+        // ➕ Agregar producto
+        agregarBtnModal.addEventListener("click", () => {
+            const totalProductos =
+                productosContainerModal.querySelectorAll(
+                    ".producto-item"
+                ).length;
+
+            // 🔸 Evitar agregar más del máximo permitido
+            if (totalProductos >= MAX_PRODUCTOS_RAPIDA) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Límite alcanzado",
+                    text: `No puedes agregar más de ${MAX_PRODUCTOS_RAPIDA} productos.`,
+                    confirmButtonColor: "#f0ad4e",
+                });
+                return;
+            }
+
+            const itemOriginal =
+                productosContainerModal.querySelector(".producto-item");
+            const nuevoItem = itemOriginal.cloneNode(true);
+
+            // Reset de valores
+            nuevoItem.querySelectorAll("input, select").forEach((el) => {
+                if (el.tagName === "INPUT")
+                    el.value = el.classList.contains("cantidadRapida")
+                        ? 1
+                        : "$0";
+                if (el.tagName === "SELECT")
+                    el.innerHTML = '<option value="">Seleccione...</option>';
+            });
+
+            productosContainerModal.appendChild(nuevoItem);
+            cargarCategoriasRapida(nuevoItem.querySelector(".categoriaRapida"));
+        });
+
+        // 🎛️ Eventos dinámicos
+        productosContainerModal.addEventListener("change", async (e) => {
+            const item = e.target.closest(".producto-item");
+
+            // 🔹 Cuando cambia la categoría, carga sus productos
+            if (e.target.classList.contains("categoriaRapida")) {
+                await cargarProductosRapida(
+                    e.target.value,
+                    item.querySelector(".productoRapida")
+                );
+            }
+
+            // 🔹 Cuando cambia el producto
+            if (e.target.classList.contains("productoRapida")) {
+                const productoSeleccionado = e.target.value;
+
+                // 🚫 Validar producto duplicado
+                const productosSeleccionados = [
+                    ...productosContainerModal.querySelectorAll(
+                        ".productoRapida"
+                    ),
+                ]
+                    .map((p) => p.value)
+                    .filter((v) => v !== "");
+
+                const duplicado =
+                    productosSeleccionados.filter(
+                        (id) => id === productoSeleccionado
+                    ).length > 1;
+
+                if (duplicado) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Producto repetido",
+                        text: "Este producto ya fue agregado. Por favor elige otro.",
+                        confirmButtonColor: "#f0ad4e",
+                    });
+                    e.target.value = ""; // limpiar selección duplicada
+                    item.querySelector(".precioRapida").value = "$0";
+                    calcularTotalRapida();
+                    return;
+                }
+
+                // Si no está duplicado, mostrar precio
+                const precio =
+                    e.target.selectedOptions[0]?.getAttribute("data-precio") ||
+                    0;
+                item.querySelector(".precioRapida").value = `$${parseFloat(
+                    precio
+                ).toFixed(1)}`;
+                calcularTotalRapida();
+            }
+
+            // 🔹 Actualizar total al cambiar cantidad
+            if (e.target.classList.contains("cantidadRapida"))
+                calcularTotalRapida();
+        });
+
+        // ❌ Eliminar producto (sin permitir eliminar el último)
+        productosContainerModal.addEventListener("click", (e) => {
+            if (e.target.classList.contains("eliminarProductoRapida")) {
+                const items =
+                    productosContainerModal.querySelectorAll(".producto-item");
+                if (items.length > 1) {
+                    e.target.closest(".producto-item").remove();
+                    calcularTotalRapida();
+                } else {
+                    Swal.fire({
+                        icon: "info",
+                        title: "Atención",
+                        text: "Debe quedar al menos un producto.",
+                        confirmButtonColor: "#5bc0de",
+                    });
+                }
+            }
+        });
+
+        // 🧾 Guardar venta rápida
+        guardarBtnModal.addEventListener("click", async () => {
+            const form = document.getElementById("ventaRapidaForm");
+            const metodoPago = document.getElementById("metodoRapida").value;
+            const estado = document.getElementById("estadoRapida").value;
+            const total = calcularTotalRapida();
+
+            const productos = [...form.querySelectorAll(".productoRapida")].map(
+                (p, i) => ({
+                    producto_id: p.value,
+                    cantidad: parseInt(
+                        form.querySelectorAll(".cantidadRapida")[i].value
+                    ),
+                    subtotal:
+                        parseFloat(
+                            form
+                                .querySelectorAll(".precioRapida")
+                                [i].value.replace("$", "")
+                        ) *
+                        parseInt(
+                            form.querySelectorAll(".cantidadRapida")[i].value
+                        ),
+                })
+            );
+
+            try {
+                const res = await fetch(apiUrl("/admin/ventas/rapida"), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": token,
+                    },
+                    body: JSON.stringify({
+                        usuario_id: usuarioIdRapida,
+                        metodo_pago: metodoPago,
+                        total,
+                        productos,
+                        estado,
+                    }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    Swal.fire(
+                        "✅ Venta rápida registrada",
+                        data.message,
+                        "success"
+                    );
+                    form.reset();
+                    calcularTotalRapida();
+                    const modal = bootstrap.Modal.getInstance(
+                        document.getElementById("ventaRapidaModal")
+                    );
+                    if (btnClose) btnClose.click();
+                } else {
+                    Swal.fire(
+                        "Error",
+                        data.message || "Error al registrar venta rápida.",
+                        "error"
+                    );
+                }
+            } catch (error) {
+                console.error("Error al registrar venta rápida:", error);
+                Swal.fire(
+                    "Error",
+                    "No se pudo registrar la venta rápida.",
+                    "error"
+                );
+            }
+        });
+
+        cargarCategoriasRapida(document.querySelector(".categoriaRapida"));
+    }
+
+    async function cargarUltimasVentas() {
+        try {
+            const res = await fetch(apiUrl("/admin/ventas/ultimas"));
+            const data = await res.json();
+
+            if (!data.success) {
+                console.error("Error al obtener ventas:", data.message);
+                return;
+            }
+
+            const tbody = document.getElementById("ventasUltimas5");
+            tbody.innerHTML = "";
+
+            if (data.ventas.length === 0) {
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-secondary">
+                        No hay ventas registradas aún.
+                    </td>
+                </tr>`;
+                return;
+            }
+
+            data.ventas.forEach((v) => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                <td>${v.producto_nombre ?? "Desconocido"}</td>
+                <td>${v.categoria_nombre ?? "Sin categoría"}</td>
+                <td>${v.metodo_pago ?? "N/A"}</td>
+                <td>$${parseFloat(v.producto_precio ?? 0).toLocaleString()}</td>
+                <td>${v.cantidad ?? 1}</td>
+                <td>$${parseFloat(v.subtotal ?? 0).toLocaleString()}</td>
+                <td>
+                    <span class="badge bg-${
+                        v.estado === "Completada" ? "success" : "secondary"
+                    }">${v.estado ?? "N/A"}</span>
+                </td>
+            `;
+                tbody.appendChild(tr);
+            });
+
+            // 👑 Mostrar botón "Ver más ventas" si es admin
+            const container = document.querySelector(".ventas-container");
+            const existingBtn = document.getElementById("verMasVentasBtn");
+
+            if (data.isAdmin && !existingBtn) {
+                const btn = document.createElement("button");
+                btn.id = "verMasVentasBtn";
+                btn.className = "btn btn-warning mt-3 fw-bold";
+                btn.textContent = "Ver más ventas";
+                btn.addEventListener("click", () => {
+                    window.location.href = apiUrl("/admin/ventas/administrador");
+                });
+                container.appendChild(btn);
+            }
+        } catch (error) {
+            console.error("Error al cargar ventas:", error);
+        }
+    }
+
+    cargarUltimasVentas();
+});

@@ -1,6 +1,7 @@
-@extends('layouts.app')
+@extends('/layouts.app')
 @section('title', 'Ventas - Golden Gym')
 @section('content')
+
 
 <div class="wrapper">
   <div class="main">
@@ -26,60 +27,65 @@
           <div class="card-body text-light">
             <h5 class="text-warning mb-3">Nueva Venta Detallada</h5>
             <form id="ventaDetalladaForm">
-              <div class="row g-2 mb-3">
-                <div class="col-3">
-                  <label class="form-label">Foto</label>
-                  <div class="border border-secondary rounded p-1 text-center" style="height:80px; display:flex; align-items:center; justify-content:center;">
-                    <img id="fotoProducto" src="" alt="Producto" style="max-height:70px; max-width:70px;" />
-                  </div>
-                </div>
-
-                <div class="col-4">
-                  <label class="form-label">Categoría</label>
-                  <select id="categoriaVenta" class="form-select text-light border-0">
-                    <option value="">Seleccione</option>
-                  </select>
-                </div>
-                <div class="col-5">
-                  <label class="form-label">Producto</label>
-                  <select id="productoVenta" class="form-select text-light border-0">
-                    <option value="">Seleccione producto</option>
-                  </select>
-                </div>
-                <div class="col-4 justify-content-center">
-                  <label class="form-label">Cliente</label>
-                  <input type="text" id="identificacionCliente" class="form-control" placeholder="Ingrese ID">
-                  <small id="nombreCliente" class="text-success mt-1 d-block"></small>
-                  <!-- JS llenará con los nombres de clientes -->
-                  </select>
-                </div>
-
-                <!-- Usuario (oculto) -->
-                <input type="hidden" id="usuarioVenta" value="{{ auth()->user()->id }}" />
-              </div>
 
               <div class="row g-2 mb-3 align-items-end">
-                <div class="col-4">
-                  <label class="form-label">Precio</label>
-                  <input type="text" id="precioVenta" class="form-control text-light border-0" readonly />
+                <div class="col-12 col-md-3 position-relative">
+                  <label class="form-label">Identificación del Cliente</label>
+                  <input type="text" id="identificacionCliente" class="form-control text-light border-0" placeholder="Cédula o documento" autocomplete="off" />
+                  <ul id="suggestionBox" class="list-group position-absolute w-100 mt-1" style="z-index: 1050; display: none;"></ul>
+                  <input type="hidden" id="cliente_id" name="cliente_id" />
                 </div>
-                <div class="col-3">
-                  <label class="form-label">Cantidad</label>
-                  <input type="number" id="cantidadVenta" class="form-control text-light border-0" min="1" value="1" />
-                </div>
-                <div class="col-5">
-                  <label class="form-label">Total</label>
-                  <input type="text" id="totalVenta" class="form-control text-light border-0" readonly value="$0" />
+
+                <div class="col-12 col-md-4">
+                  <label class="form-label">Nombre del Cliente</label>
+                  <input type="text" id="nombreCliente" class="form-control text-light border-0" placeholder="Nombre del cliente" readonly />
                 </div>
               </div>
 
-              <div class="mb-3 justify-content-center">
-                <label for="descripcionVenta" class="form-label">Descripción</label>
-                <textarea id="descripcionVenta" class="form-control text-light border-secondary" style="width: 80%;" rows="3" placeholder="Escribe una breve descripción de la venta..."></textarea>
+              <div id="productosContainer">
+                <div class="row g-2 mb-3 producto-item align-items-end">
+
+                  <div class="col-12 col-sm-6 col-md-2 categoria-col">
+                    <label class="form-label">Categoría</label>
+                    <select name="categoria[]" class="form-select text-light border-0 categoria">
+                      <option value="">Seleccione</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-sm-6 col-md-4 producto-col">
+                    <label class="form-label">Producto</label>
+                    <select name="producto[]" class="form-select text-light border-0 producto">
+                      <option value="">Seleccione</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-sm-6 col-md-2">
+                    <label class="form-label">Cantidad</label>
+                    <input type="number" name="cantidad[]" class="form-control text-light border-0 cantidad" min="1" value="1" />
+                  </div>
+
+                  <div class="col-12 col-sm-6 col-md-2">
+                    <label class="form-label">Subtotal</label>
+                    <input type="text" name="subtotal[]" class="form-control text-light border-0 subtotal" readonly value="$0" />
+                  </div>
+
+                  <div class="col-12 col-sm-6 col-md-1 mb-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm eliminarProducto">X</button>
+                  </div>
+
+                </div>
               </div>
+
+              <button type="button" class="btn btn-secondary mb-3" id="agregarProductoBtn">Agregar Producto</button>
 
               <div class="row g-2 align-items-end mb-3">
-                <div class="col-2">
+                <div class="col-12 col-md-3">
+                  <label class="form-label">Total Final</label>
+                  <input type="text" id="totalVenta" class="form-control text-light border-0" readonly value="$0" />
+                  <input type="hidden" id="usuarioVenta" value="{{ auth()->user()->id }}" />
+                </div>
+
+                <div class="col-12 col-md-2">
                   <label class="form-label">Método de Pago</label>
                   <select id="metodoPago" class="form-select text-light border-0">
                     <option value="Efectivo">Efectivo</option>
@@ -87,32 +93,28 @@
                   </select>
                 </div>
 
-                <div class="col-auto mb-1">
-                  <label class="form-label d-block">&nbsp;</label> <!-- para alinear con el select -->
-                  <button type="button" class="btn btn-warning text-dark fw-bold" id="guardarVentaDetalladaBtn">
-                    Guardar Venta
-                  </button>
+                <div class="col-12 mb-1">
+                  <button type="button" class="btn btn-warning text-dark fw-bold" id="guardarVentaDetalladaBtn">Guardar Venta</button>
                 </div>
               </div>
-
-              <input type="hidden" id="estadoVenta" value="Completada" />
 
             </form>
           </div>
         </div>
 
+
+
         <!-- TABLA DE VENTAS -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body ventas-container">
-            <h5 class="text-warning mb-3">
-              <i data-feather="list" class="me-1"></i>Últimas Ventas
+            <h5 class="text-warning mb-3 d-flex align-items-center justify-content-between">
+              <span><i data-feather="list" class="me-1"></i>Últimas Ventas</span>
             </h5>
 
-            <div class="ventas-scroll">
+            <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
                 <thead class="text-warning border-secondary">
                   <tr>
-                    <th>Foto</th>
                     <th>Producto</th>
                     <th>Categoría</th>
                     <th>Método</th>
@@ -129,12 +131,13 @@
             </div>
           </div>
         </div>
+
       </div>
     </main>
 
     <!-- Modal Venta Rápida -->
     <div class="modal fade" id="ventaRapidaModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 820px;">
         <div class="modal-content bg-dark text-light border-success">
           <div class="modal-header border-success">
             <h5 class="modal-title text-success">
@@ -145,56 +148,106 @@
 
           <div class="modal-body">
             <form id="ventaRapidaForm">
-              <div class="row g-2 mb-3">
-                <div class="col-3">
-                  <label class="form-label">Foto</label>
-                  <div class="border border-secondary rounded p-1 text-center" style="height:60px; display:flex; align-items:center; justify-content:center;">
-                    <img id="fotoProductoRapida" src="" alt="Producto" style="max-height:50px; max-width:50px;" />
+              <!-- Campo oculto con el ID del usuario autenticado -->
+              <input
+                type="hidden"
+                id="usuario_id_rapida"
+                name="usuario_id"
+                value="{{ Auth::id() }}" />
+
+              <div id="productosRapidosContainer">
+                <!-- Producto inicial -->
+                <div class="row g-2 mb-3 producto-item align-items-end">
+                  <div class="col-12 col-sm-6 col-md-3 categoria-col">
+                    <label class="form-label">Categoría</label>
+                    <select
+                      name="categoria[]"
+                      class="form-select text-light border-0 categoriaRapida">
+                      <option value="">Seleccione categoría</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-sm-6 col-md-4 producto-col">
+                    <label class="form-label">Producto</label>
+                    <select
+                      name="producto[]"
+                      class="form-select text-light border-0 productoRapida">
+                      <option value="">Seleccione producto</option>
+                    </select>
+                  </div>
+
+                  <div class="col-12 col-sm-6 col-md-2">
+                    <label class="form-label">Precio</label>
+                    <input
+                      type="text"
+                      name="precio[]"
+                      class="form-control text-light border-0 precioRapida"
+                      readonly
+                      value="$0" />
+                  </div>
+
+                  <div class="col-12 col-sm-6 col-md-2">
+                    <label class="form-label">Cantidad</label>
+                    <input
+                      type="number"
+                      name="cantidad[]"
+                      class="form-control text-light border-0 cantidadRapida"
+                      min="1"
+                      value="1" />
+                  </div>
+
+                  <div class="col mb-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger btn-sm eliminarProductoRapida">
+                      X
+                    </button>
                   </div>
                 </div>
-                <div class="col-9">
-                  <label class="form-label">Producto</label>
-                  <select id="productoRapido" class="form-select text-light border-0">
-                    <option value="">Seleccione producto</option>
-                  </select>
-                </div>
               </div>
+
+              <button type="button" class="btn btn-secondary mb-3" id="agregarProductoRapidaBtn">
+                Agregar Producto
+              </button>
 
               <div class="row g-2 mb-3 align-items-end">
-                <div class="col-6">
-                  <label class="form-label">Cantidad</label>
-                  <input type="number" id="cantidadRapida" class="form-control text-light border-0" min="1" value="1" />
+                <div class="col-3">
+                  <label for="metodoRapida" class="form-label">Método de Pago</label>
+                  <select id="metodoRapida" class="form-select text-light border-0">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                  </select>
                 </div>
-                <div class="col-6">
-                  <label class="form-label">Total</label>
-                  <input type="text" id="totalRapida" class="form-control text-light border-0" readonly value="$0" />
+
+                <div class="col-3">
+                  <label for="totalRapida" class="form-label">Total Final</label>
+                  <input
+                    type="text"
+                    id="totalRapida"
+                    class="form-control text-light border-0"
+                    readonly
+                    value="$0" />
+                </div>
+
+                <div class="col-3 mb-1">
+                  <input type="hidden" id="estadoRapida" value="Completada" />
+                  <button
+                    type="button"
+                    class="btn btn-success text-dark fw-bold"
+                    id="guardarRapidaBtn">
+                    Vender
+                  </button>
                 </div>
               </div>
-
-              <div class="mb-3">
-                <label class="form-label">Método de Pago</label>
-                <select id="metodoRapida" class="form-select text-light border-0">
-                  <option value="Efectivo">Efectivo</option>
-                  <option value="Transferencia">Transferencia</option>
-                </select>
-              </div>
-
-              <input type="hidden" id="estadoRapida" value="Completada" />
-              <button type="button" class="btn btn-success text-dark fw-bold" id="guardarRapidaBtn">Vender</button>
             </form>
+
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
 
+<script src="{{ asset('js/ventas/funcionalidad-ventas.js') }}"></script>
+<script src="{{ asset('js/ventas/venta-productos.js') }}"></script>
 
-<script src="../../js/app.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-
-</html>
 @endsection

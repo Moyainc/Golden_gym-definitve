@@ -1,81 +1,226 @@
 document.addEventListener("DOMContentLoaded", () => {
-    inicializarFiltros()
-    cargarDatos()
+    // ---------------------------------------------------
+    // VARIABLES DEL MODAL
+    // ---------------------------------------------------
+    const reportModalEl = document.getElementById("reportsModal");
+    const reportModal = new bootstrap.Modal(reportModalEl, { backdrop: "static", keyboard: false });
+    const reportButton = document.querySelector('button[data-report-type="membresias"]');
+    const reportStartDate = document.getElementById("reportStartDate");
+    const reportEndDate = document.getElementById("reportEndDate");
+    const includePagosDiarios = document.getElementById("includePagosDiarios");
+    const modalPdfBtn = document.getElementById("exportPdfBtnModal");
+    const modalExcelBtn = document.getElementById("exportExcelBtnModal");
 
-    document.getElementById("applyFilter").addEventListener("click", cargarDatos)
-    document.getElementById("exportPdf").addEventListener("click", exportarPdf)
-    document.getElementById("exportExcel").addEventListener("click", exportarExcel)
-})
+    // ---------------------------------------------------
+    // ABRIR MODAL DESDE BOTÓN
+    // ---------------------------------------------------
+    if (reportButton) {
+        reportButton.addEventListener("click", () => {
+            // Limpiar campos cada vez que se abre
+            if (reportStartDate) reportStartDate.value = "";
+            if (reportEndDate) reportEndDate.value = "";
+            if (includePagosDiarios) includePagosDiarios.checked = false;
 
-let chartIngresos = null
-let chartTendencia = null
-let movimientosGlobal = [] // Guardará todos los movimientos
-let paginaActual = 1
-const MOVIMIENTOS_POR_PAGINA = 10
+            reportModal.show();
+        });
+    }
 
+    // ---------------------------------------------------
+    // FUNCION DE EXPORTACIÓN DESDE MODAL
+    // ---------------------------------------------------
+    function exportModal(tipo) {
+        const fechaInicio = reportStartDate?.value;
+        const fechaFin = reportEndDate?.value;
+        const incluirPagos = includePagosDiarios?.checked ? 1 : 0;
+
+        if (!fechaInicio || !fechaFin) {
+            Swal.fire({
+                icon: "warning",
+                title: "Campos requeridos",
+                text: "Selecciona un rango de fechas",
+                background: "#1a1a1a",
+                color: "#fff",
+            });
+            return;
+        }
+
+        const params = new URLSearchParams({
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin,
+            incluir_pagos_diarios: incluirPagos,
+        });
+
+        const url =
+            tipo === "pdf"
+                ? `/golden-gym/public/admin/exportar/contabilidad-pdf?${params.toString()}`
+                : `/golden-gym/public/admin/exportar/contabilidad-excel?${params.toString()}`;
+
+        window.open(url, "_blank");
+        reportModal.hide();
+    }
+
+    if (modalPdfBtn) modalPdfBtn.addEventListener("click", () => exportModal("pdf"));
+    if (modalExcelBtn) modalExcelBtn.addEventListener("click", () => exportModal("excel"));
+
+    // ---------------------------------------------------
+    // INICIALIZAR FILTROS Y CARGAR DATOS
+    // ---------------------------------------------------
+    if (typeof inicializarFiltros === "function") inicializarFiltros();
+    if (typeof cargarDatos === "function") cargarDatos();
+    if (typeof cargarAniosDisponibles === "function") cargarAniosDisponibles();
+
+    const applyFilterBtn = document.getElementById("applyFilter");
+    const exportPdfBtnMain = document.getElementById("exportPdfBtn");
+    const exportExcelBtnMain = document.getElementById("exportExcelBtn");
+
+    if (applyFilterBtn) applyFilterBtn.addEventListener("click", cargarDatos);
+
+    if (exportPdfBtnMain) {
+        exportPdfBtnMain.addEventListener("click", () => {
+            const mes = document.getElementById("filterMes")?.value;
+            const anio = document.getElementById("filterAnio")?.value;
+            if (!mes || !anio) return;
+            window.location.href = `/golden-gym/public/admin/exportar/contabilidad-pdf?mes=${mes}&anio=${anio}`;
+        });
+    }
+
+    if (exportExcelBtnMain) {
+        exportExcelBtnMain.addEventListener("click", () => {
+            const mes = document.getElementById("filterMes")?.value;
+            const anio = document.getElementById("filterAnio")?.value;
+            if (!mes || !anio) return;
+            window.location.href = `/golden-gym/public/admin/exportar/contabilidad-excel?mes=${mes}&anio=${anio}`;
+        });
+    }
+});
+// ---------------------------------------------------
+// VARIABLES GLOBALES PARA TABLA Y GRÁFICAS
+// ---------------------------------------------------
+let chartIngresos = null;
+let chartTendencia = null;
+let movimientosGlobal = [];
+let paginaActual = 1;
+const MOVIMIENTOS_POR_PAGINA = 10;
+
+// ---------------------------------------------------
+// FUNCIONES AUXILIARES
+// ---------------------------------------------------
 function inicializarFiltros() {
-    const mesSelect = document.getElementById("filterMes")
-    const anioSelect = document.getElementById("filterAnio")
+    const mesSelect = document.getElementById("filterMes");
+    const anioSelect = document.getElementById("filterAnio");
 
-    const fechaActual = new Date()
-    const mesActual = fechaActual.getMonth() + 1
-    const anioActual = fechaActual.getFullYear()
+    const fechaActual = new Date();
+    const mesActual = fechaActual.getMonth() + 1;
+    const anioActual = fechaActual.getFullYear();
 
-    mesSelect.value = mesActual.toString().padStart(2, "0")
-    anioSelect.value = anioActual
+    if (mesSelect) mesSelect.value = mesActual.toString().padStart(2, "0");
+    if (anioSelect) anioSelect.value = anioActual;
+}
+// CARGAR AÑOS QUE TIENEN DATOS
+function cargarAniosDisponibles() {
+    fetch('/golden-gym/public/admin/api/anios-disponibles')
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) return;
+            const anioSelect = document.getElementById("filterAnio");
+            if (!anioSelect) return;
+
+            anioSelect.innerHTML = ""; // limpiar opciones
+            data.anios.forEach(anio => {
+                const option = document.createElement("option");
+                option.value = anio;
+                option.textContent = anio;
+                anioSelect.appendChild(option);
+            });
+
+            // Seleccionar último año por defecto
+            anioSelect.value = Math.max(...data.anios);
+        })
+        .catch(err => console.error("Error cargando años:", err));
 }
 
-// ✅ Función para formatear valores en pesos colombianos
+// VALORES MONETARIOS ABREVIDADOS 1M
+function formatearAbreviado(valor) {
+    if (valor === null || valor === undefined || valor === "") return "$0";
+    const numero = parseFloat(valor);
+    if (isNaN(numero)) return "$0";
+
+    if (numero >= 1_000_000_000)
+        return `$${(numero / 1_000_000_000).toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}B`;
+    if (numero >= 1_000_000)
+        return `$${(numero / 1_000_000).toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}M`;
+    if (numero >= 1_000)
+        return `$${(numero / 1_000).toLocaleString("es-CO", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}K`;
+
+    return `$${numero.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+// VALORES MONETARIOS ABREVIADOS PARA GRÁFICAS
+function formatearGrafica(valor) {
+    if (valor >= 1_000_000) return "$" + (valor / 1_000_000).toFixed(1) + "M";
+    if (valor >= 1_000) return "$" + (valor / 1_000).toFixed(0) + "K";
+    return "$" + valor;
+}
 function formatearCOP(valor) {
-    if (valor === null || valor === undefined || valor === "") return "$0"
-    const numero = parseFloat(valor)
-    if (isNaN(numero)) return "$0"
+    if (valor === null || valor === undefined || valor === "") return "$0";
+    const numero = parseFloat(valor);
+    if (isNaN(numero)) return "$0";
     return numero.toLocaleString("es-CO", {
         style: "currency",
         currency: "COP",
         minimumFractionDigits: 0,
-    })
+    });
 }
 
+
+// ---------------------------------------------------
+// CARGAR DATOS DESDE LA API
+// ---------------------------------------------------
 function cargarDatos() {
-    const mes = document.getElementById("filterMes").value
-    const anio = document.getElementById("filterAnio").value
+    const mes = document.getElementById("filterMes")?.value;
+    const anio = document.getElementById("filterAnio")?.value;
+    if (!mes || !anio) return;
 
     fetch(`/golden-gym/public/admin/api/resumen-contabilidad?mes=${mes}&anio=${anio}`)
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
-                movimientosGlobal = data.movimientos.sort((a, b) => b.id - a.id) // Orden DESC
-                paginaActual = 1
-                actualizarCards(data.cards)
-                mostrarPagina(paginaActual)
-                actualizarGraficas(data.distribucion, data.tendencia)
+                movimientosGlobal = data.movimientos.sort((a, b) => b.id - a.id);
+                paginaActual = 1;
+                actualizarCards(data.cards);
+                mostrarPagina(paginaActual);
+                actualizarGraficas(data.distribucion, data.tendencia);
             }
         })
-        .catch((error) => console.error("[v3] Error cargando datos:", error))
+        .catch((error) => console.error("[v3] Error cargando datos:", error));
 }
 
+// ---------------------------------------------------
+// CARDS Y TABLA
+// ---------------------------------------------------
 function actualizarCards(cards) {
-    document.getElementById("ingresoMembresias").textContent = formatearCOP(cards.ingreso_membresias)
-    document.getElementById("ingresoDiarios").textContent = formatearCOP(cards.ingreso_diarios)
-    document.getElementById("cantidadMembresias").textContent = cards.cantidad_membresias
-    document.getElementById("ingresoTotal").textContent = formatearCOP(cards.ingreso_total)
+    if (!cards) return;
+    document.getElementById("ingresoMembresias").textContent = formatearAbreviado(cards.ingreso_membresias);
+    document.getElementById("ingresoDiarios").textContent = formatearAbreviado(cards.ingreso_diarios);
+    document.getElementById("cantidadMembresias").textContent = cards.cantidad_membresias;
+    document.getElementById("ingresoTotal").textContent = formatearAbreviado(cards.ingreso_total);
 }
 
 function mostrarPagina(numPagina) {
-    const inicio = (numPagina - 1) * MOVIMIENTOS_POR_PAGINA
-    const fin = inicio + MOVIMIENTOS_POR_PAGINA
-    const movimientosPagina = movimientosGlobal.slice(inicio, fin)
-    actualizarTabla(movimientosPagina)
-    actualizarPaginacion()
+    const inicio = (numPagina - 1) * MOVIMIENTOS_POR_PAGINA;
+    const fin = inicio + MOVIMIENTOS_POR_PAGINA;
+    const movimientosPagina = movimientosGlobal.slice(inicio, fin);
+    actualizarTabla(movimientosPagina);
+    actualizarPaginacion();
 }
 
 function actualizarTabla(movimientos) {
-    const tbody = document.getElementById("contabilidadTable")
+    const tbody = document.getElementById("contabilidadTable");
+    if (!tbody) return;
 
     if (!movimientos || movimientos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay datos para este período</td></tr>'
-        return
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay datos para este período</td></tr>';
+        return;
     }
 
     tbody.innerHTML = movimientos
@@ -89,52 +234,68 @@ function actualizarTabla(movimientos) {
             <td><span class="badge ${getEstadoBadgeClass(mov.estado)}">${mov.estado}</span></td>
         </tr>`
         )
-        .join("")
+        .join("");
 }
 
+// ---------------------------------------------------
+// PAGINACIÓN
+// ---------------------------------------------------
 function actualizarPaginacion() {
-    const totalPaginas = Math.ceil(movimientosGlobal.length / MOVIMIENTOS_POR_PAGINA)
-    const paginacionContainer = document.getElementById("paginacionMovimientos")
-    if (!paginacionContainer) return
+    const totalPaginas = Math.ceil(movimientosGlobal.length / MOVIMIENTOS_POR_PAGINA);
+    const paginacionContainer = document.getElementById("paginacionMovimientos");
+    if (!paginacionContainer) return;
 
-    let html = ""
+    let html = "";
     for (let i = 1; i <= totalPaginas; i++) {
         html += `
             <button class="btn btn-sm ${i === paginaActual ? "btn-warning text-dark" : "btn-outline-warning"} mx-1"
-                    onclick="cambiarPagina(${i})">${i}</button>`
+                    onclick="cambiarPagina(${i})">${i}</button>`;
     }
-    paginacionContainer.innerHTML = html
+    paginacionContainer.innerHTML = html;
 }
 
 function cambiarPagina(pagina) {
-    paginaActual = pagina
-    mostrarPagina(pagina)
+    paginaActual = pagina;
+    mostrarPagina(pagina);
 }
 
+// ---------------------------------------------------
+// BADGES DE ESTADO
+// ---------------------------------------------------
 function getEstadoBadgeClass(estado) {
     switch (estado) {
         case "Activa":
-            return "bg-success"
+            return "bg-success";
         case "Próxima a vencer":
-            return "bg-warning text-dark"
+            return "bg-warning text-dark";
         case "Vencida":
-            return "bg-danger"
+            return "bg-danger";
         case "Completado":
-            return "bg-primary"
+            return "bg-primary";
         default:
-            return "bg-secondary"
+            return "bg-secondary";
     }
 }
 
-function actualizarGraficas(distribucion, tendencia) {
-    // === GRÁFICA DE DISTRIBUCIÓN ===
-    const ctxIngresos = document.getElementById("chartIngresos").getContext("2d")
-    if (chartIngresos) chartIngresos.destroy()
+// ---------------------------------------------------
+// GRÁFICAS
+// ---------------------------------------------------
 
+function actualizarGraficas(distribucion, tendencia) {
+    // Distribución
+    // Distribución - Doughnut con valores visibles
+    const ctxIngresos = document.getElementById("chartIngresos")?.getContext("2d");
+    if (!ctxIngresos) return;
+    if (chartIngresos) chartIngresos.destroy();
+    const labelsConValores = [
+        `Membresías (${formatearGrafica(distribucion.membresias)})`,
+        `Pagos Diarios (${formatearGrafica(distribucion.diarios)})`
+    ];
     chartIngresos = new Chart(ctxIngresos, {
         type: "doughnut",
         data: {
-            labels: ["Membresías", "Pagos Diarios"],
+            // ⬇️ usamos los labels nuevos aquí
+            labels: labelsConValores,
             datasets: [
                 {
                     data: [distribucion.membresias, distribucion.diarios],
@@ -150,7 +311,10 @@ function actualizarGraficas(distribucion, tendencia) {
             plugins: {
                 legend: {
                     position: "bottom",
-                    labels: { color: "#fff", font: { size: 14 } },
+                    labels: {
+                        color: "#fff",
+                        font: { size: 14 },
+                    },
                 },
                 title: {
                     display: true,
@@ -160,19 +324,28 @@ function actualizarGraficas(distribucion, tendencia) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => formatearCOP(context.parsed),
+                        label: function (context) {
+                            const valor = context.raw;
+                            const label = context.label || "";
+                            return `${label}: ${formatearGrafica(valor)}`;
+                        },
                     },
                 },
             },
+            animation: {
+                duration: 1200,
+                easing: "easeOutQuart",
+            },
         },
-    })
+    });
 
-    // === GRÁFICA DE TENDENCIA (LÍNEA) ===
-    const ctxTendencia = document.getElementById("chartTendencia").getContext("2d")
-    if (chartTendencia) chartTendencia.destroy()
+    // Tendencia - Line
+    const ctxTendencia = document.getElementById("chartTendencia")?.getContext("2d");
+    if (!ctxTendencia) return;
+    if (chartTendencia) chartTendencia.destroy();
 
-    const diasLabels = tendencia.map((d) => d.dia)
-    const diasData = tendencia.map((d) => d.total)
+    const diasLabels = tendencia.map((d) => d.dia);
+    const diasData = tendencia.map((d) => d.total);
 
     chartTendencia = new Chart(ctxTendencia, {
         type: "line",
@@ -205,35 +378,28 @@ function actualizarGraficas(distribucion, tendencia) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => formatearCOP(context.parsed.y),
+                        label: function (context) {
+                            return formatearGrafica(context.parsed.y);
+                        },
                     },
                 },
             },
             scales: {
-                y: {
+                yAxes: [{
                     ticks: {
                         color: "#fff",
-                        callback: (value) => formatearCOP(value),
+                        callback: function (value) {
+                            return formatearGrafica(value);
+                        }
                     },
-                    grid: { color: "rgba(255,255,255,0.1)" },
-                },
-                x: {
+                    gridLines: { color: "rgba(255,255,255,0.1)" }
+                }],
+                xAxes: [{
                     ticks: { color: "#fff" },
-                    grid: { color: "rgba(255,255,255,0.1)" },
-                },
-            },
-        },
-    })
-}
+                    gridLines: { color: "rgba(255,255,255,0.1)" }
+                }]
+            }
+        }
+    });
 
-function exportarPdf() {
-    const mes = document.getElementById("filterMes").value
-    const anio = document.getElementById("filterAnio").value
-    window.location.href = `/golden-gym/public/admin/exportar/contabilidad-pdf?mes=${mes}&anio=${anio}`
-}
-
-function exportarExcel() {
-    const mes = document.getElementById("filterMes").value
-    const anio = document.getElementById("filterAnio").value
-    window.location.href = `/golden-gym/public/admin/exportar/contabilidad-excel?mes=${mes}&anio=${anio}`
 }

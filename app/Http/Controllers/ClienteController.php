@@ -5,21 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Models\Membresia;
 use App\Models\PagoMembresia;
+use App\Models\PagoDiario;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class ClienteController extends Controller
 {
     /**
      * Retorna el listado completo de clientes con su membresía actual
      */
-    public function getClientes()
+    public function getClientes(Request $request)
     {
+        $page = (int) $request->query('page', 1) ?: 1;
+        $perPage = (int) request()->query('per_page', 10) ?: 10;
+        $skip = ($page - 1) * $perPage;
+
         $clientes = Cliente::with(['membresiaActual.membresia'])
             ->orderByDesc('id')
-            ->limit(15)
+            ->skip($skip)
+            ->take($perPage)
             ->get()
             ->map(function ($cliente) {
                 if ($cliente->membresiaActual) {
@@ -41,7 +53,18 @@ class ClienteController extends Controller
                 return $cliente;
             });
 
-        return response()->json($clientes);
+        $total = Cliente::count();
+        $totalPages = ceil($total / $perPage);
+
+        return response()->json([
+            'data' => $clientes,
+            'pagination' => [
+                'current_page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'total_pages' => $totalPages
+            ]
+        ]);
     }
 
     /**
@@ -54,6 +77,8 @@ class ClienteController extends Controller
             'cedula' => 'required|string|max:20|unique:clientes,cedula',
             'correo' => 'required|email|unique:clientes,correo',
             'telefono' => 'nullable|string|max:20',
+            'eps' => 'nullable|string|max:100',
+            'numero_emergencia' => 'nullable|string|max:20',
             'foto' => 'nullable|image|max:2048',
             'membresia_id' => 'required|exists:membresias,id',
         ]);
@@ -69,12 +94,13 @@ class ClienteController extends Controller
                 'cedula' => $request->cedula,
                 'correo' => $request->correo,
                 'telefono' => $request->telefono,
+                'eps' => $request->eps,
+                'numero_emergencia' => $request->numero_emergencia,
                 'foto' => $fotoPath,
             ]);
 
             $membresia = Membresia::findOrFail($request->membresia_id);
             $fechaInicio = Carbon::now()->startOfDay();
-            
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
@@ -91,10 +117,7 @@ class ClienteController extends Controller
             return response()->json(['success' => true, 'cliente' => $cliente]);
         } catch (\Exception $e) {
             Log::error('Error al registrar cliente: ' . $e->getMessage());
-            return response()->json([
-                'success' => false, 
-                'message' => 'Error interno al registrar el cliente: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Error interno al registrar el cliente.'], 500);
         }
     }
 
@@ -104,7 +127,7 @@ class ClienteController extends Controller
     public function show($id)
     {
         $cliente = Cliente::with(['membresiaActual.membresia'])->findOrFail($id);
-        
+
         if ($cliente->membresiaActual) {
             $cliente->estado = $this->calcularEstadoMembresia(
                 $cliente->membresiaActual->fecha_inicio,
@@ -119,7 +142,7 @@ class ClienteController extends Controller
             $cliente->fecha_fin = null;
             $cliente->membresia_actual = null;
         }
-        
+
         return response()->json($cliente);
     }
 
@@ -133,6 +156,8 @@ class ClienteController extends Controller
             'cedula' => 'required|string|max:20|unique:clientes,cedula,' . $id,
             'correo' => 'required|email|unique:clientes,correo,' . $id,
             'telefono' => 'nullable|string|max:20',
+            'eps' => 'nullable|string|max:100',
+            'numero_emergencia' => 'nullable|string|max:20',
             'foto' => 'nullable|image|max:2048',
             'membresia_id' => 'required|exists:membresias,id',
             'metodo_pago' => 'nullable|string|max:50',
@@ -151,6 +176,8 @@ class ClienteController extends Controller
                 'cedula' => $request->cedula,
                 'correo' => $request->correo,
                 'telefono' => $request->telefono,
+                'eps' => $request->eps,
+                'numero_emergencia' => $request->numero_emergencia,
             ]);
 
             if ($request->membresia_id != $cliente->membresiaActual?->membresia_id) {
@@ -173,10 +200,7 @@ class ClienteController extends Controller
             return response()->json(['success' => true, 'cliente' => $cliente]);
         } catch (\Exception $e) {
             Log::error('Error al actualizar cliente: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al actualizar el cliente: ' . $e->getMessage()
-            ], 500);
+            return response()->json(['success' => false, 'message' => 'Error al actualizar el cliente.'], 500);
         }
     }
 
@@ -193,7 +217,7 @@ class ClienteController extends Controller
         try {
             $cliente = Cliente::findOrFail($id);
             $membresia = Membresia::findOrFail($request->membresia_id);
-            
+
             $fechaInicio = Carbon::now()->startOfDay();
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
@@ -259,39 +283,49 @@ class ClienteController extends Controller
             $fechaInicio = Carbon::parse($request->fecha_inicio);
             $fechaFin = Carbon::parse($request->fecha_fin)->endOfDay();
 
-            $query = PagoMembresia::with(['cliente', 'membresia'])
+            // Obtener pagos de membresías
+            $pagos = PagoMembresia::with(['cliente', 'membresia'])
                 ->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
                 ->orderBy('cliente_id')
-                ->latest('id');
-
-            $pagos = $query->get();
+                ->latest('id')
+                ->get();
 
             $clientes = $pagos->map(function ($pago) {
                 $cliente = $pago->cliente;
-                $cliente->estado = $this->calcularEstadoMembresia(
-                    $pago->fecha_inicio,
-                    $pago->fecha_fin
-                );
+                $cliente->estado = $this->calcularEstadoMembresia($pago->fecha_inicio, $pago->fecha_fin);
                 $cliente->membresia_nombre = $pago->membresia->nombre ?? 'N/A';
                 $cliente->fecha_inicio = $pago->fecha_inicio->format('d/m/Y');
                 $cliente->fecha_fin = $pago->fecha_fin->format('d/m/Y');
-                $cliente->monto = $pago->monto ?? 0;
-                $cliente->metodo_pago = $pago->metodo_pago ?? 'N/A';
+                $cliente->metodo_pago = $pago->metodo_pago ?? 'No especificado';
                 return $cliente;
             })->unique('id');
 
             if ($request->estado) {
-                $clientes = $clientes->filter(function ($cliente) use ($request) {
-                    return $cliente->estado === $request->estado;
-                });
+                $clientes = $clientes->filter(fn($cliente) => $cliente->estado === $request->estado);
             }
+
+            // Obtener pagos diarios
+            $pagosDiarios = collect();
+            if ($request->has('incluir_pagos_diarios') && $request->incluir_pagos_diarios == 1) {
+                $pagosDiarios = PagoDiario::whereBetween('fecha', [$fechaInicio, $fechaFin])
+                    ->orderBy('fecha', 'desc')
+                    ->get();
+            }
+
+            // Totales
+            $total_clientes = $clientes->count();
+            $total_pagos_diarios = $pagosDiarios->count();
+            $total_registros = $total_clientes + $total_pagos_diarios;
 
             $data = [
                 'clientes' => $clientes,
+                'pagos_diarios' => $pagosDiarios,
                 'fecha_inicio' => $fechaInicio->format('d/m/Y'),
                 'fecha_fin' => $fechaFin->format('d/m/Y'),
                 'fecha_generacion' => Carbon::now()->format('d/m/Y H:i:s'),
-                'total' => $clientes->count(),
+                'total_clientes' => $total_clientes,
+                'total_pagos_diarios' => $total_pagos_diarios,
+                'total_registros' => $total_registros,
                 'logo_url' => asset('images/logo-gym.png'),
             ];
 
@@ -305,9 +339,8 @@ class ClienteController extends Controller
             ], 500);
         }
     }
-
     /**
-     * Exportar clientes a Excel (CSV)
+     * Exportar clientes a Excel
      */
     public function exportExcel(Request $request)
     {
@@ -321,72 +354,57 @@ class ClienteController extends Controller
             $fechaInicio = Carbon::parse($request->fecha_inicio);
             $fechaFin = Carbon::parse($request->fecha_fin)->endOfDay();
 
+            // === OBTENER PAGOS DE MEMBRESÍAS ===
             $query = PagoMembresia::with(['cliente', 'membresia'])
                 ->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
                 ->orderBy('cliente_id')
                 ->latest('id');
 
-            $pagos = $query->get();
+            $pagosMembresias = $query->get();
 
-            $clientes = $pagos->map(function ($pago) {
+            $clientes = $pagosMembresias->map(function ($pago) {
                 $cliente = $pago->cliente;
-                $cliente->estado = $this->calcularEstadoMembresia(
-                    $pago->fecha_inicio,
-                    $pago->fecha_fin
-                );
+                $cliente->estado = $this->calcularEstadoMembresia($pago->fecha_inicio, $pago->fecha_fin);
                 $cliente->membresia_nombre = $pago->membresia->nombre ?? 'N/A';
                 $cliente->fecha_inicio = $pago->fecha_inicio->format('d/m/Y');
                 $cliente->fecha_fin = $pago->fecha_fin->format('d/m/Y');
-                $cliente->monto = $pago->monto ?? 0;
-                $cliente->metodo_pago = $pago->metodo_pago ?? 'N/A';
                 return $cliente;
             })->unique('id');
 
             if ($request->estado) {
-                $clientes = $clientes->filter(function ($cliente) use ($request) {
-                    return $cliente->estado === $request->estado;
-                });
+                $clientes = $clientes->filter(fn($cliente) => $cliente->estado === $request->estado);
             }
 
-            $filename = 'reporte-clientes-' . date('Y-m-d') . '.csv';
-            $headers = [
-                'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Pragma' => 'no-cache',
-                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
-                'Expires' => '0'
-            ];
+            $pagosDiarios = PagoDiario::whereBetween('fecha', [$fechaInicio, $fechaFin])
+                ->orderBy('fecha', 'desc')
+                ->get();
 
-            $callback = function() use ($clientes) {
-                $file = fopen('php://output', 'w');
-                
-                fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-                
-                fputcsv($file, [
-                    'N°',
-                    'Nombre Completo',
-                    'Cédula',
-                    'Correo',
-                    'Teléfono',
-                    'Membresía',
-                    'Fecha Inicio',
-                    'Fecha Fin',
-                    'Monto',
-                    'Método de Pago',
-                    'Estado',
-                    'Fecha Registro'
-                ], ';');
+            // === CONTADORES ===
+            $totalClientes = $clientes->count();
+            $totalPagosDiarios = $pagosDiarios->count();
 
-                $numero = 1;
-                foreach ($clientes as $cliente) {
-                    $estadoTexto = match($cliente->estado) {
-                        'activa' => 'Activa',
-                        'proxima' => 'Próxima a vencer',
-                        'vencida' => 'Vencida',
-                        default => 'Sin membresía'
-                    };
+            // === CREAR DOCUMENTO EXCEL ===
+            $spreadsheet = new Spreadsheet();
 
-                    fputcsv($file, [
+            // ===== HOJA 1: MEMBRESÍAS =====
+            $sheet1 = $spreadsheet->getActiveSheet();
+            $sheet1->setTitle('Membresías');
+            $sheet1->fromArray([
+                ['N°', 'Nombre Completo', 'Cédula', 'Correo', 'Teléfono', 'Membresía', 'Fecha Inicio', 'Fecha Fin', 'Estado', 'Fecha Registro']
+            ]);
+
+            $row = 2;
+            $numero = 1;
+            foreach ($clientes as $cliente) {
+                $estadoTexto = match ($cliente->estado) {
+                    'activa' => 'Activa',
+                    'proxima' => 'Próxima a vencer',
+                    'vencida' => 'Vencida',
+                    default => 'Sin membresía'
+                };
+
+                $sheet1->fromArray([
+                    [
                         $numero++,
                         $cliente->nombre_completo,
                         $cliente->cedula,
@@ -395,20 +413,79 @@ class ClienteController extends Controller
                         $cliente->membresia_nombre,
                         $cliente->fecha_inicio,
                         $cliente->fecha_fin,
-                        '$' . number_format($cliente->monto, 2),
-                        ucfirst($cliente->metodo_pago),
                         $estadoTexto,
                         $cliente->created_at->format('d/m/Y')
-                    ], ';');
-                }
+                    ]
+                ], null, "A{$row}");
+                $row++;
+            }
 
-                fclose($file);
-            };
+            $lastRow1 = $row - 1;
+            $sheet1->getStyle("A1:J{$lastRow1}")
+                ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $sheet1->getStyle("A1:J1")->getFont()->setBold(true)->getColor()->setRGB('272727');
+            $sheet1->getStyle("A1:J1")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('fcd52b'); // Amarillo suave
+            $sheet1->getStyle("A1:J1")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            foreach (range('A', 'J') as $col) $sheet1->getColumnDimension($col)->setAutoSize(true);
 
-            return response()->stream($callback, 200, $headers);
+            // ===== HOJA 2: PAGOS DIARIOS =====
+            $sheet2 = $spreadsheet->createSheet();
+            $sheet2->setTitle('Pagos Diarios');
+            $sheet2->fromArray([
+                ['N°', 'Nombre Cliente', 'Método de Pago', 'Fecha']
+            ]);
 
+            $row = 2;
+            $numero = 1;
+            foreach ($pagosDiarios as $pago) {
+                $sheet2->fromArray([
+                    [
+                        $numero++,
+                        $pago->nombre_cliente ?? 'Sin nombre',
+                        ucfirst($pago->metodo_pago ?? 'No especificado'),
+                        Carbon::parse($pago->fecha)->format('d/m/Y')
+                    ]
+                ], null, "A{$row}");
+                $row++;
+            }
+
+            $lastRow2 = $row - 1;
+            $sheet2->getStyle("A1:D{$lastRow2}")
+                ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $sheet2->getStyle("A1:D1")->getFont()->setBold(true)->getColor()->setRGB('272727');
+            $sheet2->getStyle("A1:D1")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('fcd52b'); // Amarillo suave
+            $sheet2->getStyle("A1:D1")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            foreach (range('A', 'D') as $col) $sheet2->getColumnDimension($col)->setAutoSize(true);
+
+            // ===== HOJA 3: RESUMEN GENERAL =====
+            $sheet3 = $spreadsheet->createSheet();
+            $sheet3->setTitle('Resumen General');
+            $sheet3->fromArray([
+                ['Tipo', 'Cantidad de Registros'],
+                ['Clientes con Membresía', $totalClientes],
+                ['Pagos Diarios', $totalPagosDiarios],
+            ]);
+
+            $sheet3->getStyle("A1:B3")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $sheet3->getStyle("A1:B1")->getFont()->setBold(true)->getColor()->setRGB('272727');
+            $sheet3->getStyle("A1:B1")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('fcd52b'); // Amarillo suave
+            $sheet3->getStyle("A1:B3")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            foreach (range('A', 'B') as $col) $sheet3->getColumnDimension($col)->setAutoSize(true);
+
+            // === DESCARGAR ARCHIVO ===
+            $filename = 'reporte-clientes-' . date('Y-m-d') . '.xlsx';
+            $writer = new Xlsx($spreadsheet);
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $filename, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ]);
         } catch (\Exception $e) {
-            Log::error('Error al generar CSV: ' . $e->getMessage());
+            Log::error('Error al generar Excel: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error al generar el archivo: ' . $e->getMessage()
@@ -422,13 +499,13 @@ class ClienteController extends Controller
     private function calcularFechaFin($membresia, $fechaInicio)
     {
         $fechaFin = Carbon::parse($fechaInicio);
-        
+
         if ($membresia->tipo_duracion === 'meses') {
             return $fechaFin->addMonths($membresia->duracion);
         } elseif ($membresia->tipo_duracion === 'dias') {
             return $fechaFin->addDays($membresia->duracion);
         }
-        
+
         return $fechaFin;
     }
 

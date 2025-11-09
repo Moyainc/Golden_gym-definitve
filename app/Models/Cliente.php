@@ -14,6 +14,8 @@ class Cliente extends Model
         'cedula',
         'correo',
         'telefono',
+        'eps',
+        'numero_emergencia',
         'foto',
     ];
 

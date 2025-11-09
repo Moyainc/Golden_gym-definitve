@@ -4,7 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const tableBody = document.getElementById("membershipsTableBody");
     let editingMembershipId = null;
 
-    const apiUrl = (path) => `/golden-gym/public/${path}`;
+    const apiUrl = (path) => {
+        const base = window.app?.baseUrl || window.location.origin;
+        return `${base}/${path.replace(/^\/+/, "")}`;
+    };
     const feather = window.feather;
     const bootstrap = window.bootstrap;
     const Swal = window.Swal;
@@ -13,33 +16,37 @@ document.addEventListener("DOMContentLoaded", () => {
     loadMembresias();
 
     function loadMembresias() {
-    fetch(apiUrl("admin/membresias/list/json"))
-        .then(res => res.json())
-        .then(data => {
-            const tbody = document.getElementById("membershipsTableBody");
-            tbody.innerHTML = "";
+        fetch(apiUrl("admin/membresias/list/json"))
+            .then((res) => res.json())
+            .then((data) => {
+                const tbody = document.getElementById("membershipsTableBody");
+                tbody.innerHTML = "";
 
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `
                     <tr>
                         <td colspan="5" class="text-center text-muted py-3">
                             No hay membresías registradas.
                         </td>
                     </tr>`;
-                feather.replace();
-                return;
-            }
+                    feather.replace();
+                    return;
+                }
 
-            data.forEach(m => {
-                const duracion = m.duracion ? m.duracion : "—";
-                const tipoDuracion = m.tipo_duracion
-                    ? (m.tipo_duracion === "meses"
-                        ? (m.duracion == 1 ? "Mes" : "Meses")
-                        : (m.duracion == 1 ? "Día" : "Días"))
-                    : "—";
-                const precio = `$${parseInt(m.precio).toLocaleString("es-CO")}`;
+                data.forEach((m) => {
+                    const duracion = m.duracion ? m.duracion : "—";
+                    const tipoDuracion = m.tipo_duracion
+                        ? m.tipo_duracion === "meses"
+                            ? m.duracion == 1
+                                ? "Mes"
+                                : "Meses"
+                            : m.duracion == 1
+                                ? "Día"
+                                : "Días"
+                        : "—";
+                    const precio = `$${parseInt(m.precio).toLocaleString("es-CO")}`;
 
-                const row = `
+                    const row = `
                     <tr data-id="${m.id}">
                         <td class="nombre">${m.nombre}</td>
                         <td class="duracion">${duracion}</td>
@@ -54,14 +61,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             </button>
                         </td>
                     </tr>`;
-                tbody.insertAdjacentHTML("beforeend", row);
-            });
+                    tbody.insertAdjacentHTML("beforeend", row);
+                });
 
-            feather.replace();
-        })
-        .catch(err => console.error("Error cargando membresías:", err));
-}
-
+                feather.replace();
+            })
+            .catch((err) => console.error("Error cargando membresías:", err));
+    }
 
     // ➕ NUEVA MEMBRESÍA
     document.getElementById("addMembershipBtn").addEventListener("click", () => {
@@ -149,6 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     form.reset();
                     editingMembershipId = null;
                     loadMembresias();
+                    cargarEstadisticasMembresias(); // 👈 recarga estadísticas también
                 } else {
                     Swal.fire({
                         icon: "error",
@@ -219,6 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 showConfirmButton: false,
                             });
                             loadMembresias();
+                            cargarEstadisticasMembresias(); // 👈 recarga estadísticas también
                         } else {
                             Swal.fire({
                                 icon: "error",
@@ -243,4 +251,123 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
+
+    // === Estadísticas ===
+    // Variables globales para destruir gráficos anteriores
+
+    let graficoPopularidadInstance = null;
+
+    async function cargarEstadisticasMembresias() {
+        try {
+            const response = await fetch(apiUrl("admin/membresias/estadisticas"));
+            const data = await response.json();
+
+            // === ACTUALIZAR CARDS ===
+            document.getElementById("totalMembresias").textContent = data.resumen.total_membresias ?? 0;
+            document.getElementById("clientesActivos").textContent = data.resumen.clientes_activos ?? 0;
+            document.getElementById("membresiaPopular").textContent = data.resumen.membresia_mas_popular.nombre ?? '—';
+            // Cambiamos “promedio de duración” por “Total de ingresos por membresías”
+            document.getElementById("ingresosMembresias").textContent =
+                data.resumen.ingresos_membresias
+                    ? `$${Number(data.resumen.ingresos_membresias).toLocaleString()}`
+                    : "$0";
+
+            // === GRÁFICOS ===
+            renderGraficoPopularidad(data.popularidad);
+            renderGraficoPrecios(data.precios);
+
+            // Mostrar lista debajo del gráfico pastel
+            renderListaPopularidad(data.popularidad);
+
+        } catch (error) {
+            console.error("Error al cargar estadísticas:", error);
+        }
+    }
+
+    function renderGraficoPopularidad(popularidad) {
+        const ctx = document.getElementById("graficoPopularidad")?.getContext("2d");
+        if (!ctx) return;
+
+        // Destruir gráfico anterior si existe
+        if (graficoPopularidadInstance) graficoPopularidadInstance.destroy();
+
+        // Función para abreviar números grandes
+        const abreviar = (num) => {
+            if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+            if (num >= 1_000) return (num / 1_000).toFixed(1) + "K";
+            return num.toString();
+        };
+
+        // Labels y datos
+        const labels = popularidad.map(p => `${p.nombre} (${abreviar(p.total)})`);
+        const data = popularidad.map(p => p.total);
+
+        const colores = [
+            "#FFD700", "#FF8C00", "#ADFF2F", "#00BFFF", "#FF69B4",
+            "#8A2BE2", "#00FA9A", "#FF4500", "#7FFF00", "#1E90FF"
+        ];
+
+        graficoPopularidadInstance = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: colores,
+                    borderWidth: 2,
+                    borderColor: "#1a1a1a"
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: "top",
+                        labels: {
+                            color: "#000",
+                            font: { size: 13 },
+                            padding: 12
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                const total = data.reduce((a, b) => a + b, 0);
+                                const valor = ctx.parsed;
+                                const porcentaje = ((valor / total) * 100).toFixed(1);
+                                return `${ctx.label}: ${valor.toLocaleString()} (${porcentaje}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Renderizar lista de detalle debajo de la gráfica
+        renderListaPopularidad(popularidad);
+    }
+    // Ejecutar al inicio
+    cargarEstadisticasMembresias();
 });
+// Función para renderizar la lista de detalles
+function renderListaPopularidad(popularidad) {
+    const contenedor = document.getElementById("detallePopularidad");
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    const total = popularidad.reduce((sum, p) => sum + p.total, 0);
+
+    popularidad.forEach((p, i) => {
+        const color = [
+            "#FFD700", "#FF8C00", "#ADFF2F", "#00BFFF", "#FF69B4",
+            "#8A2BE2", "#00FA9A", "#FF4500", "#7FFF00", "#1E90FF"
+        ][i % 10];
+
+
+    });
+}
+
+

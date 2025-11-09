@@ -18,4 +18,10 @@ trait HasPrecioFormatted
 
     return '$' . number_format($valor, 0, ',', '.');
   }
+
+  // ✅ Nuevo método para llamar desde controlador
+  public function precioFormatted($valor)
+  {
+    return '$' . number_format($valor, 0, ',', '.');
+  }
 }

@@ -5,18 +5,36 @@ namespace App\Http\Controllers;
 use App\Models\PagoDiario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PagoDiarioController extends Controller
 {
     public function index()
     {
         try {
+            $page = (int) request()->query('page', 1) ?: 1;
+            $perPage = (int) request()->query('per_page', 5) ?: 5;
+            $skip = ($page - 1) * $perPage;
+
             $pagos = PagoDiario::orderByDesc('fecha')
                 ->orderByDesc('id')
-                ->limit(15)
+                ->skip($skip)
+                ->take($perPage)
                 ->get();
 
-            return response()->json($pagos);
+            $total = PagoDiario::count();
+            $totalPages = ceil($total / $perPage);
+
+            return response()->json([
+                'data' => $pagos,
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                    'total_pages' => $totalPages
+                ]
+            ]);
         } catch (\Exception $e) {
             Log::error('Error al listar pagos diarios: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Error al cargar pagos diarios'], 500);
@@ -70,6 +88,43 @@ class PagoDiarioController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al eliminar el pago diario'
+            ], 500);
+        }
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $request->validate([
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+        ]);
+
+        try {
+            $fechaInicio = Carbon::parse($request->fecha_inicio);
+            $fechaFin = Carbon::parse($request->fecha_fin)->endOfDay();
+
+            $pagos = PagoDiario::whereBetween('fecha', [$fechaInicio, $fechaFin])
+                ->orderByDesc('fecha')
+                ->orderByDesc('id')
+                ->get();
+
+            $data = [
+                'pagos' => $pagos,
+                'fecha_inicio' => $fechaInicio->format('d/m/Y'),
+                'fecha_fin' => $fechaFin->format('d/m/Y'),
+                'fecha_generacion' => Carbon::now()->format('d/m/Y H:i:s'),
+                'total' => $pagos->count(),
+                'total_monto' => $pagos->sum('monto'),
+                'logo_url' => asset('images/logo-gym.png'),
+            ];
+
+            $pdf = Pdf::loadView('reports.pagos-diarios-pdf', $data);
+            return $pdf->download('reporte-pagos-diarios-' . date('Y-m-d') . '.pdf');
+        } catch (\Exception $e) {
+            Log::error('Error al generar PDF: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al generar el PDF: ' . $e->getMessage()
             ], 500);
         }
     }
