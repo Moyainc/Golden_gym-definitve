@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let chartCategoria, chartProducto, chartMes;
 
-
     // Formateo en pesos colombianos
     function formatearCOP(valor) {
         if (valor === null || valor === undefined || valor === "") return "$0";
@@ -99,11 +98,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         {
                             data: ventasPorCategoriaValores,
                             backgroundColor: [
-                                "#f59e0b",
-                                "#10b981",
-                                "#3b82f6",
-                                "#ef4444",
-                                "#8b5cf6",
+                                "#FFD700", // Amarillo dorado (armoniza con botones)
+                                "#FFB347", // Amarillo-naranja suave
+                                "#4D96FF", // Azul brillante
+                                "#9B5DE5", // Morado vibrante
+                                "#FF69B4", // Rosa fuerte
+                                "#6BCB77", // Verde fresco
+                                "#00CED1", // Turquesa
+                                "#F4A261", // Amarillo-anaranjado pastel
+                                "#8AC926", // Verde lima vivo
                             ],
                         },
                     ],
@@ -155,7 +158,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         {
                             label: "Ventas por Producto",
                             data: ventasPorProductoValores,
-                            backgroundColor: "#3b82f6",
+                            backgroundColor: "#ffd52b",
+                            hoverBackgroundColor: "#fab300",
                         },
                     ],
                 },
@@ -221,10 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         {
                             label: "Total Ventas",
                             data: ventasPorMesValores,
-                            borderColor: "#f59e0b",
-                            backgroundColor: "rgba(245,158,11,0.3)",
+                            borderColor: "#FAD730",
+                            backgroundColor: "rgba(225,178,11,0.2)",
                             fill: true,
-                            pointBackgroundColor: "#f59e0b",
+                            pointBackgroundColor: "#FAD730",
                             pointRadius: 5,
                             tension: 0.4,
                         },

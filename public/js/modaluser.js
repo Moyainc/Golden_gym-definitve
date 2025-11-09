@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const eyeIcon = document.getElementById("eyeIcon");
     const modalTitle = document.getElementById("addEditUserModalLabel");
     const saveButton = form.querySelector("button[type='submit']");
-    const DEFAULT_IMG = "{{ asset('img/avatars/user.png') }}";
 
     const passwordGroup = document.querySelectorAll(".row.mb-3")[2];
     let changePasswordBtn = null;
@@ -118,9 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("userPhone").value =
                     data.telefono || "";
                 document.getElementById("userRole").value = data.rol;
-                previewImg.src = data.foto
-                    ? `/storage/${data.foto}`
-                    : DEFAULT_IMG;
+                console.log(DEFAULT_IMG);
+                previewImg.src =
+                    data.foto && !data.foto.includes("default.png")
+                        ? data.foto
+                        : DEFAULT_IMG;
 
                 modalTitle.innerHTML = `<i data-feather="edit" class="me-1"></i> Editar usuario`;
                 saveButton.innerHTML = `<i data-feather="save" class="me-1"></i> Actualizar usuario`;

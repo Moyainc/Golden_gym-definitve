@@ -36,11 +36,19 @@ class ProductoController extends Controller
   public function store(Request $request)
   {
     try {
+
+      if ($request->has('precio')) {
+        // Elimina cualquier carácter que no sea dígito
+        $request->merge([
+          'precio' => preg_replace('/\D/', '', $request->precio)
+        ]);
+      }
+
       $validated = $request->validate([
         'nombre' => 'required|string|max:255|unique:productos,nombre,' . ($id->id ?? 'NULL'),
         'categoria_id' => 'required|exists:categorias,id',
         'stock' => 'required|integer|min:0',
-        'precio' => 'required|numeric|min:0',
+        'precio' => 'required|integer|min:0',
         'estado' => 'required|in:Activo,Inactivo',
       ], [
         'nombre.unique' => "El producto '{$request->nombre}' ya está registrado.",
@@ -70,11 +78,18 @@ class ProductoController extends Controller
   public function update(Request $request, Producto $id)
   {
     try {
+
+      if ($request->has('precio')) {
+        $request->merge([
+          'precio' => preg_replace('/\D/', '', $request->precio)
+        ]);
+      }
+
       $validated = $request->validate([
         'nombre' => 'required|string|max:255|unique:productos,nombre,' . $id->id,
         'categoria_id' => 'required|exists:categorias,id',
         'stock' => 'required|integer|min:0',
-        'precio' => 'required|numeric|min:0',
+        'precio' => 'required|integer|min:0',
         'estado' => 'required|in:Activo,Inactivo',
       ]);
 

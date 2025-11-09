@@ -96,7 +96,6 @@
                 <h6 class="mb-0 tittle-color">
                   <i data-feather="user-check" class="me-1"></i>Usuarios
                 </h6>
-                <small id="usersCount" class="text-muted">3 usuarios</small>
               </div>
               <div class="card-body">
                 <div class="table-responsive">
@@ -219,12 +218,14 @@
                 </div>
               </div>
 
+              @php
+              $userFoto = Auth::user()->foto;
+              @endphp
               <!-- Foto de perfil -->
               <div class="text-center mb-3">
                 <img
                   id="previewUserImage"
-                  src="{{ asset('img/avatars/user.png') }}"
-                  alt="Foto de perfil"
+                  src="{{ $userFoto && file_exists(public_path('storage/' . $userFoto)) ? asset('storage/' . $userFoto) : asset('img/avatars/user.png') }}" alt="Foto de usuario"
                   class="rounded-circle border border-secondary mb-2"
                   width="100"
                   height="100" />
@@ -333,6 +334,9 @@
 
   </div>
 </div>
+<script>
+  const DEFAULT_IMG = "{{ asset('img/avatars/user.png') }}";
+</script>
 <script src="{{ asset('js/modaluser.js') }}"></script>
 
 @endsection

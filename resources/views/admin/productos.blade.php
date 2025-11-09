@@ -265,7 +265,7 @@
     <div class="modal-content bg-dark text-light border-warning">
       <div class="modal-header border-secondary">
         <h5
-          class="modal-title text-warning fw-bold"
+          class="modal-title tittle-color fw-bold"
           id="productModalTitle">
           <i data-feather="package"></i> Nuevo Producto
         </h5>
@@ -313,7 +313,10 @@
               class="form-control text-light border-0"
               id="precioProducto"
               required />
+            <small class="tittle-color fst-italic">No digite puntos ni comas</small>
           </div>
+
+
 
           <div class="col-md-4">
             <label class="form-label">Estado</label>

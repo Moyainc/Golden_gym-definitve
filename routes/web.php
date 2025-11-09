@@ -12,6 +12,7 @@ use App\Http\Controllers\PagoDiarioController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\ResumenVentasController;
 use App\Http\Controllers\ResumenMembresiasController;
+use App\Http\Controllers\ResumenGeneralController;
 
 
 
@@ -152,6 +153,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin/api/resumen-contabilidad', [ResumenMembresiasController::class, 'getResumenContabilidad']);
     Route::get('admin/exportar/contabilidad-pdf', [ResumenMembresiasController::class, 'exportContabilidadPdf']);
     Route::get('admin/exportar/contabilidad-excel', [ResumenMembresiasController::class, 'exportContabilidadExcel']);
+    Route::get('admin/resumen-general/datos', [ResumenGeneralController::class, 'obtenerDatos'])->name('admin.general.datos');
   });
 
 

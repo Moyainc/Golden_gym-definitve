@@ -33,13 +33,6 @@ class PagoGeneral extends Model
     }
 
 
-    /**
-     * Relación polimórfica según tipo_pago
-     * Por ejemplo:
-     * - 'venta_producto' => Venta
-     * - 'membresia' => Membresia
-     * - 'pago_individual' => Pago
-     */
     public function origen()
     {
         return $this->morphTo(null, 'tipo_pago', 'origen_id');
