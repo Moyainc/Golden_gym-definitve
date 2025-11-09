@@ -250,6 +250,7 @@ class VentaController extends Controller
       PagoGeneral::create([
         'tipo_pago' => 'venta_producto',
         'origen_id' => $venta->id,
+        'origen_type' => Venta::class,
         'monto' => $total,
         'metodo_pago' => $request->metodo_pago,
         'usuario_id' => $request->usuario_id,

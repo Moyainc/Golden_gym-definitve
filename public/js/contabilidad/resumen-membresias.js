@@ -118,7 +118,7 @@ function inicializarFiltros() {
 }
 // CARGAR AÑOS QUE TIENEN DATOS
 function cargarAniosDisponibles() {
-    fetch('/golden-gym/public/admin/api/anios-disponibles')
+    fetch(apiUrl('admin/api/anios-disponibles'))
         .then(res => res.json())
         .then(data => {
             if (!data.success) return;
@@ -181,7 +181,7 @@ function cargarDatos() {
     const anio = document.getElementById("filterAnio")?.value;
     if (!mes || !anio) return;
 
-    fetch(`/golden-gym/public/admin/api/resumen-contabilidad?mes=${mes}&anio=${anio}`)
+    fetch(apiUrl(`admin/api/resumen-contabilidad?mes=${mes}&anio=${anio}`))
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {

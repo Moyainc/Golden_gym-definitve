@@ -47,10 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnClose = document.querySelector("#ventaRapidaModal .btn-close");
     let timeout = null;
     const suggestionBox = document.getElementById("suggestionBox");
-    const apiUrl = (path) => {
-        const base = `${window.location.origin}/golden_gym/public`;
-        return `${base}/${path.replace(/^\/+/, "")}`;
-    };
 
     // 🔍 Búsqueda dinámica
     identificacionInput.addEventListener("input", () => {
