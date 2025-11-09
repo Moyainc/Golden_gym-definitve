@@ -379,10 +379,11 @@
                 <div class="d-flex justify-content-center align-items-center">
                   <img
                     id="viewClientPhoto"
-                    src="{{ asset('storage/usuarios/default.png') }}"
+                    src="{{ asset('img/avatars/user.png') }}"
                     alt="Foto del cliente"
                     class="rounded-circle shadow"
-                    style="width:180px;height:180px;object-fit:cover;border:3px solid #ffc107;" />
+                    style="width:140px; height:140px; object-fit:cover; border:3px solid #ffc107;" />
+
                 </div>
                 <h5 class="mt-3 text-warning fw-bold" id="viewClientName">Nombre del cliente</h5>
                 <p class="text-muted mb-0">Cédula: <span id="viewClientIdNumber">N/A</span></p>
@@ -700,4 +701,3 @@
   <script src="{{ asset('js/pagosdiarios.js') }}"></script>
 </body>
 @endsection
-</merged_code

@@ -6,37 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('pagos_generales', function (Blueprint $table) {
             $table->id();
-
-            // 🔹 Fuente del pago: venta, membresía, pago individual, etc.
-            $table->string('tipo_pago');
-            // Ejemplo: 'venta_producto', 'membresia', 'pago_individual', etc.
-
-            // 🔹 ID del registro en la tabla de origen (por ejemplo, id de la venta)
-            $table->morphs('origen');
-
-            // 🔹 Información contable y general
-            $table->decimal('monto', 11, 0); // total pagado
-            $table->string('metodo_pago');   // Efectivo, Transferencia, etc.
-            $table->unsignedBigInteger('usuario_id')->nullable(); // Usuario que registró el pago
-            $table->timestamp('fecha_pago')->useCurrent(); // Fecha en que se registró el pago
-
+            $table->string('tipo_pago'); // nombre corto del tipo de pago, opcional si usas morphMap
+            $table->string('origen_type'); // clase completa del modelo relacionado
+            $table->unsignedBigInteger('origen_id'); // id del registro relacionado
+            $table->decimal('monto', 15, 2);
+            $table->string('metodo_pago');
+            $table->unsignedBigInteger('usuario_id')->nullable();
+            $table->dateTime('fecha_pago');
             $table->timestamps();
 
+            // Relación opcional con usuarios, no se borra nada si se elimina un usuario
             $table->foreign('usuario_id')
                 ->references('id')
                 ->on('usuarios')
-                ->nullOnDelete();
+                ->nullOnDelete(); // Si borran el usuario, se pone null en usuario_id
         });
     }
 
-    /**
-     * Revertir la migración.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('pagos_generales');
     }

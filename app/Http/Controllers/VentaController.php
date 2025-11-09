@@ -142,13 +142,15 @@ class VentaController extends Controller
 
       // ✅ Registrar pago
       PagoGeneral::create([
-        'tipo_pago' => 'venta_producto',
-        'origen_id' => $venta->id,
-        'monto' => $totalVenta,
+        'tipo_pago'   => 'venta_producto',
+        'origen_id'   => $venta->id,
+        'origen_type' => Venta::class, // <- esto faltaba
+        'monto'       => $totalVenta,
         'metodo_pago' => $request->metodo_pago,
-        'usuario_id' => $request->usuario_id,
-        'fecha_pago' => now(),
+        'usuario_id'  => $request->usuario_id,
+        'fecha_pago'  => now(),
       ]);
+
 
       DB::commit();
 

@@ -36,6 +36,6 @@ class PagoGeneral extends Model
 
     public function origen()
     {
-        return $this->morphTo(null, 'tipo_pago', 'origen_id');
+        return $this->morphTo(null, 'origen_type', 'origen_id');
     }
 }

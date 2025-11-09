@@ -41,10 +41,6 @@ class HomeController extends Controller
     {
         return view('admin/contabilidad/resumen-ventas');
     }
-    public function dashboard()
-    {
-        return view('admin/dashboard');
-    }
     public function membresias()
     {
         $membresias = Membresia::orderByDesc('id')->get();

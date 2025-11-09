@@ -12,10 +12,12 @@ use App\Http\Controllers\PagoDiarioController;
 use App\Http\Controllers\ResumenMembresiasController;
 use App\Http\Controllers\ResumenVentasController;
 use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ResumenGeneralController;
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
 // =========================
-use App\Http\Controllers\ResumenGeneralController;
+
 
 
 
@@ -177,7 +179,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('resumen-ventas/pdf', [ResumenVentasController::class, 'exportVentasPdf'])->name('admin.resumen_ventas.pdf');
     Route::get('resumen-ventas/excel', [ResumenVentasController::class, 'exportVentasExcel'])->name('admin.resumen_ventas.excel');
 
-    Route::get('admin/dashboard', [HomeController::class, 'dashboard'])->name('admin.dashboard');
+
+    Route::get('admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+        // Rutas AJAX para filtros
+    Route::get('admin/dashboard/data/cards', [DashboardController::class, 'cardsData']);
+    Route::get('admin/dashboard/data/chart/monthly', [DashboardController::class, 'monthlyChart']);
+    Route::get('admin/dashboard/data/chart/membership', [DashboardController::class, 'membershipChart']);
+    Route::get('admin/dashboard/data/last-movements', [DashboardController::class, 'lastMovements']);
 
 
     // Moya
