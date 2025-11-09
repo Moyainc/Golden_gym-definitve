@@ -16,7 +16,7 @@ return new class extends Migration
             // Ejemplo: 'venta_producto', 'membresia', 'pago_individual', etc.
 
             // 🔹 ID del registro en la tabla de origen (por ejemplo, id de la venta)
-            $table->unsignedBigInteger('origen_id');
+            $table->morphs('origen');
 
             // 🔹 Información contable y general
             $table->decimal('monto', 11, 0); // total pagado
@@ -25,11 +25,6 @@ return new class extends Migration
             $table->timestamp('fecha_pago')->useCurrent(); // Fecha en que se registró el pago
 
             $table->timestamps();
-
-            $table->foreign('origen_id')
-                ->references('id')
-                ->on('ventas')
-                ->cascadeOnDelete();
 
             $table->foreign('usuario_id')
                 ->references('id')

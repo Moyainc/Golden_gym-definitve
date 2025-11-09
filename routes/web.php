@@ -154,6 +154,7 @@ Route::middleware(['auth'])->group(function () {
         // Ventas básicas
 
         Route::get('admin/ventas/vender', [HomeController::class, 'vender'])->name('admin.vender');
+        Route::get('admin/ventas/list', [VentaController::class, 'listVentas'])->name('admin.list_ventas');
         Route::get('admin/ventas/lista-ventas', [HomeController::class, 'lista_ventas'])->name('admin.lista_ventas');
         Route::get('/admin/ventas/buscar', [VentaController::class, 'buscarCliente'])->name('ventas.buscarCliente');
         Route::post('/admin/ventas/registrar', [VentaController::class, 'store'])->name('ventas.store');

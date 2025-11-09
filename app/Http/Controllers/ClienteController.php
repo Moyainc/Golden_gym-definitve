@@ -106,7 +106,7 @@ class ClienteController extends Controller
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
-            PagoMembresia::create([
+            $pagoMembresia =     PagoMembresia::create([
                 'cliente_id' => $cliente->id,
                 'membresia_id' => $membresia->id,
                 'fecha_inicio' => $fechaInicio,
@@ -115,9 +115,11 @@ class ClienteController extends Controller
                 'estado' => $estado,
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
             ]);
+            // Registrar en pagos generales usando morph
             PagoGeneral::create([
+                'origen_id' => $pagoMembresia->id,            // apunta al pago de membresía
+                'origen_type' => PagoMembresia::class,        // indica la clase para morph
                 'tipo_pago' => 'pagos_membresias',
-                'origen_id' => $cliente->id,
                 'monto' => $membresia->precio,
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
                 'usuario_id' => $request->usuario_id ?? null,

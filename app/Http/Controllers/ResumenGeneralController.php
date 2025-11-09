@@ -34,7 +34,7 @@ class ResumenGeneralController extends Controller
 
     // Totales generales
     $totalGeneral = $pagos->sum('monto');
-    $totalMembresias = $pagos->where('tipo_pago', 'pagos_membresias ')->sum('monto');
+    $totalMembresias = $pagos->where('tipo_pago', 'pagos_membresias')->sum('monto');
     $totalProductos = $pagos->where('tipo_pago', 'venta_producto')->sum('monto');
     $totalPagosDiarios = $pagos->where('tipo_pago', 'pagos_diarios')->sum('monto');
 

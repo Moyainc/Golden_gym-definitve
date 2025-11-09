@@ -613,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         parseFloat(
                             form
                                 .querySelectorAll(".precioRapida")
-                                [i].value.replace("$", "")
+                            [i].value.replace("$", "")
                         ) *
                         parseInt(
                             form.querySelectorAll(".cantidadRapida")[i].value
@@ -706,8 +706,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${v.cantidad ?? 1}</td>
                 <td>$${parseFloat(v.subtotal ?? 0).toLocaleString()}</td>
                 <td>
-                    <span class="badge bg-${
-                        v.estado === "Completada" ? "success" : "secondary"
+                    <span class="badge bg-${v.estado === "Completada" ? "success" : "secondary"
                     }">${v.estado ?? "N/A"}</span>
                 </td>
             `;

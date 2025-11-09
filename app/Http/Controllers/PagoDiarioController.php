@@ -44,6 +44,7 @@ class PagoDiarioController extends Controller
 
     public function store(Request $request)
     {
+        // Validación
         $request->validate([
             'nombre_cliente' => 'required|string|max:255',
             'monto' => 'required|numeric|min:0',
@@ -55,19 +56,19 @@ class PagoDiarioController extends Controller
         DB::beginTransaction();
 
         try {
-            // ✅ Crear registro en pagos diarios
+            // 1️⃣ Crear el registro en pagos diarios
             $pagoDiario = PagoDiario::create([
                 'nombre_cliente' => $request->nombre_cliente,
                 'monto' => $request->monto,
                 'fecha' => $request->fecha,
                 'metodo_pago' => $request->metodo_pago,
-                'usuario_id' => $request->usuario_id ?? null,
             ]);
 
-            // ✅ Crear registro en pagos generales
+            // 2️⃣ Crear el registro en pagos generales usando morphs
             PagoGeneral::create([
-                'tipo_pago' => 'pagos_diarios',
                 'origen_id' => $pagoDiario->id,
+                'origen_type' => PagoDiario::class, // obligatorio para morph
+                'tipo_pago' => 'pagos_diarios',
                 'monto' => $request->monto,
                 'metodo_pago' => $request->metodo_pago,
                 'usuario_id' => $request->usuario_id ?? null,

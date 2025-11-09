@@ -15,6 +15,7 @@ class PagoGeneral extends Model
     protected $fillable = [
         'tipo_pago',
         'origen_id',
+        'origen_type',
         'monto',
         'metodo_pago',
         'usuario_id',
