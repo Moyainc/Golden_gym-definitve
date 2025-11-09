@@ -53,7 +53,7 @@
 
                 <!-- Rol: Administrador -->
                 <div class="mb-4 p-3 border rounded border-secondary">
-                  <h6 class="text-warning mb-2">
+                  <h6 class="tittle-color mb-2">
                     <i data-feather="user-check" class="me-1"></i> Administrador
                   </h6>
                   <p class="mb-0 text-light small">
@@ -64,7 +64,7 @@
 
                 <!-- Rol: Recepcionista -->
                 <div class="mb-4 p-3 border rounded border-secondary">
-                  <h6 class="text-warning mb-2">
+                  <h6 class="tittle-color mb-2">
                     <i data-feather="clipboard" class="me-1"></i> Recepcionista
                   </h6>
                   <p class="mb-0 text-light small">
@@ -75,7 +75,7 @@
 
                 <!-- Rol: Contador -->
                 <div class="p-3 border rounded border-secondary">
-                  <h6 class="text-warning mb-2">
+                  <h6 class="tittle-color mb-2">
                     <i data-feather="file-text" class="me-1"></i> Contador
                   </h6>
                   <p class="mb-0 text-light small">
@@ -96,7 +96,6 @@
                 <h6 class="mb-0 tittle-color">
                   <i data-feather="user-check" class="me-1"></i>Usuarios
                 </h6>
-                <small id="usersCount" class="text-muted">3 usuarios</small>
               </div>
               <div class="card-body">
                 <div class="table-responsive">
@@ -219,12 +218,14 @@
                 </div>
               </div>
 
+              @php
+              $userFoto = Auth::user()->foto;
+              @endphp
               <!-- Foto de perfil -->
               <div class="text-center mb-3">
                 <img
                   id="previewUserImage"
-                  src="{{ asset('storage/usuarios/default.png') }}"
-                  alt="Foto de perfil"
+                  src="{{ $userFoto && file_exists(public_path('storage/' . $userFoto)) ? asset('storage/' . $userFoto) : asset('img/avatars/user.png') }}" alt="Foto de usuario"
                   class="rounded-circle border border-secondary mb-2"
                   width="100"
                   height="100" />
@@ -331,48 +332,11 @@
       </div>
     </div>
 
-
-    <!-- Modal Eliminar Usuario -->
-    <div
-      class="modal fade"
-      id="deleteUserModal"
-      tabindex="-1"
-      aria-labelledby="deleteUserModalLabel"
-      aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-0 shadow-lg">
-          <div class="modal-header border-secondary">
-            <h5 class="modal-title tittle-color" id="deleteUserModalLabel">
-              <i data-feather="trash-2" class="me-1"></i> Eliminar usuario
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <p class="text-white">
-              ¿Estás seguro que deseas eliminar al usuario
-              <strong id="deleteUserName"></strong>?
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal">
-              Cancelar
-            </button>
-            <button type="button" class="btn btn-danger" id="confirmDeleteUser">
-              <i data-feather="trash-2" class="me-1"></i> Eliminar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>
+<script>
+  const DEFAULT_IMG = "{{ asset('img/avatars/user.png') }}";
+</script>
 <script src="{{ asset('js/modaluser.js') }}"></script>
 
 @endsection

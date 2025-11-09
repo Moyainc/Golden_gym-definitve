@@ -96,7 +96,7 @@
 
           <div class="card-body">
             <div class="table-responsive">
-              <table class="table table-dark table-striped align-middle mt-3">
+              <table class="table align-middle mt-3">
                 <thead>
                   <tr class="text-uppercase text-secondary">
                     <th>Nombre</th>

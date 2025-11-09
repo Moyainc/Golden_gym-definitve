@@ -138,7 +138,7 @@
     <!-- Modal Venta Rápida -->
     <div class="modal fade" id="ventaRapidaModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" style="max-width: 820px;">
-        <div class="modal-content bg-dark text-light border-success">
+        <div class="modal-content text-light border-success">
           <div class="modal-header border-success">
             <h5 class="modal-title text-success">
               <i data-feather="zap" class="me-1"></i>Venta Rápida
@@ -177,16 +177,6 @@
                   </div>
 
                   <div class="col-12 col-sm-6 col-md-2">
-                    <label class="form-label">Precio</label>
-                    <input
-                      type="text"
-                      name="precio[]"
-                      class="form-control text-light border-0 precioRapida"
-                      readonly
-                      value="$0" />
-                  </div>
-
-                  <div class="col-12 col-sm-6 col-md-2">
                     <label class="form-label">Cantidad</label>
                     <input
                       type="number"
@@ -194,6 +184,16 @@
                       class="form-control text-light border-0 cantidadRapida"
                       min="1"
                       value="1" />
+                  </div>
+
+                  <div class="col-12 col-sm-6 col-md-2">
+                    <label class="form-label">Subtotal</label>
+                    <input
+                      type="text"
+                      name="precio[]"
+                      class="form-control text-light border-0 precioRapida"
+                      readonly
+                      value="$0" />
                   </div>
 
                   <div class="col mb-2 d-flex align-items-end">

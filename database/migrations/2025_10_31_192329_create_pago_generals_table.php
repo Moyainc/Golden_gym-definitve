@@ -19,7 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('origen_id');
 
             // 🔹 Información contable y general
-            $table->decimal('monto', 10, 1); // total pagado
+            $table->decimal('monto', 11, 0); // total pagado
             $table->string('metodo_pago');   // Efectivo, Transferencia, etc.
             $table->unsignedBigInteger('usuario_id')->nullable(); // Usuario que registró el pago
             $table->timestamp('fecha_pago')->useCurrent(); // Fecha en que se registró el pago

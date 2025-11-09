@@ -8,11 +8,46 @@ document.addEventListener("DOMContentLoaded", () => {
     const eyeIcon = document.getElementById("eyeIcon");
     const modalTitle = document.getElementById("addEditUserModalLabel");
     const saveButton = form.querySelector("button[type='submit']");
-    const DEFAULT_IMG = "{{ asset('storage/usuarios/default.png') }}";
 
-    // Campos de contraseña
-    const passwordGroup = document.querySelectorAll(".row.mb-3")[2]; // bloque de contraseñas
+    const passwordGroup = document.querySelectorAll(".row.mb-3")[2];
     let changePasswordBtn = null;
+
+    const apiUrl = (path) => {
+        const base = window.app?.baseUrl || window.location.origin;
+        return `${base}/${path.replace(/^\/+/, "")}`;
+    };
+
+    // ---------------------- SWEETALERT ----------------------
+    const SwalGlobal = Swal.mixin({
+        background: "#1a1a1a",
+        color: "#fff",
+        confirmButtonColor: "#fcd52b",
+        confirmButtonText: "Aceptar",
+        customClass: {
+            confirmButton: "text-black font-bold",
+        },
+    });
+
+    const showAlert = (type, message, title = null) => {
+        const icons = {
+            error: "error",
+            warning: "warning",
+            success: "success",
+            info: "info",
+        };
+        const colors = {
+            error: "#e63946",
+            warning: "#f8b400",
+            success: "#fcd52b",
+            info: "#4db6ac",
+        };
+        SwalGlobal.fire({
+            icon: icons[type] || "info",
+            title: title || (type === "success" ? "Éxito" : "Error"),
+            text: message,
+            confirmButtonColor: colors[type] || "#fcd52b",
+        });
+    };
 
     // 🔄 Restablecer formulario
     const resetForm = (mode = "nuevo") => {
@@ -20,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
         previewImg.src = DEFAULT_IMG;
         feather.replace();
 
-        // Ocultar campos de contraseña y quitar botón "Cambiar contraseña"
         passwordGroup.classList.add("d-none");
         passwordGroup.classList.remove("d-flex");
         if (changePasswordBtn) {
@@ -31,16 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (mode === "nuevo") {
             modalTitle.innerHTML = `<i data-feather="user-plus" class="me-1"></i> Nuevo usuario`;
             saveButton.innerHTML = `<i data-feather="save" class="me-1"></i> Guardar usuario`;
-            form.action = "{{ route('admin.usuarios.store') }}";
-
             form.action = form.dataset.url;
 
-            // Mostrar campos de contraseña en fila
             passwordGroup.classList.remove("d-none");
             passwordGroup.classList.add("d-flex");
         }
     };
-
 
     // 📸 Vista previa imagen
     fileInput?.addEventListener("change", (e) => {
@@ -69,7 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
             resetForm("editar");
 
             try {
-                const response = await fetch(apiUrl(`/admin/usuarios/${userId}/edit`));
+                const response = await fetch(
+                    apiUrl(`/admin/usuarios/${userId}/edit`)
+                );
                 if (!response.ok)
                     throw new Error(
                         "No se pudieron cargar los datos del usuario."
@@ -77,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const data = await response.json();
 
-                // 🧩 Rellenar los campos
                 document.getElementById("userId").value = data.id;
                 document.getElementById("userName").value =
                     data.nombre_completo;
@@ -86,17 +117,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("userPhone").value =
                     data.telefono || "";
                 document.getElementById("userRole").value = data.rol;
-                previewImg.src = data.foto
-                    ? `/storage/${data.foto}`
-                    : DEFAULT_IMG;
+                console.log(DEFAULT_IMG);
+                previewImg.src =
+                    data.foto && !data.foto.includes("default.png")
+                        ? data.foto
+                        : DEFAULT_IMG;
 
-                // ⚙️ Ajustes del modal
                 modalTitle.innerHTML = `<i data-feather="edit" class="me-1"></i> Editar usuario`;
                 saveButton.innerHTML = `<i data-feather="save" class="me-1"></i> Actualizar usuario`;
                 form.action = apiUrl(`/admin/usuarios/${userId}`);
-                passwordGroup.style.display = "none"; // ocultar contraseñas
+                passwordGroup.style.display = "none";
 
-                // 🔁 Botón "Cambiar contraseña"
                 changePasswordBtn = document.createElement("button");
                 changePasswordBtn.type = "button";
                 changePasswordBtn.className = "btn btn-outline-warning mb-3";
@@ -110,18 +141,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 changePasswordBtn.addEventListener("click", () => {
                     passwordGroup.classList.remove("d-none");
-                    passwordGroup.classList.add("d-flex"); // mantener fila
+                    passwordGroup.classList.add("d-flex");
                     changePasswordBtn.remove();
                     changePasswordBtn = null;
                 });
             } catch (error) {
                 console.error("❌ Error al cargar usuario:", error);
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "No se pudieron cargar los datos del usuario.",
-                    confirmButtonColor: "#e63946",
-                });
+                showAlert(
+                    "error",
+                    "No se pudieron cargar los datos del usuario."
+                );
             }
         });
     });
@@ -129,14 +158,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // 🚀 Envío del formulario (crear o editar)
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
-
         const formData = new FormData(form);
         const userId = document.getElementById("userId").value;
         const isEdit = !!userId;
 
         try {
             const response = await fetch(form.action, {
-                method: isEdit ? "POST" : "POST",
+                method: "POST",
                 body: formData,
                 headers: {
                     "X-CSRF-TOKEN": document.querySelector(
@@ -160,7 +188,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         ? "Usuario actualizado"
                         : "Usuario registrado",
                     text: result.message,
-                    confirmButtonColor: "#f8b400",
+                    background: "#1a1a1a",
+                    color: "#fff",
+                    customClass: { confirmButton: "text-black font-bold" },
+                    timer: 1500,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
                 }).then(() => {
                     resetForm();
                     const bsModal = bootstrap.Modal.getInstance(modal);
@@ -171,89 +204,87 @@ document.addEventListener("DOMContentLoaded", () => {
                 const errores = Object.values(result.errors)
                     .map((e) => e.join("\n"))
                     .join("\n\n");
-                Swal.fire({
-                    icon: "warning",
-                    title: "Errores de validación",
-                    text: errores,
-                    confirmButtonColor: "#f8b400",
-                });
-            } else {
+                showAlert("warning", errores, "Errores de validación");
+            } else
                 throw new Error(
                     result?.message || "Error al procesar el formulario."
                 );
-            }
         } catch (error) {
             console.error("❌ Error al enviar el formulario:", error);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error inesperado al procesar el formulario.",
-                confirmButtonColor: "#e63946",
-            });
+            showAlert(
+                "error",
+                "Ocurrió un error inesperado al procesar el formulario."
+            );
         }
     });
 
-    // 🧹 Limpiar formulario al cerrar modal
     modal.addEventListener("hidden.bs.modal", () => resetForm("nuevo"));
 
-
-
-
-    const deleteModal = document.getElementById("deleteUserModal");
-    const deleteUserName = document.getElementById("deleteUserName");
-    const confirmDeleteBtn = document.getElementById("confirmDeleteUser");
-    let selectedUserId = null;
-
-    // Abrir modal de eliminar
+    // ---------------------- ELIMINACIÓN DE USUARIOS ----------------------
     document.querySelectorAll(".deleteRole").forEach((btn) => {
-        btn.addEventListener("click", () => {
-            selectedUserId = btn.dataset.id;
-            const name = btn.dataset.name;
-            deleteUserName.textContent = name;
+        btn.addEventListener("click", async () => {
+            const userId = btn.dataset.id;
+            const userName = btn.dataset.name;
 
-            const bsModal = new bootstrap.Modal(deleteModal);
-            bsModal.show();
-        });
-    });
-
-    // Confirmar eliminación
-    confirmDeleteBtn.addEventListener("click", async () => {
-        if (!selectedUserId) return;
-
-        try {
-            const response = await fetch(apiUrl(`/admin/usuarios/${selectedUserId}`), {
-                method: "DELETE",
-                headers: {
-                    "X-CSRF-TOKEN": document.querySelector(
-                        'meta[name="csrf-token"]'
-                    ).content,
+            const confirmDelete = await SwalGlobal.fire({
+                title: `Eliminar usuario: ${userName}`,
+                text: "¿Seguro que deseas eliminar este usuario?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Sí, eliminar",
+                cancelButtonText: "Cancelar",
+                confirmButtonColor: "#fcd52b",
+                cancelButtonColor: "#e63946",
+                customClass: {
+                    confirmButton: "text-black font-bold",
+                    cancelButton: "text-white font-bold",
                 },
             });
 
-            const result = await response.json();
+            if (!confirmDelete.isConfirmed) return;
 
-            if (response.ok && result.success) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Usuario eliminado",
-                    text: result.message,
-                    confirmButtonColor: "#f8b400",
-                }).then(() => {
-                    const bsModal = bootstrap.Modal.getInstance(deleteModal);
-                    bsModal.hide();
+            try {
+                const response = await fetch(
+                    apiUrl(`/admin/usuarios/${userId}`),
+                    {
+                        method: "DELETE",
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector(
+                                'meta[name="csrf-token"]'
+                            ).content,
+                        },
+                    }
+                );
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    await showAlert(
+                        "success",
+                        result.message || "Usuario eliminado correctamente"
+                    );
                     location.reload();
-                });
-            } else {
-                throw new Error(result?.message || "Error al eliminar usuario");
+                } else
+                    throw new Error(
+                        result?.message || "Error al eliminar usuario"
+                    );
+            } catch (error) {
+                console.error("❌ Error al eliminar usuario:", error);
+                showAlert("error", "Ocurrió un error al eliminar el usuario.");
             }
-        } catch (error) {
-            console.error("❌ Error al eliminar usuario:", error);
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "Ocurrió un error al eliminar el usuario.",
-                confirmButtonColor: "#e63946",
-            });
-        }
+        });
+    });
+
+    // ---------------------- BUSCADOR ----------------------
+    const searchInput = document.getElementById("searchUsers");
+    const usersTableBody = document.getElementById("usersTableBody");
+    const rows = Array.from(usersTableBody.querySelectorAll("tr"));
+
+    searchInput.addEventListener("input", () => {
+        const term = searchInput.value.toLowerCase();
+        rows.forEach((row) => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(term) ? "" : "none";
+        });
     });
 });

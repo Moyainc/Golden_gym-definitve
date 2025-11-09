@@ -28,7 +28,7 @@ class PerfilController extends Controller
         'cedula' => $user->cedula,
         'rol' => ucfirst($user->rol),
         'ultimo_acceso' => \Carbon\Carbon::parse($ultimoAccesoAnterior)->format('d/m/Y H:i A'),
-        'foto_url' => $user->foto ? asset('storage/' . $user->foto) : asset('img/avatars/avatar-4.jpg')
+        'foto_url' => $user->foto ? asset('storage/' . $user->foto) : asset('img/avatars/user.png')
       ]
     ]);
   }

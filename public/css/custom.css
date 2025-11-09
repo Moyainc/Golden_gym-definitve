@@ -75,7 +75,9 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
+
 /* Estilos para el modal personalizado */
+
 
 .custom-modal {
     display: none;
@@ -131,6 +133,68 @@
     line-height: 1;
     cursor: pointer;
 }
+
+
+
+
+
+/* Fuerza el fondo uniforme oscuro real */
+#detalleModal .modal-content,
+#detalleModal .modal-header,
+#detalleModal .modal-body,
+#detalleModal .modal-footer {
+  background-color: #1a1a1a !important;
+  color: #f5f5f5 !important;
+}
+
+/* Corrige el fondo del diálogo y elimina cualquier herencia azul */
+#detalleModal .modal-dialog {
+  background-color: transparent !important;
+}
+
+/* Scroll personalizado */
+#detalleModalBody::-webkit-scrollbar {
+  width: 8px;
+}
+
+#detalleModalBody::-webkit-scrollbar-thumb {
+  background-color: #fcd52b;
+  border-radius: 10px;
+}
+
+#detalleModalBody::-webkit-scrollbar-track {
+  background-color: #111;
+}
+
+/* Animación suave */
+.modal.fade .modal-dialog {
+  transform: scale(0.96);
+  opacity: 0;
+  transition: all 0.25s ease-out;
+}
+
+.modal.show .modal-dialog {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Sombra elegante */
+#detalleModalContent {
+  box-shadow: 0 0 25px rgba(252, 213, 43, 0.08), 0 0 60px rgba(0, 0, 0, 0.8);
+}
+
+/* Botón hover */
+#detalleModal .btn:hover {
+  background-color: #ffd84f !important;
+  transform: translateY(-1px);
+  transition: 0.2s ease-in-out;
+}
+
+
+
+
+
+
 
 /* Animación suave de aparición */
 @keyframes modalFadeIn {
@@ -303,6 +367,11 @@
     }
 }
 
+.card-body {
+    overflow-y: auto !important;
+}
+
+
 
 
 /* contrasenia
@@ -367,4 +436,31 @@
     flex: 0 0 100%;
     max-width: 100%;
   }
+}
+
+
+
+
+/* Scrollbar completo */
+::-webkit-scrollbar {
+  width: 8px; /* ancho de la scrollbar vertical */
+  height: 8px; /* alto de la scrollbar horizontal */
+}
+
+/* Track (fondo de la barra) */
+::-webkit-scrollbar-track {
+  background: #1a1a1a; /* fondo oscuro */
+  border-radius: 4px;
+}
+
+/* Thumb (la parte que se mueve) */
+::-webkit-scrollbar-thumb {
+  background-color: #fcd62b85; /* color de la barra */
+  border-radius: 4px;
+  border: 2px solid #1a1a1a; /* un pequeño borde para separar del track */
+}
+
+/* Hover sobre la barra */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #eab308;
 }

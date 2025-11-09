@@ -30,13 +30,13 @@
           @if(Auth::check())
           <span class="text-white">{{ Auth::user()->nombre_completo }}</span>
           <img
-            src="{{ Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : asset('img/avatars/default.png') }}"
+            src="{{ Auth::user()->foto ? asset('storage/' . Auth::user()->foto) : asset('img/avatars/user.png') }}"
             class="avatar img-fluid rounded p-1 me-1"
             alt="{{ Auth::user()->nombre_completo }}" />
           @else
           <span class="text-white">Invitado</span>
           <img
-            src="{{ asset('img/avatars/default.png') }}"
+            src="{{ asset('img/avatars/user.png') }}"
             class="avatar img-fluid rounded p-1 me-1"
             alt="Invitado" />
           @endif

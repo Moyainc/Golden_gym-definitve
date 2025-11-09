@@ -24,10 +24,10 @@ return new class extends Migration
             // Datos del pago
             $table->date('fecha_inicio')->nullable();
             $table->date('fecha_fin')->nullable();
-            $table->decimal('monto', 10, 2);
+            $table->decimal('monto', 11, 0);
             $table->string('estado')->default('activo');
             $table->string('metodo_pago')->nullable();
-            
+
             $table->timestamps();
         });
     }

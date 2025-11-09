@@ -95,68 +95,71 @@ class VentaController extends Controller
     DB::beginTransaction();
 
     try {
-      // ✅ Validar stock antes de crear la venta
-      foreach ($request->productos as $producto) {
-        $productoDB = Producto::findOrFail($producto['producto_id']);
-
-        if ($productoDB->stock < $producto['cantidad']) {
-          return response()->json([
-            'success' => false,
-            'message' => "No hay suficiente stock para el producto: {$productoDB->nombre}. Stock actual: {$productoDB->stock}",
-          ], 400);
-        }
-      }
-
-      // ✅ Crear la venta principal
       $totalVenta = 0;
 
+      // ✅ Crear venta principal
       $venta = Venta::create([
         'usuario_id' => $request->usuario_id,
         'cliente_id' => $request->cliente_id,
-        'total' => 0, // se actualizará más adelante
+        'total' => 0, // Se actualizará luego
         'metodo_pago' => $request->metodo_pago,
         'estado' => 'Completada',
-        'descripcion' => 'Venta de productos',
+        'descripcion' => 'Venta detallada de productos',
+        'fecha_venta' => now(),
       ]);
 
       // ✅ Registrar detalles y actualizar stock
       foreach ($request->productos as $producto) {
         $productoDB = Producto::findOrFail($producto['producto_id']);
-        $subtotal = $producto['cantidad'] * $productoDB->precio;
 
-        // Registrar detalle de venta
+        // Validar estado y stock
+        if ($productoDB->estado !== 'Activo') {
+          throw new \Exception("El producto '{$productoDB->nombre}' está inactivo.");
+        }
+
+        if ($productoDB->stock < $producto['cantidad']) {
+          throw new \Exception("Stock insuficiente para '{$productoDB->nombre}'. Stock actual: {$productoDB->stock}");
+        }
+
+        $subtotal = $productoDB->precio * $producto['cantidad'];
+        $totalVenta += $subtotal;
+
+        // Crear detalle
         DetalleVenta::create([
           'venta_id' => $venta->id,
-          'producto_id' => $producto['producto_id'],
-          'precio_unitario' => $productoDB->precio,
+          'producto_id' => $productoDB->id,
           'cantidad' => $producto['cantidad'],
+          'precio_unitario' => $productoDB->precio,
           'subtotal' => $subtotal,
         ]);
 
-        // ✅ Descontar stock
+        // Descontar stock
         $productoDB->decrement('stock', $producto['cantidad']);
-
-        $totalVenta += $subtotal;
       }
 
-      // ✅ Actualizar total real de la venta
+      // ✅ Actualizar total de la venta
       $venta->update(['total' => $totalVenta]);
 
-      // ✅ Registrar el pago general (control contable)
+      // ✅ Registrar pago
       PagoGeneral::create([
         'tipo_pago' => 'venta_producto',
         'origen_id' => $venta->id,
         'monto' => $totalVenta,
         'metodo_pago' => $request->metodo_pago,
         'usuario_id' => $request->usuario_id,
+        'fecha_pago' => now(),
       ]);
+
+      DB::commit();
 
       DB::commit();
 
       return response()->json([
         'success' => true,
-        'message' => 'Venta registrada correctamente y stock actualizado',
+        'message' => 'Venta registrada correctamente',
         'venta_id' => $venta->id,
+        'total' => $venta->total,
+        'total_formatted' => $this->precioFormatted($venta->total),
       ]);
     } catch (\Exception $e) {
       DB::rollBack();
@@ -168,6 +171,7 @@ class VentaController extends Controller
       ], 500);
     }
   }
+
 
   public function storeFast(Request $request)
   {
@@ -193,6 +197,12 @@ class VentaController extends Controller
       foreach ($request->productos as $item) {
         $producto = Producto::findOrFail($item['producto_id']);
 
+        // ✅ Validar si el producto está activo
+        if ($producto->estado !== 'Activo') {
+          throw new \Exception("El producto '{$producto->nombre}' está en estado 'Inactivo' y no puede venderse.");
+        }
+
+        // ✅ Validar stock
         if ($producto->stock < $item['cantidad']) {
           throw new \Exception("El producto '{$producto->nombre}' no tiene suficiente stock disponible.");
         }
@@ -200,6 +210,7 @@ class VentaController extends Controller
         $subtotal = $producto->precio * $item['cantidad'];
         $total += $subtotal;
       }
+
 
       // 🧾 Registrar venta principal
       $venta = Venta::create([

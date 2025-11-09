@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Membresia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+
 class MembresiaController extends Controller
 {
   public function list()

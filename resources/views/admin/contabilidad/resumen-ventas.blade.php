@@ -18,17 +18,30 @@
         <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center my-4">
           <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center">
             <small class="text-muted me-2">Filtrar ganancias:</small>
-            <input id="filterStart" type="date" class="form-control bg-dark form-control-sm text-white border-0" />
-            <span class="text-muted mx-1">—</span>
-            <input id="filterEnd" type="date" class="form-control bg-dark form-control-sm text-white border-0" />
-            <button id="applyFilter" class="btn btn-sm btn-info ms-md-2 mt-2 mt-md-0">Limpiar</button>
+
+            <!-- Select Mes -->
+            <select id="filterMonth" class="form-select form-select-sm bg-dark text-white border-0">
+              <option value="">Todos los meses</option>
+            </select>
+
+            <!-- Select Año -->
+            <select id="filterYear" class="form-select form-select-sm bg-dark text-white border-0">
+              <option value="">Todos los años</option>
+              @foreach ($anios as $anio)
+              <option value="{{ $anio }}" {{ $anio == date('Y') ? 'selected' : '' }}>{{ $anio }}</option>
+              @endforeach
+            </select>
+
+            <button id="applyFilter" class="btn btn-sm btn-info ms-md-2 mt-2 mt-md-0">Filtrar</button>
           </div>
 
           <div class="btn-group ms-md-3 mt-2 mt-md-0" role="group">
-            <button id="exportPdf" class="btn btn-sm btn-outline-light">Exportar PDF</button>
-            <button id="exportExcel" class="btn btn-sm btn-outline-light">Exportar Excel</button>
+            <a id="exportPdf" href="{{ route('admin.resumen_ventas.pdf') }}" class="btn btn-sm btn-outline-light" target="_blank">Exportar PDF</a>
+            <a id="exportExcel" href="{{ route('admin.resumen_ventas.excel') }}" class="btn btn-sm btn-outline-light" target="_blank">Exportar Excel</a>
           </div>
         </div>
+
+
 
         <!-- MÉTRICAS -->
         <div class="row g-3 mb-4">
@@ -92,30 +105,31 @@
         <!-- GRÁFICAS -->
         <div class="row g-4">
           <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" style="height: 500px;">
               <div class="card-header border-0 d-flex justify-content-between align-items-center">
                 <h5 class="text-warning mb-0">
                   <i data-feather="pie-chart" class="me-1"></i>Ventas por Categoría
                 </h5>
               </div>
-              <div class="card-body" style="height: 100%; min-height: 350px;">
-                <canvas id="ventasCategoriaChart"></canvas>
+              <div class="card-body" style="height: calc(100% - 60px);">
+                <canvas id="ventasCategoriaChart" style="height:100%;"></canvas>
               </div>
             </div>
           </div>
 
           <div class="col-md-6">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm" style="height: 500px;">
               <div class="card-header border-0 d-flex justify-content-between align-items-center">
                 <h5 class="text-warning mb-0">
                   <i data-feather="trending-up" class="me-1"></i>Ventas por Producto
                 </h5>
               </div>
-              <div class="card-body" style="height: 100%; min-height: 350px;">
-                <canvas id="ventasProductosChart"></canvas>
+              <div class="card-body" style="height: calc(100% - 60px); overflow-y:auto;">
+                <canvas id="ventasProductosChart" style="height:100%;"></canvas>
               </div>
             </div>
           </div>
+
         </div>
 
         <div class="card border-0 shadow-sm mt-4">
@@ -124,7 +138,7 @@
               <i data-feather="bar-chart-2" class="me-1"></i>Total de Ventas por Mes
             </h5>
           </div>
-          <div class="card-body" style="height: 100%; min-height: 350px;">
+          <div class="card-body" style="height: 100%; min-height: 350px; position: relative;">
             <canvas id="ventasTotalesChart"></canvas>
           </div>
         </div>

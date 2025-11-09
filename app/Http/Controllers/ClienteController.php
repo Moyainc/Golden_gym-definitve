@@ -6,8 +6,10 @@ use App\Models\Cliente;
 use App\Models\Membresia;
 use App\Models\PagoMembresia;
 use App\Models\PagoDiario;
+use App\Models\PagoGeneral;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Barryvdh\DomPDF\Facade\Pdf;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -112,6 +114,14 @@ class ClienteController extends Controller
                 'monto' => $membresia->precio,
                 'estado' => $estado,
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
+            ]);
+            PagoGeneral::create([
+                'tipo_pago' => 'pagos_membresias',
+                'origen_id' => $cliente->id,
+                'monto' => $membresia->precio,
+                'metodo_pago' => $request->metodo_pago ?? 'efectivo',
+                'usuario_id' => $request->usuario_id ?? null,
+                'fecha_pago' => Carbon::now(),
             ]);
 
             return response()->json(['success' => true, 'cliente' => $cliente]);

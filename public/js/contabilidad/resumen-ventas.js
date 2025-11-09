@@ -1,18 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const filterStart = document.getElementById("filterStart");
-    const filterEnd = document.getElementById("filterEnd");
+    const meses = [
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre",
+    ];
 
+    const filterMonth = document.getElementById("filterMonth");
+    const filterYear = document.getElementById("filterYear");
     const totalVentasEl = document.getElementById("totalVentas");
     const numVentasEl = document.getElementById("numVentas");
     const numProductosEl = document.getElementById("numProductos");
     const ventasPendientesEl = document.getElementById("ventasPendientes");
     const ventasTable = document.getElementById("ventasTable");
-
-    const apiUrl = (path) =>
-        `${window.location.origin}/golden_gym/public/${path.replace(
-            /^\/+/,
-            ""
-        )}`;
 
     const ctxCategoria = document
         .getElementById("ventasCategoriaChart")
@@ -26,23 +34,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let chartCategoria, chartProducto, chartMes;
 
-    // ✅ Formatear precios como moneda colombiana
-    const formatPrecio = (valor) => {
-        const num = Number(valor);
-        if (isNaN(num)) return "$0";
-        return new Intl.NumberFormat("es-CO", {
+    // Formateo en pesos colombianos
+    function formatearCOP(valor) {
+        if (valor === null || valor === undefined || valor === "") return "$0";
+        const entero = Math.round(parseFloat(valor));
+        return entero.toLocaleString("es-CO", {
             style: "currency",
             currency: "COP",
             minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        }).format(num);
-    };
+        });
+    }
 
-    // ✅ Cargar métricas y gráficos
+    // Abreviar valores para ejes
+    function formatAbreviado(valor) {
+        const entero = Math.round(valor);
+        if (entero >= 1000000) return Math.floor(entero / 1000000) + "M";
+        if (entero >= 1000) return Math.floor(entero / 1000) + "k";
+        return entero.toString();
+    }
+
+    // Rellenar filtro de meses
+    meses.forEach((mes, index) => {
+        const option = document.createElement("option");
+        option.value = index + 1;
+        option.textContent = mes;
+        filterMonth.appendChild(option);
+    });
+
     async function cargarDatos() {
         const params = new URLSearchParams();
-        if (filterStart.value) params.append("fecha_inicio", filterStart.value);
-        if (filterEnd.value) params.append("fecha_fin", filterEnd.value);
+        if (filterMonth.value) params.append("mes", filterMonth.value);
+        if (filterYear.value) params.append("anio", filterYear.value);
 
         try {
             const res = await fetch(
@@ -51,93 +73,104 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
             if (!data.success) throw new Error("Error al obtener datos");
 
-            // 🧾 Métricas principales
-            totalVentasEl.innerText = formatPrecio(data.totalVentas);
+            totalVentasEl.innerText = formatearCOP(data.totalVentas);
             numVentasEl.innerText = data.numVentas;
             numProductosEl.innerText = data.numProductos;
             ventasPendientesEl.innerText = data.pendientes;
 
-            // 📊 Datos para las gráficas
-            const categoriaLabels = Object.keys(data.ventasPorCategoria);
-            const categoriaData = Object.values(data.ventasPorCategoria).map(
-                Number
+            const ventasPorProductoValores = Object.values(
+                data.ventasPorProducto
+            ).map((v) => Math.round(v));
+            const ventasPorMesValores = Object.values(data.ventasPorMes).map(
+                (v) => Math.round(v)
             );
+            const ventasPorCategoriaValores = Object.values(
+                data.ventasPorCategoria
+            ).map((v) => Math.round(v));
 
-            const productoLabels = Object.keys(data.ventasPorProducto);
-            const productoData = Object.values(data.ventasPorProducto).map(
-                Number
-            );
-
-            // ✅ Convertir "2025-11" → "nov. 2025" con orden cronológico
-            const mesKeys = Object.keys(data.ventasPorMes);
-            const mesLabels = mesKeys.map((key) => {
-                const [year, month] = key.split("-");
-                const date = new Date(year, month - 1);
-                return date.toLocaleString("es-ES", {
-                    month: "short",
-                    year: "numeric",
-                });
-            });
-            const mesData = Object.values(data.ventasPorMes).map(Number);
-
-            // 🥧 Gráfica Categoría
+            // --- Pie Chart Categoría ---
             if (chartCategoria) chartCategoria.destroy();
             chartCategoria = new Chart(ctxCategoria, {
                 type: "pie",
                 data: {
-                    labels: categoriaLabels,
+                    labels: Object.keys(data.ventasPorCategoria),
                     datasets: [
                         {
-                            data: categoriaData,
+                            data: ventasPorCategoriaValores,
                             backgroundColor: [
-                                "#f59e0b",
-                                "#10b981",
-                                "#3b82f6",
-                                "#ef4444",
-                                "#8b5cf6",
+                                "#FFD700", // Amarillo dorado (armoniza con botones)
+                                "#FFB347", // Amarillo-naranja suave
+                                "#4D96FF", // Azul brillante
+                                "#9B5DE5", // Morado vibrante
+                                "#FF69B4", // Rosa fuerte
+                                "#6BCB77", // Verde fresco
+                                "#00CED1", // Turquesa
+                                "#F4A261", // Amarillo-anaranjado pastel
+                                "#8AC926", // Verde lima vivo
                             ],
                         },
                     ],
                 },
                 options: {
-                    responsive: true, // 🔹 hace que se ajuste al contenedor
-                    maintainAspectRatio: false, // 🔹 ocupa todo el alto de la card
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: (ctx) =>
-                                    `${ctx.label}: ${formatPrecio(ctx.raw)}`,
+                                label: (ctx) => formatearCOP(ctx.raw),
                             },
                         },
                         legend: {
-                            labels: { color: "#fff" },
+                            labels: {
+                                color: "#fff",
+                                generateLabels: (chart) =>
+                                    chart.data.labels.map((label, i) => ({
+                                        text: `${label}: ${formatAbreviado(
+                                            chart.data.datasets[0].data[i]
+                                        )}`,
+                                        fillStyle:
+                                            chart.data.datasets[0]
+                                                .backgroundColor[i],
+                                        strokeStyle: "#fff",
+                                        hidden: false,
+                                        index: i,
+                                    })),
+                            },
                         },
                     },
                 },
             });
 
-            // 📦 Gráfica Producto
+            // --- Bar Chart Productos ---
             if (chartProducto) chartProducto.destroy();
+            // Limitar altura según cantidad de productos
+            const chartHeight = Math.min(
+                ventasPorProductoValores.length * 40,
+                600
+            );
+            ctxProducto.canvas.parentNode.style.height = chartHeight + "px";
+
             chartProducto = new Chart(ctxProducto, {
                 type: "bar",
                 data: {
-                    labels: productoLabels,
+                    labels: Object.keys(data.ventasPorProducto),
                     datasets: [
                         {
                             label: "Ventas por Producto",
-                            data: productoData,
-                            backgroundColor: "#3b82f6",
+                            data: ventasPorProductoValores,
+                            backgroundColor: "#ffd52b",
+                            hoverBackgroundColor: "#fab300",
                         },
                     ],
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // 🔹 importante para llenar la card
+                    maintainAspectRatio: false,
                     indexAxis: "y",
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: (ctx) => formatPrecio(ctx.raw),
+                                label: (ctx) => formatearCOP(ctx.raw),
                             },
                         },
                         legend: { labels: { color: "#fff" } },
@@ -146,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         x: {
                             ticks: {
                                 color: "#fff",
-                                callback: (val) => formatPrecio(val),
+                                callback: (v) => formatAbreviado(v),
                             },
                             grid: { color: "rgba(255,255,255,0.1)" },
                         },
@@ -158,32 +191,63 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
             });
 
-            // 📈 Gráfica Ventas por Mes
+            // --- Line Chart Ventas por Mes ---
+            const mesKeys = Object.keys(data.ventasPorMes);
+
+            const mesLabelsAbreviado = mesKeys.map((k) => {
+                const [year, month] = k.split("-");
+                const nombreMes = new Date(year, month - 1).toLocaleString(
+                    "es-ES",
+                    {
+                        month: "short", // abreviado
+                    }
+                );
+                return nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+            });
+
+            const mesLabelsCompleto = mesKeys.map((k) => {
+                const [year, month] = k.split("-");
+                const nombreMes = new Date(year, month - 1).toLocaleString(
+                    "es-ES",
+                    {
+                        month: "long", // completo
+                    }
+                );
+                return nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+            });
+
             if (chartMes) chartMes.destroy();
             chartMes = new Chart(ctxMes, {
                 type: "line",
                 data: {
-                    labels: mesLabels,
+                    labels: mesLabelsAbreviado, // Abreviado en eje X
                     datasets: [
                         {
                             label: "Total Ventas",
-                            data: mesData,
-                            borderColor: "#f59e0b",
-                            backgroundColor: "rgba(245,158,11,0.3)",
-                            pointBackgroundColor: "#f59e0b",
-                            pointRadius: 5,
+                            data: ventasPorMesValores,
+                            borderColor: "#FAD730",
+                            backgroundColor: "rgba(225,178,11,0.2)",
                             fill: true,
+                            pointBackgroundColor: "#FAD730",
+                            pointRadius: 5,
                             tension: 0.4,
                         },
                     ],
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // 🔹 ocupa todo el alto de la card
+                    maintainAspectRatio: false,
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: (ctx) => formatPrecio(ctx.raw),
+                                label: function (ctx) {
+                                    const mesCompleto =
+                                        mesLabelsCompleto[ctx.dataIndex]; // mes completo
+                                    const valor = ctx.raw;
+                                    return `${mesCompleto}: ${formatearCOP(
+                                        valor
+                                    )}`;
+                                },
                             },
                         },
                         legend: { labels: { color: "#fff" } },
@@ -196,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         y: {
                             ticks: {
                                 color: "#fff",
-                                callback: (val) => formatPrecio(val),
+                                callback: (v) => formatAbreviado(v),
                             },
                             grid: { color: "rgba(255,255,255,0.1)" },
                         },
@@ -204,11 +268,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
             });
         } catch (err) {
-            Swal.fire("Error", err.message, "error");
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: err.message,
+                background: "#1a1a1a",
+                color: "#fff",
+                confirmButtonColor: "#fcd52b",
+                confirmButtonText: "Aceptar",
+                customClass: { confirmButton: "text-black font-bold" },
+            });
         }
     }
 
-    // ✅ Últimas 5 ventas
     async function cargarUltimasVentas() {
         try {
             const res = await fetch(apiUrl("/admin/resumen-ventas/ultimas"));
@@ -217,39 +289,43 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error("Error al obtener últimas ventas");
 
             ventasTable.innerHTML = "";
+            let filas = [];
             data.ventas.forEach((v) => {
                 v.detalles.forEach((d) => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td>${d.producto}</td>
-                        <td>${d.categoria}</td>
-                        <td>${v.metodo_pago}</td>
-                        <td>${formatPrecio(d.subtotal)}</td>
-                        <td>${new Date(v.fecha_venta).toLocaleDateString()}</td>
-                        <td>
-                            <span class="badge ${
-                                v.estado === "Completada"
-                                    ? "bg-success"
-                                    : "bg-warning"
-                            } text-black">${v.estado}</span>
-                        </td>
-                    `;
-                    ventasTable.appendChild(tr);
+                    filas.push(`
+          <tr>
+            <td>${d.producto}</td>
+            <td>${d.categoria}</td>
+            <td>${v.metodo_pago}</td>
+            <td>${formatearCOP(d.subtotal)}</td>
+            <td>${new Date(v.fecha_venta).toLocaleDateString()}</td>
+            <td><span class="badge ${
+                v.estado === "Completada" ? "bg-success" : "bg-warning"
+            } text-black">${v.estado}</span></td>
+          </tr>
+        `);
                 });
             });
+
+            // Limitar a 10 filas
+            filas = filas.slice(0, 10);
+            ventasTable.innerHTML = filas.join("");
         } catch (err) {
-            Swal.fire("Error", err.message, "error");
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: err.message,
+                background: "#1a1a1a",
+                color: "#fff",
+                confirmButtonColor: "#fcd52b",
+                confirmButtonText: "Aceptar",
+                customClass: { confirmButton: "text-black font-bold" },
+            });
         }
     }
 
-    // 🎯 Filtros
-    filterStart.addEventListener("change", cargarDatos);
-    filterEnd.addEventListener("change", cargarDatos);
-    document.getElementById("applyFilter").addEventListener("click", () => {
-        filterStart.value = "";
-        filterEnd.value = "";
-        cargarDatos();
-    });
+    filterMonth.addEventListener("change", cargarDatos);
+    filterYear.addEventListener("change", cargarDatos);
 
     cargarDatos();
     cargarUltimasVentas();

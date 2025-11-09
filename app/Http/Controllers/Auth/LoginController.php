@@ -54,33 +54,27 @@ class LoginController extends Controller
     // Si el correo o contraseña es incorrecta
     if (!$usuario || !Hash::check($request->password, $usuario->password)) {
       $this->incrementRateLimit($request);
-
-      // Contar fallos recientes del mismo correo
-      $fallos = SeguridadLog::where('correo_intentado', $request->correo)
-        ->where('exitoso', false)
-        ->where('fecha_intento', '>=', now()->subMinutes(15))
-        ->count();
-
-      // Registrar el log solo si ya hay 3 o más intentos fallidos
-      if ($fallos >= 2) { // es decir, se guarda a partir del 3er intento
-        SeguridadLog::create([
-          'usuario_id' => $usuario?->id,
-          'correo_intentado' => $request->correo,
-          'exitoso' => false,
-          'ip' => $ip,
-          'dispositivo' => substr($userAgent, 0, 200),
-          'ubicacion' => $ubicacion,
-        ]);
-      }
-
-      // Verificar si debe bloquearse
+      $this->registrarIntentoFallido($request, $usuario);
       $this->verificarBloqueoUsuario($request, $usuario);
+
+      $key = 'login:' . $request->ip();
+      $maxAttempts = 4;
+      $attempts = RateLimiter::attempts($key);
+      $remaining = $maxAttempts - $attempts;
+
+      $message = ($remaining <= 2 && $remaining > 0)
+        ? "Te faltan {$remaining} intento(s) antes de que tu cuenta se bloquee temporalmente."
+        : "Correo o contraseña incorrectos.";
+
+      $status = ($remaining <= 2 && $remaining > 0) ? 429 : 401;
 
       return response()->json([
         'success' => false,
-        'message' => 'Correo o contraseña incorrectos.',
-      ], 401);
+        'message' => $message,
+      ], $status);
     }
+
+
 
     // Inicio de sesión correcto
     Auth::login($usuario); // 🔹 Sin “remember”
@@ -131,32 +125,58 @@ class LoginController extends Controller
     return cache()->get("bloqueado_{$correo}");
   }
 
-  protected function verificarBloqueoUsuario(Request $request, $usuario)
+  protected function registrarIntentoFallido(Request $request, ?Usuario $usuario)
+  {
+    $ip = $request->ip();
+    $userAgent = $request->header('User-Agent');
+    $ubicacion = $this->obtenerUbicacion($ip);
+
+    SeguridadLog::create([
+      'usuario_id' => $usuario?->id, // null si correo no existe
+      'correo_intentado' => $request->correo,
+      'exitoso' => false,
+      'ip' => $ip,
+      'dispositivo' => substr($userAgent, 0, 200),
+      'ubicacion' => $ubicacion,
+      'fecha_intento' => now(),
+    ]);
+  }
+
+  protected function verificarBloqueoUsuario(Request $request, ?Usuario $usuario)
   {
     $correo = $request->correo;
 
+    // Contar fallos recientes del mismo correo en 15 minutos
     $fallos = SeguridadLog::where('correo_intentado', $correo)
       ->where('exitoso', false)
       ->where('fecha_intento', '>=', now()->subMinutes(15))
       ->count();
 
-    // 🔹 Bloquear si hay 5 intentos fallidos en 15 minutos
+    // Bloqueo seguro: si hay 5 o más intentos fallidos
     if ($fallos >= 5) {
       cache()->put("bloqueado_{$correo}", true, now()->addMinutes(10));
 
-      // Guardar log de bloqueo (una sola vez)
-      SeguridadLog::create([
-        'usuario_id' => $usuario?->id,
-        'correo_intentado' => $correo,
-        'exitoso' => false,
-        'ip' => request()->ip(),
-        'dispositivo' => substr(request()->header('User-Agent'), 0, 200),
-        'ubicacion' => $this->obtenerUbicacion(request()->ip()),
-      ]);
+      // Guardar log de bloqueo, solo una vez
+      if (!SeguridadLog::where('correo_intentado', $correo)
+        ->where('exitoso', false)
+        ->where('mensaje', 'like', '%bloqueado%')
+        ->exists()) {
+        SeguridadLog::create([
+          'usuario_id' => $usuario?->id,
+          'correo_intentado' => $correo,
+          'exitoso' => false,
+          'ip' => $request->ip(),
+          'dispositivo' => substr($request->header('User-Agent'), 0, 200),
+          'ubicacion' => $this->obtenerUbicacion($request->ip()),
+          'fecha_intento' => now(),
+          'mensaje' => 'Cuenta bloqueada temporalmente por exceso de intentos fallidos',
+        ]);
+      }
     }
   }
 
-  // 🌍 Obtener ubicación desde IP (ip-api)
+
+  //Obtener ubicación desde IP (ip-api)
   protected function obtenerUbicacion($ip)
   {
     try {
@@ -169,31 +189,35 @@ class LoginController extends Controller
     }
   }
 
-  // ---------------------------------------------------------
-  // ⏳ Control de RateLimiter (protege del spam de login)
-  // ---------------------------------------------------------
+  // Control de RateLimiter
 
   private function checkRateLimit(Request $request)
   {
-    $key = 'login:' . $request->ip();
+    $key = 'login:' . $request->ip() . ':' . strtolower($request->correo);
 
-    if (RateLimiter::tooManyAttempts($key, 5)) {
+    if (RateLimiter::tooManyAttempts($key, 4)) {
       $seconds = RateLimiter::availableIn($key);
       throw ValidationException::withMessages([
-        'correo' => ["Demasiados intentos. Intenta de nuevo en {$seconds} segundos."],
+        'correo' => ["Demasiados intentos. Intenta de nuevo en unos minutos."],
       ])->status(429);
     }
   }
 
+
+
   private function incrementRateLimit(Request $request)
   {
-    RateLimiter::hit('login:' . $request->ip(), 300);
+    $key = 'login:' . $request->ip() . ':' . strtolower($request->correo);
+    RateLimiter::hit($key, 300);
   }
+
 
   private function clearRateLimit(Request $request)
   {
-    RateLimiter::clear('login:' . $request->ip());
+    $key = 'login:' . $request->ip() . ':' . strtolower($request->correo);
+    RateLimiter::clear($key);
   }
+
 
   // ---------------------------------------------------------
   // 🚪 Logout

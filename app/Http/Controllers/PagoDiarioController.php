@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use App\Models\PagoGeneral;
+use Illuminate\Support\Facades\DB; // Asegúrate de tener esto
 class PagoDiarioController extends Controller
 {
     public function index()
@@ -43,35 +44,54 @@ class PagoDiarioController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'nombre_cliente' => 'required|string|max:255',
+            'monto' => 'required|numeric|min:0',
+            'fecha' => 'required|date',
+            'metodo_pago' => 'required|in:efectivo,transferencia,tarjeta',
+            'usuario_id' => 'nullable|integer',
+        ]);
+
+        DB::beginTransaction();
+
         try {
-            $validated = $request->validate([
-                'nombre_cliente' => 'required|string|max:255',
-                'monto' => 'required|numeric|min:0',
-                'fecha' => 'required|date',
-                'metodo_pago' => 'required|in:efectivo,transferencia,tarjeta',
+            // ✅ Crear registro en pagos diarios
+            $pagoDiario = PagoDiario::create([
+                'nombre_cliente' => $request->nombre_cliente,
+                'monto' => $request->monto,
+                'fecha' => $request->fecha,
+                'metodo_pago' => $request->metodo_pago,
+                'usuario_id' => $request->usuario_id ?? null,
             ]);
 
-            $pago = PagoDiario::create($validated);
+            // ✅ Crear registro en pagos generales
+            PagoGeneral::create([
+                'tipo_pago' => 'pagos_diarios',
+                'origen_id' => $pagoDiario->id,
+                'monto' => $request->monto,
+                'metodo_pago' => $request->metodo_pago,
+                'usuario_id' => $request->usuario_id ?? null,
+                'fecha_pago' => Carbon::parse($request->fecha),
+            ]);
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Pago diario registrado correctamente',
-                'data' => $pago
+                'data' => $pagoDiario
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $e->errors()
-            ], 422);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Error al guardar pago diario: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al guardar el pago diario'
+                'message' => 'Error al guardar el pago diario: ' . $e->getMessage()
             ], 500);
         }
     }
+
 
     public function destroy($id)
     {

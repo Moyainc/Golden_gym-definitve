@@ -1,153 +1,109 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Registro
-    const registerForm = document.getElementById("registerForm");
-    if (registerForm) {
-        registerForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const password = registerForm.password.value;
-            const passwordConfirm = registerForm.password_confirmation.value;
-
-            if (password !== passwordConfirm) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    html: "Las contraseñas no coinciden",
-                });
-                return;
-            }
-
-            const formData = new FormData(registerForm);
-
-            try {
-                const res = await fetch(registerForm.action, {
-                    method: "POST",
-                    body: formData,
-                });
-                const data = await res.json();
-
-                if (!res.ok) {
-                    let errores = "";
-                    if (data.errors) {
-                        for (const key in data.errors) {
-                            errores += data.errors[key].join("<br>") + "<br>";
-                        }
-                    } else {
-                        errores = data.message || "Error inesperado";
-                    }
-
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        html: errores,
-                    });
-                } else {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Registro exitoso",
-                        text: data.message || "Cuenta creada correctamente",
-                    }).then(() => {
-                        registerForm.reset();
-                        window.location.href = loginUrl; // define loginUrl en algún lugar
-                    });
-                }
-            } catch (err) {
-                console.error(err);
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Ocurrió un error al procesar el registro",
-                });
-            }
-        });
-    }
-
-    // Login
     const loginForm = document.getElementById("loginForm");
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
+    const attemptsContainer = document.getElementById("loginAttempts");
+    const maxAttempts = 4; // total de intentos permitidos
 
-            const email = loginForm
-                .querySelector('[name="correo"]')
-                .value.trim();
-            const password = loginForm
-                .querySelector('[name="password"]')
-                .value.trim();
+    if (!loginForm) return;
 
-            if (!email || !password) {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: "Por favor ingrese correo y contraseña.",
-                });
-                return;
-            }
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-            const formData = new FormData(loginForm);
+        const email = loginForm.querySelector('[name="correo"]').value.trim();
+        const password = loginForm
+            .querySelector('[name="password"]')
+            .value.trim();
 
-            try {
-                const formData = new FormData(loginForm);
+        if (!email || !password) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Por favor ingrese correo y contraseña.",
+                background: "#1a1a1a",
+                color: "#fff",
+                confirmButtonColor: "#fcd52b",
+                confirmButtonText: "Aceptar",
+                customClass: { confirmButton: "text-black font-bold" },
+            });
+            return;
+        }
 
-                const response = await fetch(loginForm.action, {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content"),
-                    },
-                    credentials: "same-origin", // ✅ clave para enviar cookies de sesión
-                });
+        const formData = new FormData(loginForm);
 
-                const data = await response.json();
+        try {
+            const response = await fetch(loginForm.action, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+                credentials: "same-origin",
+            });
 
-                if (!response.ok) {
-                    let errores = "";
-                    if (data.errors) {
-                        for (const key in data.errors) {
-                            errores += data.errors[key].join(", ") + "\n";
-                        }
-                    } else {
-                        errores = data.message || "Error inesperado";
-                    }
+            const data = await response.json();
 
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: errores,
-                    });
-                } else {
-                    const hora = new Date().getHours();
-                    let saludo = "";
+            if (!response.ok) {
+                // Incrementar intentos locales
+                const key = `login_attempts_${email}`;
+                let attempts = parseInt(localStorage.getItem(key)) || 0;
+                attempts++;
+                localStorage.setItem(key, attempts);
 
-                    if (hora >= 5 && hora < 12) {
-                        saludo = "Buenos días";
-                    } else if (hora >= 12 && hora < 19) {
-                        saludo = "Buenas tardes";
-                    } else {
-                        saludo = "Buenas noches";
-                    }
+                const remaining = maxAttempts - attempts;
 
-                    const nombre = data.user?.nombre || "usuario";
-                    Swal.fire({
-                        icon: "success",
-                        title: `${saludo}, ${nombre}!`,
-                        text:
-                            data.message || "Has iniciado sesión correctamente",
-                    }).then(() => {
-                        loginForm.reset();
-                        window.location.href = data.redirect || "/";
-                    });
-                }
-            } catch (error) {
-                console.error(error);
+
                 Swal.fire({
                     icon: "error",
                     title: "Error",
-                    text: "Ocurrió un error al procesar el inicio de sesión.",
+                    text: data.message || "Correo o contraseña incorrectos",
+                    background: "#1a1a1a",
+                    color: "#fff",
+                    confirmButtonColor: "#fcd52b",
+                    confirmButtonText: "Aceptar",
+                    customClass: { confirmButton: "text-black font-bold" },
                 });
+
+                return;
             }
-        });
-    }
+
+            // Login exitoso
+            attemptsContainer.textContent = "";
+            localStorage.removeItem(`login_attempts_${email}`);
+
+            const hora = new Date().getHours();
+            const saludo =
+                hora >= 5 && hora < 12
+                    ? "Buenos días"
+                    : hora >= 12 && hora < 19
+                    ? "Buenas tardes"
+                    : "Buenas noches";
+
+            Swal.fire({
+                icon: "success",
+                title: `${saludo}, ${data.user?.nombre || "usuario"}!`,
+                text: data.message || "Has iniciado sesión correctamente",
+                background: "#1a1a1a",
+                color: "#fff",
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true,
+            }).then(() => {
+                loginForm.reset();
+                window.location.href = data.redirect || "/";
+            });
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Ocurrió un error al procesar el inicio de sesión.",
+                background: "#1a1a1a",
+                color: "#fff",
+                confirmButtonColor: "#fcd52b",
+                confirmButtonText: "Aceptar",
+                customClass: { confirmButton: "text-black font-bold" },
+            });
+        }
+    });
 });
