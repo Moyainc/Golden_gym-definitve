@@ -187,7 +187,7 @@
 
 
   <!-- Usando asset() para cargar el JS -->
-  <script src="{{ asset('js/resumen-membresias.js') }}"></script>
+  <script src="{{ asset('js/contabilidad/resumen-membresias.js') }}"></script>
 
 </body>
 @endsection
