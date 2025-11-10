@@ -37,8 +37,8 @@
                           </span>
                           <span class="text-secondary">Última</span>
                           <select class="border-0 text-warning fw-semibold bg-dark" id="filterProductos">
-                            <option>Semana</option>
-                            <option>Mes</option>
+                            <option value="week">Semana</option>
+                            <option value="month">Mes</option>
                           </select>
                         </div>
                         <a href="ventas.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a> <!-- Opcional: link -->
@@ -66,8 +66,8 @@
                           </span>
                           <span class="text-secondary">Última</span>
                           <select class="bg-dark border-0 text-warning fw-semibold" id="filterMembresias">
-                            <option>Semana</option>
-                            <option>Mes</option>
+                            <option value="week">Semana</option>
+                            <option value="month">Mes</option>
                           </select>
                         </div>
                         <a href="membresia.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
@@ -96,8 +96,8 @@
                           </span>
                           <span class="text-secondary">Última</span>
                           <select class="border-0 text-warning fw-semibold bg-dark" id="filterTotal">
-                            <option>Semana</option>
-                            <option>Mes</option>
+                            <option value="week">Semana</option>
+                            <option value="month">Mes</option>
                           </select>
                         </div>
                         <a href="contabilidad.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
@@ -124,8 +124,8 @@
                           </span>
                           <span class="text-secondary">Última</span>
                           <select class="border-0 text-warning fw-semibold bg-dark" id="filterClientes">
-                            <option>Semana</option>
-                            <option>Mes</option>
+                            <option value="week">Semana</option>
+                            <option value="month">Mes</option>
                           </select>
                         </div>
                         <a href="clientes.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>

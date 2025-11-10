@@ -92,64 +92,119 @@ document.addEventListener("DOMContentLoaded", () => {
         return { formatted, suffix };
     };
 
-    const updateCards = (filter = "week") => {
-        fetch(apiUrl(`admin/dashboard/data/cards?filter=${filter}`))
+    const updateCard = (cardId, filter) => {
+        // Normaliza el filtro por si viene en mayúsculas o con espacios
+        const normalized = filter.trim().toLowerCase();
+
+        return fetch(apiUrl(`admin/dashboard/data/cards?filter=${normalized}`))
             .then((res) => res.json())
             .then((data) => {
-                const ventas = formatNumber(data.ventas);
-                const membresias = formatNumber(data.membresias);
-                const total = formatNumber(data.total);
-                const clientes = formatNumber(data.clientes);
+                const format = (num) => {
+                    if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
+                    if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
+                    if (num >= 1e3) return (num / 1e3).toFixed(0) + "k";
+                    return num;
+                };
 
-                document.querySelector(
-                    "#cardProductos h1"
-                ).innerHTML = `<span title="${data.ventas}">${ventas.formatted}${ventas.suffix}</span>`;
+                // Aplica color al porcentaje según si subió, bajó o se mantuvo
+                const setComparisonColor = (el, value) => {
+                    el.textContent = `${value}%`;
+                    el.classList.remove(
+                        "text-success",
+                        "text-danger",
+                        "text-muted"
+                    );
 
-                document.querySelector(
-                    "#cardMembresias h1"
-                ).innerHTML = `<span title="${data.membresias}">${membresias.formatted}${membresias.suffix}</span>`;
+                    if (value > 0) el.classList.add("text-success");
+                    else if (value < 0) el.classList.add("text-danger");
+                    else el.classList.add("text-muted");
+                };
 
-                document.querySelector(
-                    "#cardTotal h1"
-                ).innerHTML = `<span title="${data.total}">${total.formatted}${total.suffix}</span>`;
+                switch (cardId) {
+                    case "Productos":
+                        document.querySelector(
+                            "#cardProductos h1"
+                        ).innerHTML = `<span title="${data.ventas}">${format(
+                            data.ventas
+                        )}</span>`;
+                        setComparisonColor(
+                            document.querySelector(
+                                "#cardProductos .comparison"
+                            ),
+                            data.comparisons.ventas
+                        );
+                        break;
 
-                document.querySelector(
-                    "#cardClientes h1"
-                ).innerHTML = `<span title="${data.clientes}">${clientes.formatted}${clientes.suffix}</span>`;
+                    case "Membresias":
+                        document.querySelector(
+                            "#cardMembresias h1"
+                        ).innerHTML = `<span title="${
+                            data.membresias
+                        }">${format(data.membresias)}</span>`;
+                        setComparisonColor(
+                            document.querySelector(
+                                "#cardMembresias .comparison"
+                            ),
+                            data.comparisons.membresias
+                        );
+                        break;
 
-                // Comparaciones
-                document.querySelector(
-                    "#cardProductos .comparison"
-                ).textContent = `${data.comparisons.ventas}%`;
+                    case "Total":
+                        document.querySelector(
+                            "#cardTotal h1"
+                        ).innerHTML = `<span title="${data.total}">${format(
+                            data.total
+                        )}</span>`;
+                        setComparisonColor(
+                            document.querySelector("#cardTotal .comparison"),
+                            data.comparisons.total
+                        );
+                        break;
 
-                document.querySelector(
-                    "#cardMembresias .comparison"
-                ).textContent = `${data.comparisons.membresias}%`;
-
-                document.querySelector(
-                    "#cardTotal .comparison"
-                ).textContent = `${data.comparisons.total}%`;
-
-                document.querySelector(
-                    "#cardClientes .comparison"
-                ).textContent = `${data.comparisons.clientes}%`;
+                    case "Clientes":
+                        document.querySelector(
+                            "#cardClientes h1"
+                        ).innerHTML = `<span title="${data.clientes}">${format(
+                            data.clientes
+                        )}</span>`;
+                        setComparisonColor(
+                            document.querySelector("#cardClientes .comparison"),
+                            data.comparisons.clientes
+                        );
+                        break;
+                }
+            })
+            .catch((err) => {
+                console.error("Error updateCard", cardId, err);
             });
     };
 
-    // Inicial
-    updateCards("week");
 
-    // Filtros
-    document
-        .querySelectorAll(
-            "#filterProductos, #filterMembresias, #filterTotal, #filterClientes"
-        )
-        .forEach((select) => {
-            select.addEventListener("change", (e) => {
-                const filter = e.target.value.toLowerCase();
-                updateCards(filter);
-            });
+    // Inicializamos todas las cards en "Semana"
+    Promise.all([
+        updateCard("Productos", "week"),
+        updateCard("Membresias", "week"),
+        updateCard("Total", "week"),
+        updateCard("Clientes", "week"),
+    ]).then(() => feather.replace());
+
+    // Ahora escuchamos cada select por separado
+    const filters = {
+        filterProductos: "Productos",
+        filterMembresias: "Membresias",
+        filterTotal: "Total",
+        filterClientes: "Clientes",
+    };
+
+    Object.entries(filters).forEach(([selectId, cardId]) => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        select.addEventListener("change", (e) => {
+            const filter = e.target.value.toLowerCase(); // semana o mes
+            updateCard(cardId, filter);
         });
+    });
 
     // Gráfico mensual total
     fetch(apiUrl("admin/dashboard/data/chart/monthly"))
