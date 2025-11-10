@@ -75,18 +75,20 @@ document.addEventListener("DOMContentLoaded", () => {
         if (number >= 1e9) {
             formatted = number / 1e9;
             suffix = "B";
+            formatted = formatted.toFixed(2); // mantiene 2 decimales
         } else if (number >= 1e6) {
             formatted = number / 1e6;
             suffix = "M";
+            formatted = formatted.toFixed(2); // mantiene 2 decimales
         } else if (number >= 1e3) {
             formatted = number / 1e3;
             suffix = "k";
+            formatted = formatted.toFixed(0); // sin decimales
         } else {
             // Para números pequeños no mostrar decimales
             return { formatted: number.toString(), suffix: "" };
         }
 
-        formatted = formatted.toFixed(decimals);
         return { formatted, suffix };
     };
 
@@ -226,15 +228,13 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
-
-        const formatTipo = (tipo) => {
-            // Reemplaza guiones bajos por espacios y capitaliza cada palabra
-            return tipo
-                .split("_")
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(" ");
-        };
-
+    const formatTipo = (tipo) => {
+        // Reemplaza guiones bajos por espacios y capitaliza cada palabra
+        return tipo
+            .split("_")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+    };
 
     // Últimos movimientos
     const loadMovements = () => {
@@ -249,7 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <td>${formatTipo(m.tipo)}</td>
                     <td>${m.cliente}</td>
                     <td>${m.detalle}</td>
-                    <td title="${m.monto}">$${Number(m.monto).toLocaleString("es-CO", { minimumFractionDigits: 0 })}</td>
+                    <td title="${m.monto}">$${Number(m.monto).toLocaleString(
+                        "es-CO",
+                        { minimumFractionDigits: 0 }
+                    )}</td>
                     <td>${m.fecha}</td>
                     <td class="text-center">${m.metodo_pago}</td>
                 `;

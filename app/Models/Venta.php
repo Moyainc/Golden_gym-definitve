@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasPrecioFormatted;
@@ -29,7 +30,6 @@ class Venta extends Model
 
     protected $appends = ['precio_formatted'];
 
-    // Relaciones
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id');
@@ -45,7 +45,30 @@ class Venta extends Model
         return $this->hasMany(DetalleVenta::class, 'venta_id');
     }
 
-    // Método para actualizar el total automáticamente
+    // Guarda el estado con primera letra en mayúscula
+    public function setEstadoAttribute($value)
+    {
+        $this->attributes['estado'] = ucfirst(strtolower($value));
+    }
+
+
+    /* Scopes */
+
+    // Scope local (por si algún día quieres incluir anuladas)
+    public function scopeActivas($query)
+    {
+        return $query->where('estado', '!=', 'Anulada');
+    }
+
+    protected static function booted(): void
+    {
+        // Este filtro se aplica a TODAS las consultas de Venta
+        static::addGlobalScope('sinAnuladas', function (Builder $builder) {
+            $builder->where('estado', '!=', 'Anulada');
+        });
+    }
+
+    // Recalcula el total de los detalles
     public function actualizarTotal()
     {
         $this->total = $this->detalles()->sum('subtotal');
