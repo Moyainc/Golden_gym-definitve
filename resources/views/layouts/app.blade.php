@@ -40,8 +40,11 @@
             @include('layouts.navbar')
             {{-- Contenido dinámico --}}
             <main>
-                @yield('content')
+                <div class="container custom-container py-2">
+                    @yield('content')
+                </div>
             </main>
+
             {{-- Footer --}}
             @include('layouts.footer')
         </div>

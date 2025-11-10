@@ -1,9 +1,18 @@
+/* Responsive de contenido central */
+.custom-container {
+  max-width: 1500px;
+}
+
+
+/* Eliminacion de Scroll Innecesario */
 .main {
     min-height: calc(
         100vh - 60px - 60px
     ); /* altura de navbar + footer aproximada */
     overflow-x: hidden;
 }
+
+
 
 /* Bordes suaves y compactos para todas las tablas */
 .table tbody,
