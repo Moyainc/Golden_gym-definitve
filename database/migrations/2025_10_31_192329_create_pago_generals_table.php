@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('tipo_pago'); // nombre corto del tipo de pago, opcional si usas morphMap
             $table->string('origen_type'); // clase completa del modelo relacionado
             $table->unsignedBigInteger('origen_id'); // id del registro relacionado
-            $table->decimal('monto', 15, 2);
+            $table->decimal('monto', 15, 0);
             $table->string('metodo_pago');
             $table->unsignedBigInteger('usuario_id')->nullable();
             $table->dateTime('fecha_pago');
