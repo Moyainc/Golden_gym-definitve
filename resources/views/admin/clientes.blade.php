@@ -212,7 +212,7 @@
                   <div class="d-flex justify-content-center align-items-center gap-3">
                     <img
                       id="clientPhotoPreview"
-                      src="{{ asset('storage/usuarios/default.png') }}"
+                      src="{{ asset('img/avatars/user.png') }}"
                       alt="Foto del cliente"
                       class="rounded-circle"
                       style="width:100px;height:100px;object-fit:cover;" />
@@ -465,7 +465,7 @@
                 <div class="d-flex justify-content-center align-items-center gap-3">
                   <img
                     id="editClientPhotoPreview"
-                    src="{{ asset('storage/usuarios/default.png') }}"
+                    src="{{ asset('img/avatars/user.png') }}"
                     alt="Foto del cliente"
                     class="rounded-circle"
                     style="width:100px;height:100px;object-fit:cover;" />
