@@ -20,6 +20,7 @@ class PagoGeneral extends Model
         'metodo_pago',
         'usuario_id',
         'fecha_pago',
+        'estado',
     ];
 
     protected $casts = [
@@ -27,15 +28,26 @@ class PagoGeneral extends Model
         'monto' => 'decimal:1',
     ];
 
-    // Relaciones opcionales
+    // Valor por defecto
+    protected $attributes = [
+        'estado' => 'Pendiente',
+    ];
+
+
+    public function setEstadoAttribute($value)
+    {
+        $validos = ['Completada', 'Pendiente', 'Anulada'];
+        $this->attributes['estado'] = in_array($value, $validos) ? $value : 'Pendiente';
+    }
+
+    // Relaciones
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 
-
     public function origen()
     {
-        return $this->morphTo(null, 'tipo_pago', 'origen_id');
+        return $this->morphTo(null, 'origen_type', 'origen_id');
     }
 }

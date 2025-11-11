@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterFechaHasta = document.getElementById("filterFechaHasta");
     const searchVenta = document.getElementById("searchVenta");
     const paginationContainer = document.querySelector(".pagination-modern");
-
+    const filterEstado = document.getElementById("filterEstado");
     const modal = new bootstrap.Modal(document.getElementById("detalleModal"));
     const modalBody = document.getElementById("detalleModalBody");
 
@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
             categoria: filterCategoria.value,
             fecha_desde: filterFechaDesde.value,
             fecha_hasta: filterFechaHasta.value,
+            estado: filterEstado.value,
             page,
         });
 
@@ -84,29 +85,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const fragment = document.createDocumentFragment();
 
+        const estadoConfig = {
+            Completada: { bg: "#28a745", color: "#fff" }, // Verde
+            Pendiente: { bg: "#fcd52b", color: "#000" }, // Amarillo
+            Anulada: { bg: "#dc3545", color: "#fff" }, // Rojo
+        };
+
         ventas.forEach((venta) => {
+            const estado = venta.estado ?? "N/A";
+            const { bg, color } = estadoConfig[estado] || {
+                bg: "#6c757d",
+                color: "#fff",
+            }; // Gris por defecto
+
             venta.detalles.forEach((det) => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-                    <td>${det.producto}</td>
-                    <td>${det.categoria}</td>
-                    <td>${venta.metodo_pago}</td>
-                    <td>${det.subtotal_formatted}</td>
-                    <td>${
-                        new Date(venta.fecha_venta).toISOString().split("T")[0]
-                    }</td>
-                    <td><span class="badge bg-${
-                        venta.estado === "Completada" ? "success" : "secondary"
-                    }">${venta.estado}</span></td>
-                    <td>${venta.usuario}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-light verVentaBtn" data-id="${
-                            venta.id
-                        }">
-                            <i data-feather="eye"></i>
-                        </button>
-                    </td>
-                `;
+                <td>${det.producto}</td>
+                <td>${det.categoria}</td>
+                <td>${venta.metodo_pago}</td>
+                <td>${det.subtotal_formatted}</td>
+                <td>${
+                    new Date(venta.fecha_venta).toLocaleDateString("es-ES")
+                }</td>
+                <td>
+                    <span class="badge" style="background:${bg}; color:${color}; font-weight:600;">
+                        ${estado}
+                    </span>
+                </td>
+                <td>${venta.usuario}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-light verVentaBtn" data-id="${
+                        venta.id
+                    }">
+                        <i data-feather="eye"></i>
+                    </button>
+                </td>
+            `;
                 fragment.appendChild(tr);
             });
         });
@@ -114,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tbody.appendChild(fragment);
         if (feather) feather.replace();
 
-        // 🔹 Botón ver venta
+        // Botón "Ver venta"
         document.querySelectorAll(".verVentaBtn").forEach((btn) => {
             btn.addEventListener("click", async () => {
                 const id = btn.dataset.id;
@@ -127,42 +142,61 @@ document.addEventListener("DOMContentLoaded", () => {
                     const data = await res.json();
 
                     let html = `
-                        <p><strong>Vendedor:</strong> ${data.usuario}</p>
-                        <p><strong>Fecha:</strong> ${new Date(
-                            data.fecha_venta
-                        ).toLocaleDateString()}</p>
-                        <p><strong>Método de pago:</strong> ${
-                            data.metodo_pago
-                        }</p>
-                        <p><strong>Estado:</strong> ${data.estado}</p>
-                        <table class="table table-sm table-bordered text-light mt-3">
-                            <thead class="text-warning">
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Categoría</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio Unitario</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
+                    <p><strong>Vendedor:</strong> ${data.usuario}</p>
+                    <p><strong>Fecha:</strong> ${new Date(
+                        data.fecha_venta
+                    ).toLocaleDateString()}</p>
+                    <p><strong>Método de pago:</strong> ${data.metodo_pago}</p>
+                        `;
+
+                    // Colores coherentes con la tabla
+                    const estadoConfig = {
+                        Completada: { bg: "#28a745", color: "#fff" },
+                        Pendiente: { bg: "#fcd52b", color: "#000" },
+                        Anulada: { bg: "#dc3545", color: "#fff" },
+                    };
+                    const { bg, color } = estadoConfig[data.estado] || {
+                        bg: "#6c757d",
+                        color: "#fff",
+                    };
+
+                    html += `
+    <p><strong>Estado:</strong>
+        <span class="badge" style="background:${bg}; color:${color}; font-weight:600; padding:6px 10px;">
+            ${data.estado}
+        </span>
+    </p>
+
+    <table class="table table-sm table-bordered text-light mt-3">
+        <thead class="text-warning">
+            <tr>
+                <th>Producto</th>
+                <th>Categoría</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+`;
 
                     data.detalles.forEach((d) => {
                         html += `
-                            <tr>
-                                <td>${d.producto}</td>
-                                <td>${d.categoria}</td>
-                                <td>${d.cantidad}</td>
-                                <td>${d.precio_unitario_formatted}</td>
-                                <td>${d.subtotal_formatted}</td>
-                            </tr>
-                        `;
+        <tr>
+            <td>${d.producto}</td>
+            <td>${d.categoria}</td>
+            <td>${d.cantidad}</td>
+            <td>${d.precio_unitario_formatted}</td>
+            <td>${d.subtotal_formatted}</td>
+        </tr>
+    `;
                     });
 
-                    html += `</tbody></table>
-                             <p class="mt-2"><strong>Total:</strong> ${data.total_formatted}</p>`;
-
+                    html += `
+        </tbody>
+    </table>
+    <p class="mt-2"><strong>Total:</strong> ${data.total_formatted}</p>
+`;
                     modalBody.innerHTML = html;
                 } catch (err) {
                     console.error(err);
@@ -214,9 +248,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    [filterCategoria, filterFechaDesde, filterFechaHasta].forEach((el) =>
-        el.addEventListener("change", () => fetchVentas(1))
+    [filterCategoria, filterFechaDesde, filterFechaHasta, filterEstado].forEach(
+        (el) => el.addEventListener("change", () => fetchVentas(1))
     );
+
 
     searchVenta.addEventListener("input", () => {
         clearTimeout(searchVenta._timeout);

@@ -24,9 +24,9 @@
           <div class="card-body">
             <div class="row g-2 align-items-end">
               <!-- Categoría -->
-              <div class="col-md-3">
+              <div class="col-md-2">
                 <label class="form-label text-light">Categoría</label>
-                <select id="filterCategoria" class="form-select text-light border-secondary">
+                <select id="filterCategoria" class="form-select form-select-sm">
                   <option value="">Todas</option>
                   @foreach(\App\Models\Categoria::orderBy('nombre')->get() as $cat)
                   <option value="{{ $cat->id }}">{{ $cat->nombre }}</option>
@@ -34,23 +34,34 @@
                 </select>
               </div>
 
+              <div class="col-md-2">
+                <label class="form-label text-light">Estado</label>
+                <select id="filterEstado" class="form-select form-select-sm">
+                  <option value="">Todos</option>
+                  <option value="Completada">Completada</option>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Anulada">Anulada</option>
+                </select>
+
+              </div>
+
               <!-- Fecha Desde -->
               <div class="col-md-2">
                 <label class="form-label text-light">Desde</label>
-                <input type="date" id="filterFechaDesde" class="form-control text-light border-secondary" />
+                <input type="date" id="filterFechaDesde" class="form-control form-select-sm" />
               </div>
 
               <!-- Fecha Hasta -->
               <div class="col-md-2">
                 <label class="form-label text-light">Hasta</label>
-                <input type="date" id="filterFechaHasta" class="form-control text-light border-secondary" />
+                <input type="date" id="filterFechaHasta" class="form-control form-select-sm " />
               </div>
 
               <!-- Buscar -->
               <div class="col-md-3">
                 <label class="form-label text-light">Buscar</label>
-                <input type="text" id="searchVenta" class="form-control text-light border-secondary"
-                  placeholder="Producto, método, estado o vendedor..." />
+                <input type="text" id="searchVenta" class="form-control form-select-sm "
+                  placeholder="Producto, método o vendedor..." />
               </div>
             </div>
           </div>
@@ -109,16 +120,15 @@
   </div>
 </div>
 
-<!-- Modal para ver detalles de venta -->
+
 <!-- Modal Detalle de Venta -->
-<!-- Modal Detalle de Venta -->
-<div class="modal fade" id="detalleModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content border-0 shadow-lg rounded-4" id="detalleModalContent">
+<div class="modal fade modal-dark-style" id="detalleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-border-custom">
+    <div class=" modal-content border-0 shadow-lg rounded-4" id="detalleModalContent">
 
       <!-- Header -->
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold text-warning text-uppercase">
+        <h5 class="modal-title fw-bold text-warning">
           <i data-feather="info" class="me-2"></i> Detalle de la Venta
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>

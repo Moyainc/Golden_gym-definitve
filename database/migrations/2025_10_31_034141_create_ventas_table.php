@@ -11,20 +11,28 @@ return new class extends Migration
         Schema::create('ventas', function (Blueprint $table) {
             $table->id();
 
-            // Relaciones con usuario y cliente, sin borrar la venta si se eliminan
+            // Relaciones con usuario y cliente (sin borrar la venta si se eliminan)
             $table->unsignedBigInteger('usuario_id')->nullable();
             $table->unsignedBigInteger('cliente_id')->nullable();
 
-            $table->decimal('total', 11, 0);
-            $table->string('metodo_pago');
-            $table->string('estado')->default('Completada');
+            // Datos principales de la venta
+            $table->decimal('total', 11, 0)->default(0);
+            $table->enum('metodo_pago', ['Efectivo', 'Transferencia']);
+            $table->enum('estado', ['Completada', 'Pendiente', 'Anulada'])->default('Completada');
             $table->text('descripcion')->nullable();
             $table->timestamp('fecha_venta')->useCurrent();
             $table->timestamps();
 
-            // Si usuario o cliente se eliminan, los campos quedan nulos pero la venta sigue
-            $table->foreign('usuario_id')->references('id')->on('usuarios')->nullOnDelete();
-            $table->foreign('cliente_id')->references('id')->on('clientes')->nullOnDelete();
+            // Claves foráneas: si usuario o cliente se eliminan, los campos quedan nulos
+            $table->foreign('usuario_id')
+                ->references('id')
+                ->on('usuarios')
+                ->nullOnDelete();
+
+            $table->foreign('cliente_id')
+                ->references('id')
+                ->on('clientes')
+                ->nullOnDelete();
         });
     }
 
@@ -33,3 +41,4 @@ return new class extends Migration
         Schema::dropIfExists('ventas');
     }
 };
+

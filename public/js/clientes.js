@@ -1,11 +1,9 @@
 function closeModalProperly(modalId) {
     const modalEl = document.getElementById(modalId)
     if (!modalEl) return
-
     const modalInstance = bootstrap.Modal.getInstance(modalEl)
     if (modalInstance) {
         modalInstance.hide()
-
         // Esperar a que termine la animación antes de eliminar la instancia
         modalEl.addEventListener(
             "hidden.bs.modal",
@@ -125,28 +123,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch(apiUrl("admin/membresias/list/json"))
             if (!res.ok) throw new Error("Error en la solicitud")
             const data = await res.json()
-
             membershipSelect.innerHTML = ""
-
             if (!data.length) {
                 membershipSelect.innerHTML = `<option value="">No hay membresías disponibles</option>`
                 return
             }
-
             membershipSelect.innerHTML = `<option value="">-- Seleccione una membresía --</option>`
             data.forEach((m) => {
-                const duracionTexto = m.duracion
-                    ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
-                    : "Sin duración"
-
-                membershipSelect.innerHTML += `
-          <option value="${m.id}"
-            data-precio="${m.precio}"
-            data-duracion="${m.duracion}"
-            data-tipo="${m.tipo_duracion}"
-            data-nombre="${m.nombre}">
-            ${m.nombre} (${duracionTexto})
-          </option>`
+                const duracionTexto = m.duracion ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}` : "Sin duración"
+                membershipSelect.innerHTML += `<option value="${m.id}" data-precio="${m.precio}" data-duracion="${m.duracion}" data-tipo="${m.tipo_duracion}" data-nombre="${m.nombre}"> ${m.nombre} (${duracionTexto}) </option>`
             })
         } catch (err) {
             console.error("Error cargando membresías:", err)
@@ -159,30 +144,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch(apiUrl("admin/membresias/list/json"))
             if (!res.ok) throw new Error("Error en la solicitud")
             const data = await res.json()
-
             const editMembershipSelect = document.getElementById("editClientMembershipType")
             editMembershipSelect.innerHTML = `<option value="">Selecciona una membresía</option>`
-
             if (!data.length) {
                 editMembershipSelect.innerHTML = `<option value="">No hay membresías disponibles</option>`
                 return data
             }
-
             data.forEach((m) => {
-                const duracionTexto = m.duracion
-                    ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
-                    : "Sin duración"
-
-                editMembershipSelect.innerHTML += `
-          <option value="${m.id}"
-            data-precio="${m.precio}"
-            data-duracion="${m.duracion}"
-            data-tipo="${m.tipo_duracion}"
-            data-nombre="${m.nombre}">
-            ${m.nombre} (${duracionTexto})
-          </option>`
+                const duracionTexto = m.duracion ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}` : "Sin duración"
+                editMembershipSelect.innerHTML += `<option value="${m.id}" data-precio="${m.precio}" data-duracion="${m.duracion}" data-tipo="${m.tipo_duracion}" data-nombre="${m.nombre}"> ${m.nombre} (${duracionTexto}) </option>`
             })
-
             return data
         } catch (err) {
             console.error("Error cargando membresías:", err)
@@ -192,26 +163,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // === Cargar clientes ===
     let currentPage = 1
-
     async function loadClients(page = 1) {
         try {
             const res = await fetch(apiUrl(`admin/clientes/list/json?page=${page}`))
             if (!res.ok) throw new Error("Error al cargar clientes")
-
             const data = await res.json()
             allClients = data.data || []
-
             clientsCountSpan.textContent = allClients.length
             applyCurrentFilter()
-
-            // Renderizar la paginación
             renderClientPagination(data.pagination)
         } catch (err) {
             console.error("Error cargando clientes:", err)
-            tableBody.innerHTML = `
-        <tr>
-          <td colspan="9" class="text-center text-danger">Error al cargar clientes</td>
-        </tr>`
+            tableBody.innerHTML = `<tr> <td colspan="9" class="text-center text-danger">Error al cargar clientes</td> </tr>`
         }
     }
 
@@ -219,44 +182,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const totalPaginas = pagination.total_pages || 1
         const paginacionContainer = document.getElementById("paginacionClientes")
         if (!paginacionContainer) return
-
         let html = ""
-
-        // Botón anterior
         if (pagination.current_page > 1) {
-            html += `
-            <button class="btn btn-sm btn-outline-warning text-light mx-1"
-                    data-page="${pagination.current_page - 1}">
-                &laquo;
-            </button>`
+            html += `<button class="btn btn-sm btn-outline-warning text-light mx-1" data-page="${pagination.current_page - 1}"> &laquo; </button>`
         }
-
-        // Botones numerados
         for (let i = 1; i <= totalPaginas; i++) {
             const isActive = i === pagination.current_page
-            html += `
-            <button class="btn btn-sm mx-1 ${isActive
-                    ? "btn-warning fw-bold text-dark"
-                    : "btn-outline-warning text-light"
-                }" 
-            data-page="${i}"
-            style="${isActive ? 'color:#000 !important;' : ''}">
-                ${i}
-            </button>`
+            html += `<button class="btn btn-sm mx-1 ${isActive ? "btn-warning fw-bold text-dark" : "btn-outline-warning text-light"}" data-page="${i}" style="${isActive ? 'color:#000 !important;' : ''}"> ${i} </button>`
         }
-
-        // Botón siguiente
         if (pagination.current_page < totalPaginas) {
-            html += `
-            <button class="btn btn-sm btn-outline-warning text-light mx-1"
-                    data-page="${pagination.current_page + 1}">
-                &raquo;
-            </button>`
+            html += `<button class="btn btn-sm btn-outline-warning text-light mx-1" data-page="${pagination.current_page + 1}"> &raquo; </button>`
         }
-
         paginacionContainer.innerHTML = html
-
-        // Delegación de eventos
         paginacionContainer.querySelectorAll("button[data-page]").forEach((btn) => {
             btn.addEventListener("click", (e) => {
                 const page = parseInt(e.target.getAttribute("data-page"))
@@ -268,64 +205,50 @@ document.addEventListener("DOMContentLoaded", () => {
         })
     }
 
-
     function renderClients(clients) {
         if (!clients.length) {
-            tableBody.innerHTML = `
-        <tr>
-          <td colspan="9" class="text-center text-muted">No hay clientes registrados</td>
-        </tr>`
+            tableBody.innerHTML = `<tr> <td colspan="9" class="text-center text-muted">No hay clientes registrados</td> </tr>`
             return
         }
-
         tableBody.innerHTML = clients
             .map((cliente, index) => {
                 const fotoUrl = cliente.foto ? `${window.app.baseUrl}/storage/${cliente.foto}` : getDefaultPhoto()
-
-                return `
-        <tr>
-          <td>${index + 1}</td>
-          <td>
-            <img
-              src="${fotoUrl}"
-              alt="Foto"
-              class="rounded-circle"
-              style="width: 45px; height: 45px; object-fit: cover;"
-              onerror="this.src='${getDefaultPhoto()}'" />
-          </td>
-          <td class="fw-semibold text-white">${cliente.nombre_completo}</td>
-          <td class="text-muted">${cliente.cedula || "N/A"}</td>
-          <td>
-            <span class="badge bg-primary bg-opacity-75">${cliente.membresia_nombre || "Sin membresía"}</span>
-          </td>
-          <td class="text-muted small">${formatDateDisplay(cliente.fecha_inicio)}</td>
-          <td class="text-muted small">${formatDateDisplay(cliente.fecha_fin)}</td>
-          <td>${getEstadoBadge(cliente.estado)}</td>
-          <td class="text-end">
-            <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${cliente.id}" title="Ver cliente">
-            <i data-feather="eye"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${cliente.id}" title="Editar">
-            <i data-feather="edit"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${cliente.id}" title="Renovar membresía">
-            <i data-feather="refresh-cw"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${cliente.id}" title="Eliminar">
-            <i data-feather="trash-2"></i>
-            </button>
-          </td>
-        </tr>`
+                return `<tr>
+                    <td>${index + 1}</td>
+                    <td>
+                        <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
+                    </td>
+                    <td class="fw-semibold text-white">${cliente.nombre_completo}</td>
+                    <td class="text-muted">${cliente.cedula || "N/A"}</td>
+                    <td>
+                        <span class="badge bg-primary bg-opacity-75">${cliente.membresia_nombre || "Sin membresía"}</span>
+                    </td>
+                    <td class="text-muted small">${formatDateDisplay(cliente.fecha_inicio)}</td>
+                    <td class="text-muted small">${formatDateDisplay(cliente.fecha_fin)}</td>
+                    <td>${getEstadoBadge(cliente.estado)}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${cliente.id}" title="Ver cliente">
+                            <i data-feather="eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${cliente.id}" title="Editar">
+                            <i data-feather="edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${cliente.id}" title="Renovar membresía">
+                            <i data-feather="refresh-cw"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${cliente.id}" title="Eliminar">
+                            <i data-feather="trash-2"></i>
+                        </button>
+                    </td>
+                </tr>`
             })
             .join("")
-
         feather.replace()
     }
 
     // === Filtros ===
     function applyCurrentFilter() {
         let filtered = allClients
-
         if (currentFilter === "activa") {
             filtered = allClients.filter((c) => c.estado === "activa")
         } else if (currentFilter === "proxima") {
@@ -333,30 +256,25 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (currentFilter === "vencida") {
             filtered = allClients.filter((c) => c.estado === "vencida")
         }
-
         renderClients(filtered)
     }
 
     document.querySelectorAll(".filter-btn").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const filterValue = e.currentTarget.dataset.filter
-
             document.querySelectorAll(".filter-btn").forEach((b) => {
                 b.classList.remove("btn-warning")
                 b.classList.add("btn-dark")
             })
             e.currentTarget.classList.remove("btn-dark")
             e.currentTarget.classList.add("btn-warning")
-
             currentFilter = filterValue
-
             const filterLabels = {
                 activa: "Activas",
                 proxima: "Próximas a vencer",
                 vencida: "Vencidas",
                 todas: "Todas",
             }
-
             clientsFilteredLabel.textContent = filterLabels[filterValue] || "Todas"
             applyCurrentFilter()
         })
@@ -386,17 +304,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 priceInput.value = ""
                 return
             }
-
             const duracion = Number.parseInt(option.getAttribute("data-duracion")) || 0
             const tipoDuracion = option.getAttribute("data-tipo")
             const precio = Number.parseFloat(option.getAttribute("data-precio")) || 0
-
             const today = new Date()
             const yyyy = today.getFullYear()
             const mm = String(today.getMonth() + 1).padStart(2, "0")
             const dd = String(today.getDate()).padStart(2, "0")
             const startDate = `${yyyy}-${mm}-${dd}`
-
             let endDate = today
             if (tipoDuracion === "meses") {
                 endDate = addMonthsSafe(today, duracion)
@@ -404,15 +319,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 endDate = new Date(today)
                 endDate.setDate(today.getDate() + duracion)
             }
-
             const endYyyy = endDate.getFullYear()
             const endMm = String(endDate.getMonth() + 1).padStart(2, "0")
             const endDd = String(endDate.getDate()).padStart(2, "0")
             const endDateStr = `${endYyyy}-${endMm}-${endDd}`
-
             startInput.value = startDate
             endInput.value = endDateStr
-
             priceInput.value = new Intl.NumberFormat("es-CO", {
                 style: "currency",
                 currency: "COP",
@@ -441,13 +353,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (form) {
         form.addEventListener("submit", async (e) => {
             e.preventDefault()
-
             const formData = new FormData(form)
             const clientId = document.getElementById("clientId")?.value
             const url = clientId ? apiUrl(`admin/clientes/json/${clientId}`) : apiUrl("admin/clientes/json")
-
             if (clientId) formData.append("_method", "PUT")
-
             try {
                 const res = await fetch(url, {
                     method: "POST",
@@ -457,9 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     },
                     body: formData,
                 })
-
                 const data = await res.json()
-
                 if (data.success) {
                     Swal.fire({
                         icon: "success",
@@ -469,7 +376,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         background: "#1a1a1a",
                         color: "#fff",
                     })
-
                     createClientFormModal.hide()
                     form.reset()
                     photoPreview.src = getDefaultPhoto()
@@ -502,9 +408,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const formData = new FormData(editClientForm)
             const clientId = document.getElementById("editClientId")?.value
             if (!clientId) return
-
             formData.append("_method", "PUT")
-
             try {
                 const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`), {
                     method: "POST",
@@ -515,7 +419,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: formData,
                 })
                 const data = await res.json()
-
                 if (data.success) {
                     Swal.fire({
                         icon: "success",
@@ -553,7 +456,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tableBody.addEventListener("click", async (e) => {
             const btn = e.target.closest("button")
             if (!btn) return
-
             const clientId = btn.dataset.id
 
             // EDITAR
@@ -562,7 +464,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`))
                     const cliente = await res.json()
                     editingClientId = clientId
-
                     document.getElementById("editClientId").value = cliente.id
                     document.getElementById("editClientName").value = cliente.nombre_completo
                     document.getElementById("editClientEmail").value = cliente.correo || ""
@@ -570,7 +471,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("editClientIdNumber").value = cliente.cedula || ""
                     document.getElementById("editClientEps").value = cliente.eps || ""
                     document.getElementById("editClientEmergency").value = cliente.numero_emergencia || ""
-
+                    await loadEditMemberships()
+                    const editMembershipSelect = document.getElementById("editClientMembershipType")
+                    if (editMembershipSelect && cliente.membresia_actual) {
+                        editMembershipSelect.value = cliente.membresia_actual.membresia_id
+                    }
                     if (cliente.foto) {
                         editClientPhotoPreview.src = `${window.app.baseUrl}/storage/${cliente.foto}`
                         editClientPhotoPreview.style.display = "block"
@@ -578,7 +483,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         editClientPhotoPreview.src = getDefaultPhoto()
                         editClientPhotoPreview.style.display = "none"
                     }
-
                     editClientFormModal.show()
                 } catch (err) {
                     Swal.fire({
@@ -590,13 +494,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     })
                 }
             }
+
             // VER CLIENTE
             if (btn.classList.contains("btn-view")) {
                 try {
                     const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`))
                     const cliente = await res.json()
-
-                    // Mostrar modal de visualización
                     const viewModal = new bootstrap.Modal(document.getElementById("viewClientModal"))
                     document.getElementById("viewClientName").textContent = cliente.nombre_completo
                     document.getElementById("viewClientIdNumber").textContent = cliente.cedula || "N/A"
@@ -608,10 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("viewClientStart").textContent = cliente.fecha_inicio || "N/A"
                     document.getElementById("viewClientEnd").textContent = cliente.fecha_fin || "N/A"
                     document.getElementById("viewClientEstado").innerHTML = getEstadoBadge(cliente.estado)
-                    document.getElementById("viewClientPhoto").src = cliente.foto
-                        ? `${window.app.baseUrl}/storage/${cliente.foto}`
-                        : getDefaultPhoto()
-
+                    document.getElementById("viewClientPhoto").src = cliente.foto ? `${window.app.baseUrl}/storage/${cliente.foto}` : getDefaultPhoto()
                     viewModal.show()
                 } catch (err) {
                     Swal.fire({
@@ -625,26 +525,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // RENOVAR
-            // RENOVAR
             if (btn.classList.contains("btn-renew")) {
                 try {
                     const resMem = await fetch(apiUrl("admin/membresias/list/json"));
                     const membresias = await resMem.json();
 
-                    // === Opciones de membresías ===
                     const inputOptions = {};
                     membresias.forEach((m) => {
-                        const duracionTexto = m.duracion
-                            ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
-                            : "Sin duración";
-                        inputOptions[m.id.toString()] = `${m.nombre} - ${duracionTexto} - ${new Intl.NumberFormat("es-CO", {
-                            style: "currency",
-                            currency: "COP",
-                            minimumFractionDigits: 0,
-                        }).format(m.precio)}`;
+                        const duracionTexto = m.duracion ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}` : "Sin duración";
+                        inputOptions[m.id.toString()] = `${m.nombre} - ${duracionTexto} - ${new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", minimumFractionDigits: 0, }).format(m.precio)}`;
                     });
 
-                    // === PRIMERA ALERTA: seleccionar membresía ===
                     const { value: membresia_id } = await Swal.fire({
                         title: "Renovar membresía",
                         input: "select",
@@ -665,17 +556,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         },
                     });
-
                     if (!membresia_id) return;
 
-                    // === SEGUNDA ALERTA: seleccionar método de pago ===
                     const { value: metodo_pago } = await Swal.fire({
                         title: "Método de pago",
                         input: "select",
-                        inputOptions: {
-                            efectivo: "Efectivo",
-                            transferencia: "Transferencia",
-                        },
+                        inputOptions: { efectivo: "Efectivo", transferencia: "Transferencia", },
                         inputPlaceholder: "Seleccione el método de pago",
                         showCancelButton: true,
                         confirmButtonText: "Renovar",
@@ -692,14 +578,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         },
                     });
-
                     if (!metodo_pago) return;
 
-                    // === Enviar al servidor ===
                     const formData = new FormData();
                     formData.append("membresia_id", membresia_id);
                     formData.append("metodo_pago", metodo_pago);
-
                     const res = await fetch(apiUrl(`admin/clientes/json/${clientId}/renovar`), {
                         method: "POST",
                         headers: {
@@ -708,9 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         },
                         body: formData,
                     });
-
                     const data = await res.json();
-
                     if (data.success) {
                         Swal.fire({
                             icon: "success",
@@ -735,7 +616,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
 
-
             // ELIMINAR
             if (btn.classList.contains("btn-delete")) {
                 const result = await Swal.fire({
@@ -748,7 +628,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     background: "#1a1a1a",
                     color: "#fff",
                 })
-
                 if (result.isConfirmed) {
                     try {
                         const formData = new FormData()
@@ -793,7 +672,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const reportStartDate = document.getElementById("reportStartDate")
     const reportEndDate = document.getElementById("reportEndDate")
     const reportEstado = document.getElementById("reportEstado")
-    const includePagosDiarios = document.getElementById("includePagosDiarios") // 🔹 nuevo
+    const includePagosDiarios = document.getElementById("includePagosDiarios")
 
     if (reportStartDate && reportEndDate) {
         const today = new Date()
@@ -808,8 +687,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const fechaInicio = reportStartDate.value
             const fechaFin = reportEndDate.value
             const estado = reportEstado.value
-            const incluirPagosDiarios = includePagosDiarios.checked ? 1 : 0 // 🔹 nuevo
-
+            const incluirPagosDiarios = includePagosDiarios.checked ? 1 : 0
             if (!fechaInicio || !fechaFin) {
                 Swal.fire({
                     icon: "warning",
@@ -820,7 +698,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 })
                 return
             }
-
             if (new Date(fechaInicio) > new Date(fechaFin)) {
                 Swal.fire({
                     icon: "warning",
@@ -832,11 +709,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 return;
             }
-
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
-                incluir_pagos_diarios: incluirPagosDiarios, // 🔹 nuevo
+                incluir_pagos_diarios: incluirPagosDiarios,
             })
             if (estado) params.append("estado", estado)
             window.open(apiUrl(`admin/clientes/export/pdf?${params.toString()}`), "_blank")
@@ -849,8 +725,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const fechaInicio = reportStartDate.value
             const fechaFin = reportEndDate.value
             const estado = reportEstado.value
-            const incluirPagosDiarios = includePagosDiarios.checked ? 1 : 0 // 🔹 nuevo
-
+            const incluirPagosDiarios = includePagosDiarios.checked ? 1 : 0
             if (!fechaInicio || !fechaFin) {
                 Swal.fire({
                     icon: "warning",
@@ -872,18 +747,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 return;
             }
-
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
-                incluir_pagos_diarios: incluirPagosDiarios, // 🔹 nuevo
+                incluir_pagos_diarios: incluirPagosDiarios,
             })
             if (estado) params.append("estado", estado)
             window.open(apiUrl(`admin/clientes/export/excel?${params.toString()}`), "_blank")
             bootstrap.Modal.getInstance(document.getElementById("reportsModal")).hide()
         })
     }
-
 
     // === Inicializar ===
     loadMemberships()
