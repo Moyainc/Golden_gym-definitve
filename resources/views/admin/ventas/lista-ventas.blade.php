@@ -122,13 +122,13 @@
 
 
 <!-- Modal Detalle de Venta -->
-<div class="modal fade" id="detalleModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade modal-dark-style" id="detalleModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-border-custom">
     <div class=" modal-content border-0 shadow-lg rounded-4" id="detalleModalContent">
 
       <!-- Header -->
       <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold text-warning text-uppercase">
+        <h5 class="modal-title fw-bold text-warning">
           <i data-feather="info" class="me-2"></i> Detalle de la Venta
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>

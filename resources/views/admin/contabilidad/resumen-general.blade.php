@@ -20,7 +20,7 @@
 
           <!-- Filtro de mes -->
           <select id="filterMonth" class="form-select form-select-sm bg-dark text-white border-0">
-            <option value="">Mes (todos)</option>
+            <option value="">Todos los meses</option>
             <option value="1">Enero</option>
             <option value="2">Febrero</option>
             <option value="3">Marzo</option>
@@ -37,7 +37,7 @@
 
           <!-- Filtro de año dinámico -->
           <select id="filterYear" class="form-select form-select-sm bg-dark text-white border-0">
-            <option value="todos">Año (todos)</option>
+            <option value="todos">Todos los años</option>
             @foreach(App\Models\PagoGeneral::selectRaw('YEAR(fecha_pago) as anio')->distinct()->orderBy('anio', 'asc')->pluck('anio') as $anio)
             <option value="{{ $anio }}">{{ $anio }}</option>
             @endforeach
@@ -160,50 +160,42 @@
               </div>
             </div>
           </div>
-
-          <div class="col-12">
-            <div class="card border-0 shadow-sm bg-dark-card">
-              <div class="card-header d-flex justify-content-between align-items-center border-bottom border-secondary py-2">
-                <h6 class="mb-0 tittle-color"><i data-feather="trending-up" class="me-1"></i>Tendencia de ingresos</h6>
-                <small class="text-muted">Últimos 12 meses</small>
-              </div>
-              <div class="card-body p-3">
-                <canvas id="revenueLineChart" height="80"></canvas>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <!-- === REPORTES Y TABLA === -->
-        <div class="row g-3 mt-2">
-          <div class="col-12 col-lg-6">
-            <div class="card border-0 shadow-sm bg-dark-card h-100">
-              <div class="card-header border-bottom border-secondary py-2">
-                <h6 class="mb-0 tittle-color"><i data-feather="file-text" class="me-1"></i>Generar reportes</h6>
+
+        <div class="row g-3 mt-2 align-items-stretch">
+          <!-- Tendencia de ingresos -->
+          <div class="col-12 col-lg-8">
+            <div class="card border-0 shadow-sm bg-dark-card" style="height: 350px;">
+              <div class="card-header d-flex justify-content-between align-items-center border-bottom border-secondary py-2">
+                <h6 class="mb-0 tittle-color">
+                  <i data-feather="users" class="me-1"></i> Clientes activos vs nuevos
+                </h6>
+                <small class="text-muted">Últimos 12 meses</small>
               </div>
-              <div class="card-body p-3">
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                  <button id="btnQuickPdf" class="btn btn-sm btn-warning">Reporte PDF (rápido)</button>
-                  <button id="btnDetailedPdf" class="btn btn-sm btn-outline-warning">PDF detallado</button>
-                  <button id="btnExportXLS" class="btn btn-sm btn-info">Exportar a Excel</button>
-                </div>
-                <div class="small text-muted">
-                  Puedes generar reportes con el rango seleccionado. Para PDF detallado se captura el área visible.
+              <div class="card-body p-3 d-flex align-items-center justify-content-center">
+                <div class="chart-container w-100 h-100">
+                  <canvas id="clientsChart"></canvas>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="col-12 col-lg-6">
+
+          <!-- Últimos registros -->
+          <div class="col-12 col-lg-4">
             <div class="card border-0 shadow-sm bg-dark-card h-100">
               <div class="card-header border-bottom border-secondary d-flex justify-content-between align-items-center py-2">
-                <h6 class="mb-0 tittle-color"><i data-feather="list" class="me-1"></i>Últimos registros</h6>
+                <h6 class="mb-0 tittle-color">
+                  <i data-feather="list" class="me-1"></i> Últimos registros
+                </h6>
                 <button id="btnViewAll" class="btn btn-sm btn-outline-info">Ver todo</button>
               </div>
+
               <div class="card-body p-0">
-                <div class="table-responsive">
-                  <table class="table table-dark table-hover mb-0 small align-middle">
-                    <thead class="text-muted">
+                <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
+                  <table class="table table-hover mb-0 small align-middle border-0" style="border: none !important;">
+                    <thead class="text-muted border-bottom border-secondary">
                       <tr>
                         <th>Fecha</th>
                         <th>Concepto</th>
@@ -219,27 +211,50 @@
           </div>
         </div>
 
+
+
         <!-- Modal detalle -->
-        <div class="modal fade" id="recordDetailModal" tabindex="-1">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bg-dark text-white border border-secondary">
-              <div class="modal-header">
-                <h5 class="modal-title text-info">Detalle del Registro</h5>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal fade modal-dark-style mt-0 py-2" id="recordDetailModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-border-custom">
+            <div class="modal-content border-0 shadow-lg" id="recordDetailModalContent">
+
+              <!-- Header -->
+              <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-warning">
+                  <i data-feather="info" class="me-2"></i> Detalle del Registro
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
-              <div class="modal-body">
-                <p><strong>Fecha:</strong> <span id="detailDate"></span></p>
-                <p><strong>Concepto:</strong> <span id="detailConcept"></span></p>
-                <p><strong>Valor:</strong> <span id="detailValue"></span></p>
-                <p><strong>Método de pago:</strong> <span id="detailMethod"></span></p>
-                <p><strong>Estado:</strong> <span id="detailStatus"></span></p>
+
+              <!-- Línea divisoria -->
+              <hr class="border-warning opacity-25 mx-4 mb-0 mt-2" />
+
+              <!-- Cuerpo -->
+              <div id="recordDetailModalBody" class="modal-body py-4 px-4"
+                style="max-height: 60vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #fcd52b #1a1a1a;">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <p><strong>Fecha:</strong> <span id="detailDate" class="text-light"></span></p>
+                    <p><strong>Concepto:</strong> <span id="detailConcept" class="text-light"></span></p>
+                    <p><strong>Valor:</strong> <span id="detailValue" class="text-light"></span></p>
+                    <p><strong>Método de pago:</strong> <span id="detailMethod" class="text-light"></span></p>
+                    <p><strong>Estado:</strong> <span id="detailStatus" class="text-light"></span></p>
+                  </div>
+                </div>
               </div>
-              <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+
+              <!-- Footer -->
+              <div class="modal-footer border-0 pt-0 d-flex justify-content-end">
+                <button type="button" class="btn fw-bold px-4"
+                  style="background-color: #fcd52b; color: #000; border-radius: 10px; font-weight: 600;"
+                  data-bs-dismiss="modal">
+                  Cerrar
+                </button>
               </div>
             </div>
           </div>
         </div>
+
     </main>
   </div>
 </div>
