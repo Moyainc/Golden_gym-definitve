@@ -61,13 +61,14 @@
                     </select>
                   </div>
                   <div class="col-md-4">
-                    <select
-                      id="filterStatus"
-                      class="form-select text-light border-secondary">
+                    <select id="filterStatus" class="form-select text-light border-secondary">
                       <option value="">Disponibilidad</option>
-                      <option>Activo</option>
-                      <option>Inactivo</option>
+                      <option value="activo">Activo</option>
+                      <option value="inactivo">Inactivo</option>
+                      <option value="bajo_stock">Bajo stock</option>
+                      <option value="agotado">Agotado</option>
                     </select>
+
                   </div>
                   <div class="col-md-4">
                     <input
