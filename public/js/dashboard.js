@@ -447,19 +447,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         estado = m.estado_pago || "Pendiente";
                     }
 
+                    // Si el cliente es "-", poner "Venta rápida"
+                    const cliente =
+                        m.cliente && m.cliente.trim() !== "-"
+                            ? m.cliente
+                            : "Venta rápida";
+
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                    <td>${formatTipo(m.tipo)}</td>
-                    <td>${m.cliente}</td>
-                    <td title="${m.monto}">$${Number(m.monto).toLocaleString(
-                        "es-CO",
-                        { minimumFractionDigits: 0 }
-                    )}</td>
-                    <td>${m.fecha}</td>
-                    <td class="text-center ${
-                        estadoColor[estado] || ""
-                    }">${estado}</td>
-                `;
+        <td>${formatTipo(m.tipo)}</td>
+        <td>${cliente}</td>
+        <td title="${m.monto}">$${Number(m.monto).toLocaleString("es-CO", {
+                        minimumFractionDigits: 0,
+                    })}</td>
+        <td>${m.fecha}</td>
+        <td class="text-center ${estadoColor[estado] || ""}">${estado}</td>
+    `;
                     tbody.appendChild(row);
                 });
 
