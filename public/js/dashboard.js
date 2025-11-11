@@ -179,7 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     };
 
-
     // Inicializamos todas las cards en "Semana"
     Promise.all([
         updateCard("Productos", "week"),
@@ -213,27 +212,89 @@ document.addEventListener("DOMContentLoaded", () => {
             const ctx = document
                 .getElementById("chartjs-dashboard-line")
                 .getContext("2d");
+
+            // Gradiente para el fondo
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, "rgba(252, 213, 43, 0.4)");
+            gradient.addColorStop(1, "rgba(252, 213, 43, 0)");
+
+            // Mapeo abreviaturas ingles → español
+            const mesesMap = {
+                Jan: "Ene",
+                Feb: "Feb",
+                Mar: "Mar",
+                Apr: "Abr",
+                May: "May",
+                Jun: "Jun",
+                Jul: "Jul",
+                Aug: "Ago",
+                Sep: "Sep",
+                Oct: "Oct",
+                Nov: "Nov",
+                Dec: "Dic",
+            };
+
             new Chart(ctx, {
                 type: "line",
                 data: {
-                    labels: data.labels,
+                    // Convertimos cada etiqueta al español
+                    labels: data.labels.map(
+                        (label) => mesesMap[label] || label
+                    ),
                     datasets: [
                         {
                             label: "Ingresos Totales",
                             data: data.totals,
                             borderColor: "#fcd52b",
-                            backgroundColor: "rgba(252, 213, 43, 0.2)",
+                            backgroundColor: gradient,
+                            fill: true,
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
                         },
                     ],
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function (tooltipItems) {
+                                    // Mostramos el mes completo en español
+                                    const mesesLong = {
+                                        Ene: "Enero",
+                                        Feb: "Febrero",
+                                        Mar: "Marzo",
+                                        Abr: "Abril",
+                                        May: "Mayo",
+                                        Jun: "Junio",
+                                        Jul: "Julio",
+                                        Ago: "Agosto",
+                                        Sep: "Septiembre",
+                                        Oct: "Octubre",
+                                        Nov: "Noviembre",
+                                        Dic: "Diciembre",
+                                    };
+                                    const abrev = tooltipItems[0].label;
+                                    return mesesLong[abrev] || abrev;
+                                },
+                                label: function (tooltipItem) {
+                                    // Valor completo formateado tipo $200.000 sin decimales
+                                    return `$ ${Number(
+                                        tooltipItem.raw
+                                    ).toLocaleString("es-CO", {
+                                        maximumFractionDigits: 0,
+                                    })}`;
+                                },
+                            },
+                        },
+                    },
                     scales: {
                         y: {
                             ticks: {
                                 callback: function (value) {
-                                    const formatted = formatNumber(value);
+                                    const formatted = formatNumber(value); // eje Y abreviado
                                     return (
                                         formatted.formatted + formatted.suffix
                                     );
@@ -252,26 +313,92 @@ document.addEventListener("DOMContentLoaded", () => {
             const ctx = document
                 .getElementById("chartjs-dashboard-bar")
                 .getContext("2d");
+
+            // Gradiente para las barras (puedes comentar estas líneas para desactivarlo)
+            // const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            // gradient.addColorStop(0, "rgba(252, 213, 43, 0.8)");
+            // gradient.addColorStop(1, "rgba(252, 213, 43, 0.2)");
+
+            // Mapeo abreviaturas ingles → español
+            const mesesMap = {
+                Jan: "Ene",
+                Feb: "Feb",
+                Mar: "Mar",
+                Apr: "Abr",
+                May: "May",
+                Jun: "Jun",
+                Jul: "Jul",
+                Aug: "Ago",
+                Sep: "Sep",
+                Oct: "Oct",
+                Nov: "Nov",
+                Dec: "Dic",
+            };
+
             new Chart(ctx, {
                 type: "bar",
                 data: {
-                    labels: data.labels,
+                    // Traducimos los labels al español
+                    labels: data.labels.map(
+                        (label) => mesesMap[label] || label
+                    ),
                     datasets: [
                         {
                             label: "Membresías",
                             data: data.totals,
-                            backgroundColor: "#fcd52b",
+                            backgroundColor: "#fcd52b", // color sólido si no quieres degradado
                         },
                     ],
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function (tooltipItems) {
+                                    // Mes completo en español
+                                    const mesesLong = {
+                                        Ene: "Enero",
+                                        Feb: "Febrero",
+                                        Mar: "Marzo",
+                                        Abr: "Abril",
+                                        May: "Mayo",
+                                        Jun: "Junio",
+                                        Jul: "Julio",
+                                        Ago: "Agosto",
+                                        Sep: "Septiembre",
+                                        Oct: "Octubre",
+                                        Nov: "Noviembre",
+                                        Dic: "Diciembre",
+                                    };
+                                    const abrev = tooltipItems[0].label;
+                                    return mesesLong[abrev] || abrev;
+                                },
+                                label: function (tooltipItem) {
+                                    // Valor formateado en pesos sin decimales
+                                    return `$ ${Number(
+                                        tooltipItem.raw
+                                    ).toLocaleString("es-CO", {
+                                        maximumFractionDigits: 0,
+                                    })}`;
+                                },
+                            },
+                        },
+                    },
                     scales: {
+                        x: {
+                            ticks: {
+                                callback: function (val, index) {
+                                    const label = data.labels[index];
+                                    return mesesMap[label] || label; // abreviaturas en español
+                                },
+                            },
+                        },
                         y: {
                             ticks: {
                                 callback: function (value) {
-                                    const formatted = formatNumber(value);
+                                    const formatted = formatNumber(value); // eje Y abreviado
                                     return (
                                         formatted.formatted + formatted.suffix
                                     );
