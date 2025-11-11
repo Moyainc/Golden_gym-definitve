@@ -171,8 +171,6 @@ class ClienteController extends Controller
             'eps' => 'nullable|string|max:100',
             'numero_emergencia' => 'nullable|string|max:20',
             'foto' => 'nullable|image|max:2048',
-            'membresia_id' => 'required|exists:membresias,id',
-            'metodo_pago' => 'nullable|string|max:50',
         ]);
 
         try {
@@ -192,22 +190,6 @@ class ClienteController extends Controller
                 'numero_emergencia' => $request->numero_emergencia,
             ]);
 
-            if ($request->membresia_id != $cliente->membresiaActual?->membresia_id) {
-                $membresia = Membresia::findOrFail($request->membresia_id);
-                $fechaInicio = Carbon::now()->startOfDay();
-                $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
-                $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
-
-                PagoMembresia::create([
-                    'cliente_id' => $cliente->id,
-                    'membresia_id' => $membresia->id,
-                    'fecha_inicio' => $fechaInicio,
-                    'fecha_fin' => $fechaFin,
-                    'monto' => $membresia->precio,
-                    'estado' => $estado,
-                    'metodo_pago' => $request->metodo_pago ?? 'efectivo',
-                ]);
-            }
 
             return response()->json(['success' => true, 'cliente' => $cliente]);
         } catch (\Exception $e) {

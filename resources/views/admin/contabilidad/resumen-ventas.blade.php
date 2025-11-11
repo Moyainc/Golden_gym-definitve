@@ -32,12 +32,16 @@
               @endforeach
             </select>
 
-            <button id="applyFilter" class="btn btn-sm btn-info ms-md-2 mt-2 mt-md-0">Filtrar</button>
-          </div>
-
-          <div class="btn-group ms-md-3 mt-2 mt-md-0" role="group">
-            <a id="exportPdf" href="{{ route('admin.resumen_ventas.pdf') }}" class="btn btn-sm btn-outline-light" target="_blank">Exportar PDF</a>
-            <a id="exportExcel" href="{{ route('admin.resumen_ventas.excel') }}" class="btn btn-sm btn-outline-light" target="_blank">Exportar Excel</a>
+            <button id="applyFilter" class="btn btn-info py-3 ms-md-2 mt-2 mt-md-0 text-nowrap">Aplicar Filtro</button>
+            <div class="d-flex flex-wrap align-items-center">
+              <button
+                type="button"
+                class="btn btn-success py-3 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap"
+                data-bs-toggle="modal"
+                data-bs-target="#reportsVentasModal">
+                <i data-feather="file-text" class="me-1"></i> Reportes
+              </button>
+            </div>
           </div>
         </div>
 
@@ -171,9 +175,52 @@
             </div>
           </div>
         </div>
-
       </div>
     </main>
+
+    <!-- Modal para Reportes -->
+    <div class="modal fade" id="reportsVentasModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-0 text-white shadow-lg">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title text-success">
+              <i data-feather="file-text" class="me-1"></i> Generar Reporte de Ventas
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+
+          <form id="reportsVentasForm" class="modal-body">
+            <div class="alert alert-info bg-opacity-10 border-info text-info">
+              <i data-feather="info" class="me-1"></i>
+              Selecciona un rango de fechas para filtrar las ventas a incluir en el reporte.
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Fecha inicio</label>
+              <input id="reportStartDateVentas" name="inicio" type="date"
+                class="form-control text-white border-0" required />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Fecha fin</label>
+              <input id="reportEndDateVentas" name="fin" type="date"
+                class="form-control text-white border-0" required />
+            </div>
+
+            <div class="modal-footer border-secondary">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="button" id="exportPdfVentasBtn" class="btn btn-danger">
+                <i data-feather="file" class="me-1"></i> Exportar PDF
+              </button>
+              <button type="button" id="exportExcelVentasBtn" class="btn btn-success">
+                <i data-feather="download" class="me-1"></i> Exportar Excel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 

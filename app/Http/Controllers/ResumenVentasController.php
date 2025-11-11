@@ -7,6 +7,10 @@ use App\Models\Venta;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class ResumenVentasController extends Controller
 {
@@ -132,66 +136,188 @@ class ResumenVentasController extends Controller
   public function exportVentasPdf(Request $request)
   {
     try {
-      $mes = $request->input('mes', date('m'));
-      $anio = $request->input('anio', date('Y'));
+      $inicio = $request->input('fecha_inicio');
+      $fin = $request->input('fecha_fin');
 
-      $ventas = Venta::with(['detalles.producto.categoria'])
-        ->whereYear('fecha_venta', $anio)
-        ->whereMonth('fecha_venta', $mes)
-        ->orderByDesc('fecha_venta')
-        ->get();
+      // Consulta base con relaciones
+      $query = Venta::with(['usuario', 'cliente', 'detalles.producto.categoria'])
+        ->orderByDesc('fecha_venta');
 
+      // Aplicar filtro de rango de fechas si se proporcionan
+      if ($inicio && $fin) {
+        $query->whereBetween('fecha_venta', [$inicio, $fin]);
+      }
+
+      $ventas = $query->get();
+
+      // Procesar cada venta para agregar cliente, usuario y subtotal detalle
+      foreach ($ventas as $venta) {
+        // Cliente o "Venta rápida"
+        if (!$venta->cliente) {
+          $venta->cliente = (object)[
+            'nombre_completo' => 'Venta rápida'
+          ];
+        }
+
+        // Usuario que realizó la venta
+        $venta->usuario_nombre = $venta->usuario->nombre_completo ?? 'N/A';
+
+        // Asegurar subtotal de cada detalle
+        foreach ($venta->detalles as $detalle) {
+          $detalle->precio_total = $detalle->subtotal ?? ($detalle->cantidad * $detalle->precio_unitario);
+        }
+      }
+
+      // Totales
       $totalVentas = $ventas->sum('total');
       $numVentas = $ventas->count();
       $numProductos = $ventas->sum(fn($v) => $v->detalles->sum('cantidad'));
       $pendientes = $ventas->where('estado', 'Pendiente')->count();
 
+      // Generar PDF
       $pdf = Pdf::loadView('reports.ventas-pdf', [
         'ventas' => $ventas,
         'totalVentas' => $totalVentas,
         'numVentas' => $numVentas,
         'numProductos' => $numProductos,
         'pendientes' => $pendientes,
-        'mes' => $mes,
-        'anio' => $anio,
+        'inicio' => $inicio,
+        'fin' => $fin,
+        'fecha_generacion' => now()->format('d/m/Y H:i'),
       ]);
 
-      return $pdf->download("ventas-{$mes}-{$anio}.pdf");
+      $filename = 'resumen-ventas-' . now()->format('d-m-y') . '.pdf';
+      return $pdf->download($filename);
     } catch (\Throwable $e) {
       Log::error('Error ResumenVentasController@exportVentasPdf: ' . $e->getMessage());
       return redirect()->back()->with('error', 'Ocurrió un error generando el PDF.');
     }
   }
 
+
   // ✅ Export Excel (CSV)
   public function exportVentasExcel(Request $request)
   {
-    try {
-      $mes = $request->input('mes', date('m'));
-      $anio = $request->input('anio', date('Y'));
+    $request->validate([
+      'fecha_inicio' => 'required|date',
+      'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+    ], [
+      'fecha_inicio.required' => 'La fecha de inicio es obligatoria.',
+      'fecha_fin.required' => 'La fecha de fin es obligatoria.',
+      'fecha_fin.after_or_equal' => 'La fecha de fin debe ser igual o posterior a la fecha de inicio.',
+    ]);
 
-      $ventas = Venta::with(['detalles.producto.categoria'])
-        ->whereYear('fecha_venta', $anio)
-        ->whereMonth('fecha_venta', $mes)
+    try {
+      $inicio = $request->input('fecha_inicio');
+      $fin = $request->input('fecha_fin');
+
+      // 🔹 Cargar datos con relaciones y filtro por rango
+      $ventas = Venta::with(['usuario', 'cliente', 'detalles.producto.categoria'])
+        ->whereBetween('fecha_venta', [$inicio, $fin])
         ->orderByDesc('fecha_venta')
         ->get();
 
-      $csv = "ID,Producto,Categoría,Método de Pago,Precio,Fecha,Estado\n";
+      // 🔹 Crear Excel
+      $spreadsheet = new Spreadsheet();
+      $sheet = $spreadsheet->getActiveSheet();
+      $sheet->setTitle('Ventas');
+
+      // 🔹 Encabezados
+      $headers = [
+        'N°',
+        'ID Venta',
+        'Producto',
+        'Categoría',
+        'Cliente',
+        'Usuario',
+        'Método de Pago',
+        'Cantidad',
+        'Precio Unitario',
+        'Subtotal',
+        'Fecha',
+        'Estado'
+      ];
+
+      $sheet->fromArray([$headers], null, 'A1');
+
+      // 🔹 Estilos del encabezado
+      $sheet->getStyle('A1:L1')->getFont()->setBold(true)->getColor()->setRGB('272727');
+      $sheet->getStyle('A1:L1')->getFill()
+        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+        ->getStartColor()->setRGB('fcd52b');
+      $sheet->getStyle('A1:L1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+      // 🔹 Llenar datos
+      $row = 2;
+      $numero = 1;
 
       foreach ($ventas as $venta) {
         foreach ($venta->detalles as $detalle) {
           $producto = $detalle->producto->nombre ?? 'Producto Eliminado';
           $categoria = $detalle->producto->categoria->nombre ?? 'Sin Categoría';
-          $csv .= "{$venta->id},{$producto},{$categoria},{$venta->metodo_pago},{$detalle->subtotal},{$venta->fecha_venta},{$venta->estado}\n";
+          $cliente = $venta->cliente->nombre_completo ?? 'Venta rápida';
+          $usuario = $venta->usuario->nombre_completo ?? 'N/A';
+          $fecha = Carbon::parse($venta->fecha_venta)->format('d/m/Y');
+
+          $sheet->fromArray([[
+            $numero++,
+            $venta->id,
+            $producto,
+            $categoria,
+            $cliente,
+            $usuario,
+            ucfirst($venta->metodo_pago ?? 'No especificado'),
+            $detalle->cantidad,
+            number_format($detalle->precio_unitario, 0, ',', '.'),
+            number_format($detalle->subtotal, 0, ',', '.'),
+            $fecha,
+            $venta->estado,
+          ]], null, "A{$row}");
+
+          $row++;
         }
       }
 
-      return response()->streamDownload(function () use ($csv) {
-        echo "\xEF\xBB\xBF" . $csv;
-      }, "ventas-{$mes}-{$anio}.csv", ['Content-Type' => 'text/csv']);
+      $lastRow = $row - 1;
+
+      // 🔹 Totales
+      $totalVentas = $ventas->sum('total');
+      $numProductos = $ventas->sum(fn($v) => $v->detalles->sum('cantidad'));
+
+      $sheet->fromArray([
+        ['', '', '', '', '', '', '', '', 'TOTAL VENTAS:', number_format($totalVentas, 0, ',', '.'), '', ''],
+        ['', '', '', '', '', '', '', '', 'TOTAL PRODUCTOS:', $numProductos, '', ''],
+      ], null, "A" . ($lastRow + 2));
+
+      // 🔹 Estilo general
+      $sheet->getStyle("A1:L{$lastRow}")
+        ->getBorders()
+        ->getAllBorders()
+        ->setBorderStyle(Border::BORDER_THIN);
+
+      $sheet->getStyle("A1:L{$lastRow}")
+        ->getAlignment()
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+      foreach (range('A', 'L') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+      }
+
+      // 🔹 Descargar archivo
+      $filename = 'resumen-ventas-' . now()->format('d-m-y') . '.xlsx';
+      $writer = new Xlsx($spreadsheet);
+
+      return response()->streamDownload(function () use ($writer) {
+        $writer->save('php://output');
+      }, $filename, [
+        'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ]);
     } catch (\Throwable $e) {
       Log::error('Error ResumenVentasController@exportVentasExcel: ' . $e->getMessage());
-      return redirect()->back()->with('error', 'Ocurrió un error generando el Excel.');
+      return response()->json([
+        'success' => false,
+        'message' => 'Error al generar el archivo: ' . $e->getMessage(),
+      ], 500);
     }
   }
 }

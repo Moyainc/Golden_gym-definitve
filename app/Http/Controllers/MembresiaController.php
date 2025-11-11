@@ -116,7 +116,7 @@ class MembresiaController extends Controller
 
     // Clientes activos: contarlos desde la tabla clientes (que tengan al menos un pago activo)
     $totalClientesActivos = \App\Models\Cliente::whereHas('pagosMembresias', function ($q) {
-      $q->where('estado', 'activa');
+      $q->where('estado', ['activa', 'proxima']);
     })->count();
 
     // Ingresos totales por membresías (suma de monto en pagos_membresias)

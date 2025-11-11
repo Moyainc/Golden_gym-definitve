@@ -43,6 +43,17 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             return;
         }
+        if (new Date(fechaInicio) > new Date(fechaFin)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Rango de fechas inválido",
+                text: "La fecha de inicio no puede ser mayor que la fecha de fin.",
+                confirmButtonColor: "#fcd52b",
+                background: "#1e1e1e",
+                color: "#fff",
+            });
+            return;
+        }
 
         const params = new URLSearchParams({
             fecha_inicio: fechaInicio,

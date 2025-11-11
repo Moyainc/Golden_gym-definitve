@@ -14,7 +14,7 @@ class SuperAdminSeeder extends Seeder
         Usuario::updateOrCreate(
             ['correo' => 'adminMaster@gym.com'],
             [
-                'nombre_completo' => 'Super Admin David',
+                'nombre_completo' => 'Super Admin',
                 'cedula' => '123456789',
                 'telefono' => '3000000000',
                 'rol' => 'Administrador',

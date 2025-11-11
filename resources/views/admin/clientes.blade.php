@@ -514,37 +514,6 @@
 
               <hr class="border-secondary" />
 
-              <div class="col-md-6">
-                <label class="form-label">Tipo de Membresía *</label>
-                <select class="form-select text-white border-0" id="editClientMembershipType" name="membresia_id" required>
-                  <option value="">Selecciona una membresía</option>
-                </select>
-              </div>
-
-              <div class="col-md-6">
-                <label class="form-label">Método de pago *</label>
-                <select class="form-select text-white border-0" id="editClientPaymentMethod" name="metodo_pago" required>
-                  <option value="efectivo">Efectivo</option>
-                  <option value="transferencia">Transferencia</option>
-                  <option value="tarjeta">Tarjeta</option>
-                </select>
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Fecha Inicio</label>
-                <input type="date" class="form-control text-white border-0" id="editMembershipStart" name="fecha_inicio" readonly>
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Fecha Fin</label>
-                <input type="date" class="form-control text-white border-0" id="editMembershipEnd" name="fecha_fin" readonly>
-              </div>
-
-              <div class="col-md-4">
-                <label class="form-label">Precio</label>
-                <input type="text" class="form-control text-warning fw-bold border-0" id="editMembershipPrice" readonly>
-              </div>
-
               <div class="modal-footer border-secondary">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                 <button type="submit" id="editClientSaveBtn" class="btn btn-warning">

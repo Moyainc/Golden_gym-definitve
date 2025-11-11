@@ -13,31 +13,62 @@
     }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'poppins', sans-serif;
       font-size: 11px;
       color: #1a1a1a;
       padding: 30px;
       line-height: 1.5;
+      background-color: #fff;
     }
 
+    h1,
+    h2 {
+      font-family: 'poppins', sans-serif;
+    }
+
+    /* ===== ENCABEZADO ===== */
     .header {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       border-bottom: 3px solid #fcd52b;
       padding-bottom: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 35px;
+    }
+
+    .logo {
+      width: 85px;
+      height: 85px;
+      object-fit: contain;
+      margin-right: 20px;
+    }
+
+    .header-info {
+      flex: 1;
+      text-align: center;
     }
 
     .header h1 {
+      font-family: 'poppins', sans-serif;
       color: #1a1a1a;
-      font-size: 28px;
-      font-weight: 900;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 1px;
       text-transform: uppercase;
     }
 
     .header h2 {
+      font-family: 'poppins', sans-serif;
       color: #555;
       font-size: 14px;
       margin-top: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .header-date {
+      color: #777;
+      font-size: 10px;
+      margin-top: 6px;
     }
 
     .info-section {
@@ -130,13 +161,26 @@
 
 <body>
   <div class="header">
-    <h1>GOLDEN GYM</h1>
-    <h2>Reporte de Ventas</h2>
-    <p style="font-size: 10px; color: #666; margin-top: 10px;">Mes: {{ $mes }} / Año: {{ $anio }}</p>
+    @if(file_exists(public_path('img/icons/golden_gym.png')))
+    <img src="{{ public_path('img/icons/golden_gym.png') }}" alt="Logo Golden Gym" class="logo">
+    @elseif(file_exists(public_path('images/logo-gym.png')))
+    <img src="{{ public_path('images/logo-gym.png') }}" alt="Logo Golden Gym" class="logo">
+    @else
+    <div class="logo-placeholder">GYM</div>
+    @endif
+    <div class="header-info">
+      <h1 style="font-family: 'Arial', sans-serif;">GOLDEN GYM</h1>
+      <h2>Reporte de Ventas</h2>
+      <div class="header-date">Generado: {{ $fecha_generacion }}</div>
+    </div>
   </div>
 
   <div class="info-section">
-    <p><strong>Período:</strong> {{ $mes }} / {{ $anio }}</p>
+    @if(isset($fecha_inicio) && isset($fecha_fin))
+    <p><strong>Período:</strong> {{ \Carbon\Carbon::parse($fecha_inicio)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($fecha_fin)->format('d/m/Y') }}</p>
+    @else
+    <p><strong>Período:</strong> Todos</p>
+    @endif
     <p><strong>Fecha de Generación:</strong> {{ now()->format('d/m/Y H:i') }}</p>
   </div>
 
@@ -146,6 +190,8 @@
     <thead>
       <tr>
         <th>ID Venta</th>
+        <th>Cliente</th>
+        <th>Vendido por</th>
         <th>Producto</th>
         <th>Categoría</th>
         <th>Método de Pago</th>
@@ -159,17 +205,19 @@
       @foreach($venta->detalles as $detalle)
       <tr>
         <td>{{ $venta->id }}</td>
+        <td>{{ $venta->cliente->nombre_completo ?? 'Venta rápida' }}</td>
+        <td>{{ $venta->usuario_nombre ?? 'N/A' }}</td>
         <td>{{ $detalle->producto->nombre ?? 'Producto Eliminado' }}</td>
         <td>{{ $detalle->producto->categoria->nombre ?? 'Sin Categoría' }}</td>
         <td>{{ ucfirst($venta->metodo_pago) }}</td>
-        <td>${{ number_format($detalle->subtotal, 0) }}</td>
+        <td>${{ number_format($detalle->precio_total, 0) }}</td>
         <td>{{ \Carbon\Carbon::parse($venta->fecha_venta)->format('d/m/Y') }}</td>
         <td>{{ $venta->estado }}</td>
       </tr>
       @endforeach
       @endforeach
       <tr class="total-row">
-        <td colspan="4" style="text-align: right;">TOTAL VENTAS:</td>
+        <td colspan="4" style="text-align: right;"><strong>TOTAL VENTAS:</strong></td>
         <td colspan="3">${{ number_format($totalVentas, 0) }}</td>
       </tr>
     </tbody>
@@ -181,7 +229,6 @@
   <div class="summary">
     <p><strong>Total Ventas:</strong> ${{ number_format($totalVentas, 0) }}</p>
     <p><strong>Total Productos Vendidos:</strong> {{ $numProductos }}</p>
-    <p><strong>Total Ventas Pendientes:</strong> {{ $pendientes }}</p>
   </div>
 
   <div class="footer">

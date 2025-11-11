@@ -590,3 +590,59 @@ const initializePage = () => {
     loadCategories();
     loadProducts();
 };
+// ==============================
+//  EXPORTAR REPORTES INVENTARIO
+// ==============================
+
+document.addEventListener("DOMContentLoaded", () => {
+    const apiUrl = `${window.location.origin}/golden-gym/public/admin`;
+
+    const form = document.getElementById("reportsInventarioForm");
+    const exportPdfBtn = document.getElementById("exportPdfInventarioBtn");
+    const exportExcelBtn = document.getElementById("exportExcelInventarioBtn");
+
+    function exportarInventario(tipo) {
+        // Validar campos requeridos
+        const inicio = document.getElementById("reportStartDateInventario").value;
+        const fin = document.getElementById("reportEndDateInventario").value;
+        
+        if (!inicio || !fin) {
+            Swal.fire({
+                icon: "warning",
+                title: "Campos requeridos",
+                text: "Selecciona un rango de fechas",
+                background: "#1a1a1a",
+                color: "#fff",
+            })
+            return
+        }
+        // Validar rango de fechas
+        if (new Date(inicio) > new Date(fin)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Rango de fechas inválido",
+                text: "La fecha de inicio no puede ser mayor que la fecha de fin.",
+                confirmButtonColor: "#fcd52b",
+                background: "#1e1e1e",
+                color: "#fff",
+            });
+            return;
+        }
+
+        // Construir URL
+        let url = "";
+        if (tipo === "pdf") {
+            url = `${apiUrl}/resumen-inventario/pdf?inicio=${inicio}&fin=${fin}`;
+        } else {
+            url = `${apiUrl}/resumen-inventario/excel?inicio=${inicio}&fin=${fin}`;
+        }
+
+        // Abrir reporte
+        window.open(url, "_blank");
+    }
+
+    // Eventos de exportación
+    exportPdfBtn.addEventListener("click", () => exportarInventario("pdf"));
+    exportExcelBtn.addEventListener("click", () => exportarInventario("excel"));
+});
+

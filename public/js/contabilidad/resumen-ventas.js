@@ -299,9 +299,8 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${v.metodo_pago}</td>
             <td>${formatearCOP(d.subtotal)}</td>
             <td>${new Date(v.fecha_venta).toLocaleDateString()}</td>
-            <td><span class="badge ${
-                v.estado === "Completada" ? "bg-success" : "bg-warning"
-            } text-black">${v.estado}</span></td>
+            <td><span class="badge ${v.estado === "Completada" ? "bg-success" : "bg-warning"
+                        } text-black">${v.estado}</span></td>
           </tr>
         `);
                 });
@@ -329,4 +328,82 @@ document.addEventListener("DOMContentLoaded", () => {
 
     cargarDatos();
     cargarUltimasVentas();
+});
+
+
+// === EXPORTAR REPORTES DE VENTAS ===
+document.addEventListener("DOMContentLoaded", () => {
+    const exportPdfVentasBtn = document.getElementById("exportPdfVentasBtn");
+    const exportExcelVentasBtn = document.getElementById("exportExcelVentasBtn");
+    const reportsVentasForm = document.getElementById("reportsVentasForm");
+
+
+    const validarFormulario = () => {
+
+
+        const inicio = reportsVentasForm.querySelector("#reportStartDateVentas").value;
+        const fin = reportsVentasForm.querySelector("#reportEndDateVentas").value;
+        // === Validación del formulario ===
+        if (!inicio || !fin) {
+            Swal.fire({
+                icon: "warning",
+                title: "Campos requeridos",
+                text: "Selecciona un rango de fechas",
+                background: "#1a1a1a",
+                color: "#fff",
+            })
+            return
+        }
+
+        if (inicio && fin && new Date(inicio) > new Date(fin)) {
+            Swal.fire({
+                icon: "warning",
+                title: "Fechas inválidas",
+                text: "La fecha de inicio no puede ser mayor que la fecha de fin.",
+                background: "#1a1a1a",
+                color: "#fff",
+                confirmButtonColor: "#fcd52b",
+                confirmButtonText: "Aceptar",
+                customClass: { confirmButton: "text-black font-bold" },
+            });
+            return false;
+        }
+
+        return true;
+    };
+
+    // === PDF ===
+    exportPdfVentasBtn.addEventListener("click", e => {
+        e.preventDefault();
+        if (!validarFormulario()) return;
+
+        const inicio = reportsVentasForm.querySelector("#reportStartDateVentas").value;
+        const fin = reportsVentasForm.querySelector("#reportEndDateVentas").value;
+
+        // Enviar con los mismos nombres que espera el controlador
+        const params = new URLSearchParams({
+            fecha_inicio: inicio,
+            fecha_fin: fin
+        });
+
+        const url = apiUrl("/admin/resumen-ventas/pdf") + "?" + params.toString();
+        window.open(url, "_blank");
+    });
+
+    // === EXCEL ===
+    exportExcelVentasBtn.addEventListener("click", e => {
+        e.preventDefault();
+        if (!validarFormulario()) return;
+
+        const inicio = reportsVentasForm.querySelector("#reportStartDateVentas").value;
+        const fin = reportsVentasForm.querySelector("#reportEndDateVentas").value;
+
+        const params = new URLSearchParams({
+            fecha_inicio: inicio,
+            fecha_fin: fin
+        });
+
+        const url = apiUrl("/admin/resumen-ventas/excel") + "?" + params.toString();
+        window.open(url, "_blank");
+    });
 });

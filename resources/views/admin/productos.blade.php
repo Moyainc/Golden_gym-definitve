@@ -13,6 +13,7 @@
             Inventario de Productos
           </h1>
 
+
           <div class="d-flex gap-2">
             <button
               class="btn btn-warning text-dark fw-bold shadow-sm"
@@ -28,6 +29,15 @@
               data-mode="create">
               <i data-feather="plus-circle" class="me-1"></i>Nuevo Producto
             </button>
+
+            <button
+              type="button"
+              class="btn btn-success py-3 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap"
+              data-bs-toggle="modal"
+              data-bs-target="#reportsInventarioModal">
+              <i data-feather="file-text" class="me-1"></i> Reportes
+            </button>
+
           </div>
         </div>
 
@@ -315,9 +325,6 @@
               required />
             <small class="tittle-color fst-italic">No digite puntos ni comas</small>
           </div>
-
-
-
           <div class="col-md-4">
             <label class="form-label">Estado</label>
             <select
@@ -363,6 +370,49 @@
         </button>
         <button class="btn btn-danger fw-bold">Eliminar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Reportes -->
+<div class="modal fade" id="reportsInventarioModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark border-0 text-white shadow-lg">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-success">
+          <i data-feather="file-text" class="me-1"></i> Generar Reporte de Inventario
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="reportsInventarioForm" class="modal-body">
+        <div class="alert alert-info bg-opacity-10 border-info text-info">
+          <i data-feather="info" class="me-1"></i>
+          Selecciona un rango de fechas para filtrar el inventario a incluir en el reporte.
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Fecha inicio</label>
+          <input id="reportStartDateInventario" name="inicio" type="date"
+            class="form-control text-white border-0" required />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Fecha fin</label>
+          <input id="reportEndDateInventario" name="fin" type="date"
+            class="form-control text-white border-0" required />
+        </div>
+
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" id="exportPdfInventarioBtn" class="btn btn-danger">
+            <i data-feather="file" class="me-1"></i> Exportar PDF
+          </button>
+          <button type="button" id="exportExcelInventarioBtn" class="btn btn-success">
+            <i data-feather="download" class="me-1"></i> Exportar Excel
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

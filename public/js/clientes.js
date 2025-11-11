@@ -571,12 +571,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("editClientEps").value = cliente.eps || ""
                     document.getElementById("editClientEmergency").value = cliente.numero_emergencia || ""
 
-                    await loadEditMemberships()
-                    const editMembershipSelect = document.getElementById("editClientMembershipType")
-                    if (editMembershipSelect && cliente.membresia_actual) {
-                        editMembershipSelect.value = cliente.membresia_actual.membresia_id
-                    }
-
                     if (cliente.foto) {
                         editClientPhotoPreview.src = `${window.app.baseUrl}/storage/${cliente.foto}`
                         editClientPhotoPreview.style.display = "block"
@@ -631,55 +625,104 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // RENOVAR
+            // RENOVAR
             if (btn.classList.contains("btn-renew")) {
                 try {
-                    const resMem = await fetch(apiUrl("admin/membresias/list/json"))
-                    const membresias = await resMem.json()
-                    const inputOptions = {}
+                    const resMem = await fetch(apiUrl("admin/membresias/list/json"));
+                    const membresias = await resMem.json();
+
+                    // === Opciones de membresías ===
+                    const inputOptions = {};
                     membresias.forEach((m) => {
                         const duracionTexto = m.duracion
                             ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
-                            : "Sin duración"
+                            : "Sin duración";
                         inputOptions[m.id.toString()] = `${m.nombre} - ${duracionTexto} - ${new Intl.NumberFormat("es-CO", {
                             style: "currency",
                             currency: "COP",
                             minimumFractionDigits: 0,
-                        }).format(m.precio)}`
-                    })
+                        }).format(m.precio)}`;
+                    });
 
+                    // === PRIMERA ALERTA: seleccionar membresía ===
                     const { value: membresia_id } = await Swal.fire({
                         title: "Renovar membresía",
                         input: "select",
                         inputOptions: inputOptions,
+                        inputPlaceholder: "Seleccione una membresía",
+                        showCancelButton: true,
+                        confirmButtonText: "Siguiente",
+                        background: "#2d2d2d",
+                        color: "#fff",
+                        didOpen: () => {
+                            const select = Swal.getPopup().querySelector("select");
+                            if (select) {
+                                select.style.backgroundColor = "#1a1a1a";
+                                select.style.color = "#fff";
+                                select.style.border = "1px solid #555";
+                                select.style.borderRadius = "6px";
+                                select.style.padding = "8px";
+                            }
+                        },
+                    });
+
+                    if (!membresia_id) return;
+
+                    // === SEGUNDA ALERTA: seleccionar método de pago ===
+                    const { value: metodo_pago } = await Swal.fire({
+                        title: "Método de pago",
+                        input: "select",
+                        inputOptions: {
+                            efectivo: "Efectivo",
+                            transferencia: "Transferencia",
+                        },
+                        inputPlaceholder: "Seleccione el método de pago",
                         showCancelButton: true,
                         confirmButtonText: "Renovar",
                         background: "#2d2d2d",
                         color: "#fff",
-                    })
+                        didOpen: () => {
+                            const select = Swal.getPopup().querySelector("select");
+                            if (select) {
+                                select.style.backgroundColor = "#1a1a1a";
+                                select.style.color = "#fff";
+                                select.style.border = "1px solid #555";
+                                select.style.borderRadius = "6px";
+                                select.style.padding = "8px";
+                            }
+                        },
+                    });
 
-                    if (membresia_id) {
-                        const formData = new FormData()
-                        formData.append("membresia_id", membresia_id)
-                        const res = await fetch(apiUrl(`admin/clientes/json/${clientId}/renovar`), {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                                Accept: "application/json",
-                            },
-                            body: formData,
-                        })
-                        const data = await res.json()
-                        if (data.success) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Membresía renovada correctamente",
-                                timer: 1500,
-                                showConfirmButton: false,
-                                background: "#1a1a1a",
-                                color: "#fff",
-                            })
-                            loadClients()
-                        }
+                    if (!metodo_pago) return;
+
+                    // === Enviar al servidor ===
+                    const formData = new FormData();
+                    formData.append("membresia_id", membresia_id);
+                    formData.append("metodo_pago", metodo_pago);
+
+                    const res = await fetch(apiUrl(`admin/clientes/json/${clientId}/renovar`), {
+                        method: "POST",
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                            Accept: "application/json",
+                        },
+                        body: formData,
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Membresía renovada correctamente",
+                            timer: 1500,
+                            showConfirmButton: false,
+                            background: "#1a1a1a",
+                            color: "#fff",
+                        });
+                        loadClients();
+                    } else {
+                        throw new Error(data.message || "No se pudo renovar la membresía");
                     }
                 } catch (err) {
                     Swal.fire({
@@ -688,9 +731,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         text: err.message,
                         background: "#1a1a1a",
                         color: "#fff",
-                    })
+                    });
                 }
             }
+
 
             // ELIMINAR
             if (btn.classList.contains("btn-delete")) {
@@ -777,6 +821,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 return
             }
 
+            if (new Date(fechaInicio) > new Date(fechaFin)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Rango de fechas inválido",
+                    text: "La fecha de inicio no puede ser mayor que la fecha de fin.",
+                    confirmButtonColor: "#fcd52b",
+                    background: "#1e1e1e",
+                    color: "#fff",
+                });
+                return;
+            }
+
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
@@ -804,6 +860,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     color: "#fff",
                 })
                 return
+            }
+            if (new Date(fechaInicio) > new Date(fechaFin)) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Rango de fechas inválido",
+                    text: "La fecha de inicio no puede ser mayor que la fecha de fin.",
+                    confirmButtonColor: "#fcd52b",
+                    background: "#1e1e1e",
+                    color: "#fff",
+                });
+                return;
             }
 
             const params = new URLSearchParams({
