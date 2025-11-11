@@ -342,6 +342,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
+            if (data.alert) {
+                Swal.fire(data.alert);
+                return;
+            }
+
             if (res.ok && data.success) {
                 showAlert("success", data.message, "Venta registrada");
 
@@ -609,7 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         parseFloat(
                             form
                                 .querySelectorAll(".precioRapida")
-                            [i].value.replace("$", "")
+                                [i].value.replace("$", "")
                         ) *
                         parseInt(
                             form.querySelectorAll(".cantidadRapida")[i].value
@@ -634,6 +639,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 const data = await res.json();
+
+                if (data.alert) {
+                    Swal.fire(data.alert);
+                    return;
+                }
 
                 if (res.ok && data.success) {
                     showAlert(
@@ -693,6 +703,18 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             data.ventas.forEach((v) => {
+                const estadoConfig = {
+                    Completada: { bg: "#28a745", color: "#fff" }, // Verde, texto negro
+                    Pendiente: { bg: "#fcd52b", color: "#000" }, // Amarillo, texto negro
+                    Anulada: { bg: "#dc3545", color: "#fff" }, // Rojo, texto blanco
+                };
+
+                const estado = v.estado ?? "N/A";
+                const { bg, color } = estadoConfig[estado] || {
+                    bg: "#6c757d",
+                    color: "#fff",
+                }; // Default gris
+
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
                 <td>${v.producto_nombre ?? "Desconocido"}</td>
@@ -702,10 +724,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${v.cantidad ?? 1}</td>
                 <td>$${parseFloat(v.subtotal ?? 0).toLocaleString()}</td>
                 <td>
-                    <span class="badge bg-${v.estado === "Completada" ? "success" : "secondary"
-                    }">${v.estado ?? "N/A"}</span>
+                    <span class="badge" style="background:${bg}; color:${color}; font-weight:600;">
+                        ${estado}
+                    </span>
                 </td>
-            `;
+                `;
                 tbody.appendChild(tr);
             });
 
@@ -719,9 +742,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btn.className = "btn btn-warning mt-3 fw-bold";
                 btn.textContent = "Ver más ventas";
                 btn.addEventListener("click", () => {
-                    window.location.href = apiUrl(
-                        "/admin/ventas/administrador"
-                    );
+                    window.location.href = apiUrl("admin/ventas/lista-ventas");
                 });
                 container.appendChild(btn);
             }

@@ -115,7 +115,6 @@ class DashboardController extends Controller
         return [
           'tipo' => $item->tipo_pago,
           'cliente' => $item->origen?->cliente?->nombre_completo ?? '-',
-          'detalle' => $item->origen_type === 'PagoMembresia' ? $item->origen?->membresia?->nombre : ($item->origen_type === 'Venta' ? $item->origen?->descripcion : 'Ingreso Diario'),
           'monto' => $item->monto,
           'metodo_pago' => $item->metodo_pago,
           'fecha' => $item->fecha_pago->format('d M Y'),
