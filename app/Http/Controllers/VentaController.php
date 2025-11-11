@@ -90,12 +90,43 @@ class VentaController extends Controller
       'productos.*.subtotal' => 'required|numeric|min:0',
       'total' => 'required|numeric|min:0',
       'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
-    ]);
+    ],
+      [
+        'productos.required' => 'Debe agregar al menos un producto.',
+        'productos.*.producto_id.exists' => 'El producto seleccionado no existe.',
+        'productos.*.cantidad.min' => 'La cantidad debe ser al menos 1.',
+        'estado.in' => 'El estado no valido.',
+        'metodo_pago.in' => 'El método de pago debe ser Efectivo o Transferencia.',
+
+      ]);
 
     DB::beginTransaction();
 
     try {
       $totalVenta = 0;
+
+      //Determinar el estado según el método de pago
+      $estado = $request->metodo_pago === 'Efectivo' ? 'Completada' : 'Pendiente';
+
+      // Validar que el estado esté dentro de los valores esperados
+      $estadosPermitidos = ['Completada', 'Pendiente', 'Anulada'];
+      if (!in_array($estado, $estadosPermitidos)) {
+        return response()->json([
+          'success' => false,
+          'alert' => [
+            'icon' => 'error',
+            'title' => 'Error',
+            'text' => "El estado '{$estado}' no es válido.",
+            'background' => '#1a1a1a',
+            'color' => '#fff',
+            'confirmButtonColor' => '#fcd52b',
+            'confirmButtonText' => 'Aceptar',
+            'customClass' => [
+              'confirmButton' => 'text-black font-bold',
+            ],
+          ]
+        ], 422);
+      }
 
       // ✅ Crear venta principal
       $venta = Venta::create([
@@ -103,7 +134,7 @@ class VentaController extends Controller
         'cliente_id' => $request->cliente_id,
         'total' => 0, // Se actualizará luego
         'metodo_pago' => $request->metodo_pago,
-        'estado' => 'Completada',
+        'estado' => $estado,
         'descripcion' => 'Venta detallada de productos',
         'fecha_venta' => now(),
       ]);
@@ -144,15 +175,13 @@ class VentaController extends Controller
       PagoGeneral::create([
         'tipo_pago'   => 'venta_producto',
         'origen_id'   => $venta->id,
-        'origen_type' => Venta::class, // <- esto faltaba
+        'origen_type' => Venta::class,
         'monto'       => $totalVenta,
         'metodo_pago' => $request->metodo_pago,
         'usuario_id'  => $request->usuario_id,
         'fecha_pago'  => now(),
+        'estado'      => $venta->estado, // ← Se envía el estado directamente
       ]);
-
-
-      DB::commit();
 
       DB::commit();
 
@@ -169,10 +198,22 @@ class VentaController extends Controller
 
       return response()->json([
         'success' => false,
-        'message' => 'Error al registrar la venta: ' . $e->getMessage(),
+        'alert' => [
+          'icon' => 'error',
+          'title' => 'Error',
+          'text' => $e->getMessage(),
+          'background' => '#1a1a1a',
+          'color' => '#fff',
+          'confirmButtonColor' => '#fcd52b',
+          'confirmButtonText' => 'Aceptar',
+          'customClass' => [
+            'confirmButton' => 'text-black font-bold',
+          ],
+        ]
       ], 500);
     }
   }
+
 
 
   public function storeFast(Request $request)
@@ -183,11 +224,14 @@ class VentaController extends Controller
       'productos.*.producto_id' => 'required|exists:productos,id',
       'productos.*.cantidad' => 'required|integer|min:1',
       'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
-      'estado' => 'required|string|in:Completada,Cancelada',
+      'estado' => 'nullable|string|in:Completada,Pendiente,Anulada',
     ], [
       'productos.required' => 'Debe agregar al menos un producto.',
       'productos.*.producto_id.exists' => 'El producto seleccionado no existe.',
       'productos.*.cantidad.min' => 'La cantidad debe ser al menos 1.',
+      'estado.in' => 'El estado no valido.',
+      'metodo_pago.in' => 'El método de pago debe ser Efectivo o Transferencia.',
+
     ]);
 
     try {
@@ -195,16 +239,14 @@ class VentaController extends Controller
 
       $total = 0;
 
-      // 🔍 Recalcular todo en el backend (seguro y confiable)
+      // Calcular el total validando los productos
       foreach ($request->productos as $item) {
         $producto = Producto::findOrFail($item['producto_id']);
 
-        // ✅ Validar si el producto está activo
         if ($producto->estado !== 'Activo') {
-          throw new \Exception("El producto '{$producto->nombre}' está en estado 'Inactivo' y no puede venderse.");
+          throw new \Exception("El producto '{$producto->nombre}' está 'Inactivo' y no puede venderse.");
         }
 
-        // ✅ Validar stock
         if ($producto->stock < $item['cantidad']) {
           throw new \Exception("El producto '{$producto->nombre}' no tiene suficiente stock disponible.");
         }
@@ -213,29 +255,33 @@ class VentaController extends Controller
         $total += $subtotal;
       }
 
+      //Determinar estado automáticamente según método de pago
+      $estado = match (strtolower($request->metodo_pago)) {
+        'efectivo' => 'Completada',
+        'transferencia' => 'Pendiente',
+        default => $request->estado ?? 'Pendiente',
+      };
 
-      // 🧾 Registrar venta principal
+      // Registrar la venta principal
       $venta = Venta::create([
         'usuario_id' => $request->usuario_id,
-        'cliente_id' => null, // Venta rápida sin cliente
+        'cliente_id' => null,
         'total' => $total,
-        'estado' => $request->estado,
+        'estado' => $estado,
         'metodo_pago' => $request->metodo_pago,
         'fecha_venta' => now(),
       ]);
 
-      // 💾 Registrar detalle y actualizar stock
+      //Registrar detalle y actualizar stock
       foreach ($request->productos as $item) {
         $producto = Producto::findOrFail($item['producto_id']);
         $cantidad = $item['cantidad'];
         $subtotal = $producto->precio * $cantidad;
 
-        // Validación de stock antes de descontar
         if ($producto->stock < $cantidad) {
           throw new \Exception("Stock insuficiente para el producto '{$producto->nombre}'.");
         }
 
-        // Guardar detalle
         DetalleVenta::create([
           'venta_id' => $venta->id,
           'producto_id' => $producto->id,
@@ -244,19 +290,19 @@ class VentaController extends Controller
           'subtotal' => $subtotal,
         ]);
 
-        // Descontar del stock
         $producto->decrement('stock', $cantidad);
       }
 
-      // 💰 Registrar pago
+      //Registrar pago general asociado
       PagoGeneral::create([
-        'tipo_pago' => 'venta_producto',
-        'origen_id' => $venta->id,
+        'tipo_pago'   => 'venta_producto',
+        'origen_id'   => $venta->id,
         'origen_type' => Venta::class,
-        'monto' => $total,
+        'monto'       => $total,
         'metodo_pago' => $request->metodo_pago,
-        'usuario_id' => $request->usuario_id,
-        'fecha_pago' => now(),
+        'usuario_id'  => $request->usuario_id,
+        'fecha_pago'  => now(),
+        'estado'      => $venta->estado,
       ]);
 
       DB::commit();
@@ -265,9 +311,9 @@ class VentaController extends Controller
         'success' => true,
         'message' => 'Venta rápida registrada correctamente.',
         'venta_id' => $venta->id,
+        'estado' => $venta->estado,
       ]);
     } catch (\Illuminate\Validation\ValidationException $e) {
-      // ⚠️ Responder errores de validación (422)
       return response()->json([
         'success' => false,
         'errors' => $e->errors(),
@@ -282,7 +328,8 @@ class VentaController extends Controller
     }
   }
 
-  // Obtener las últimas 5 ventas (AJAX) + Verificar rol
+
+  // Obtener las últimas 5 ventas
 
   public function ultimasVentas()
   {
@@ -333,24 +380,36 @@ class VentaController extends Controller
     $categoriaId = $request->query('categoria');
     $fechaDesde = $request->query('fecha_desde');
     $fechaHasta = $request->query('fecha_hasta');
+    $estado = $request->query('estado'); // Nuevo: permite filtrar por estado
     $perPage = 10;
 
+    // Base query
     $query = Venta::with(['detalles.producto.categoria', 'usuario'])
       ->orderBy('fecha_venta', 'desc');
 
-    // Filtrar por rango de fechas
-    if ($fechaDesde) $query->whereDate('fecha_venta', '>=', $fechaDesde);
-    if ($fechaHasta) $query->whereDate('fecha_venta', '<=', $fechaHasta);
+    // Filtrar por estado (si se pasa un valor)
+    if ($estado && strtolower($estado) !== 'todas') {
+      $query->where('estado', ucfirst(strtolower($estado)));
+    }
 
+    // Filtrar por rango de fechas
+    if ($fechaDesde) {
+      $query->whereDate('fecha_venta', '>=', $fechaDesde);
+    }
+    if ($fechaHasta) {
+      $query->whereDate('fecha_venta', '<=', $fechaHasta);
+    }
+
+    // Paginación
     $ventas = $query->paginate($perPage)->appends($request->query());
 
-    // 🔹 Mapear ventas y filtrar detalles por categoría si aplica
+    // Mapear ventas y filtrar detalles por categoría si aplica
     $ventasFormateadas = $ventas->map(function ($venta) use ($categoriaId) {
       $detalles = $venta->detalles->map(function ($det) {
         return [
           'producto' => $det->producto->nombre ?? 'Sin nombre',
           'categoria' => $det->producto->categoria->nombre ?? 'N/A',
-          'categoria_id' => $det->producto->categoria->id ?? null, // 🔹 agregamos ID
+          'categoria_id' => $det->producto->categoria->id ?? null,
           'cantidad' => $det->cantidad,
           'precio_unitario' => $det->precio_unitario,
           'precio_unitario_formatted' => '$' . number_format($det->precio_unitario, 0, ',', '.'),
@@ -359,11 +418,9 @@ class VentaController extends Controller
         ];
       });
 
-      // 🔹 Filtrar detalles por categoría si se seleccionó una
+      // Filtrar detalles por categoría si se seleccionó una
       if ($categoriaId) {
-        $detalles = $detalles->filter(function ($det) use ($categoriaId) {
-          return $det['categoria_id'] == $categoriaId;
-        })->values(); // reset keys
+        $detalles = $detalles->filter(fn($det) => $det['categoria_id'] == $categoriaId)->values();
       }
 
       return [
@@ -377,7 +434,7 @@ class VentaController extends Controller
         'detalles' => $detalles,
       ];
     })
-      ->filter(fn($v) => $v['detalles']->count() > 0) // solo ventas con detalles
+      ->filter(fn($v) => $v['detalles']->count() > 0)
       ->values();
 
     return response()->json([
@@ -390,6 +447,35 @@ class VentaController extends Controller
     ]);
   }
 
+
+
+  // public function actualizarEstado(Request $request, $id)
+  // {
+  //   $request->validate([
+  //     'estado' => 'required|string|in:Completada,Pendiente,Anulada'
+  //   ]);
+
+  //   $venta = Venta::findOrFail($id);
+  //   $venta->estado = $request->estado;
+  //   $venta->save();
+
+  //   // Actualizar el pago relacionado
+  //   $pago = PagoGeneral::where('origen_id', $venta->id)
+  //     ->where('origen_type', Venta::class)
+  //     ->first();
+
+  //   if ($pago) {
+  //     $pago->estado = $request->estado;
+  //     $pago->save();
+  //   }
+
+  //   return response()->json([
+  //     'success' => true,
+  //     'venta_id' => $venta->id,
+  //     'estado' => $venta->estado,
+  //     'message' => 'Estado actualizado correctamente'
+  //   ]);
+  // }
 
 
 

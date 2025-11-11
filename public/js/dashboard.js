@@ -419,29 +419,53 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Últimos movimientos
+    const estadoColor = {
+        Completado: "text-success",
+        Pendiente: "text-warning",
+        Anulado: "text-danger",
+    };
+
     const loadMovements = () => {
         fetch(apiUrl("admin/dashboard/data/last-movements"))
             .then((res) => res.json())
             .then((data) => {
                 const tbody = document.querySelector("table tbody");
                 tbody.innerHTML = "";
+
+                const estadoColor = {
+                    Completada: "text-success",
+                    Pendiente: "text-warning",
+                    Anulada: "text-danger",
+                };
+
                 data.forEach((m) => {
+                    // Determinar el estado según tipo
+                    let estado = "Pendiente"; // valor por defecto
+                    if (m.tipo.toLowerCase().includes("venta")) {
+                        estado = m.estado || "Pendiente";
+                    } else if (m.tipo.toLowerCase().includes("membresia")) {
+                        estado = m.estado_pago || "Pendiente";
+                    }
+
                     const row = document.createElement("tr");
                     row.innerHTML = `
                     <td>${formatTipo(m.tipo)}</td>
                     <td>${m.cliente}</td>
-                    <td>${m.detalle}</td>
                     <td title="${m.monto}">$${Number(m.monto).toLocaleString(
                         "es-CO",
                         { minimumFractionDigits: 0 }
                     )}</td>
                     <td>${m.fecha}</td>
-                    <td class="text-center">${m.metodo_pago}</td>
+                    <td class="text-center ${
+                        estadoColor[estado] || ""
+                    }">${estado}</td>
                 `;
                     tbody.appendChild(row);
                 });
+
                 feather.replace();
             });
     };
+
     loadMovements();
 });

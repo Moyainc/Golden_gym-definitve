@@ -166,41 +166,40 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/ventas/{id}', [VentaController::class, 'showVentaDetalle'])->name('ventas.detalle');
     });
 
-  //                   ----------------------------- CONTADOR =============================
+    //                   ----------------------------- CONTADOR =============================
 
-  Route::middleware(['checkrole:Administrador,Contador'])->group(function () {
-    // Acceso solo a contabilidad / resumen
-    Route::get('admin/contabilidad/resumen-ventas', [ResumenVentasController::class, 'index'])->name('admin.resumen.ventas');
-    Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
-    Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
-    Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
-    Route::get('admin/resumen-ventas/data', [ResumenVentasController::class, 'data'])->name('resumen.ventas.data');
-    Route::get('admin/resumen-ventas/ultimas', [ResumenVentasController::class, 'ultimasVentas'])->name('resumen.ventas.ultimas');
-    Route::get('resumen-ventas/pdf', [ResumenVentasController::class, 'exportVentasPdf'])->name('admin.resumen_ventas.pdf');
-    Route::get('resumen-ventas/excel', [ResumenVentasController::class, 'exportVentasExcel'])->name('admin.resumen_ventas.excel');
+    Route::middleware(['checkrole:Administrador,Contador'])->group(function () {
+        // Acceso solo a contabilidad / resumen
+        Route::get('admin/contabilidad/resumen-ventas', [ResumenVentasController::class, 'index'])->name('admin.resumen.ventas');
+        Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
+        Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
+        Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
+        Route::get('admin/resumen-ventas/data', [ResumenVentasController::class, 'data'])->name('resumen.ventas.data');
+        Route::get('admin/resumen-ventas/ultimas', [ResumenVentasController::class, 'ultimasVentas'])->name('resumen.ventas.ultimas');
+        Route::get('resumen-ventas/pdf', [ResumenVentasController::class, 'exportVentasPdf'])->name('admin.resumen_ventas.pdf');
+        Route::get('resumen-ventas/excel', [ResumenVentasController::class, 'exportVentasExcel'])->name('admin.resumen_ventas.excel');
 
 
-    Route::get('admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
         // Rutas AJAX para filtros
-    Route::get('admin/dashboard/data/cards', [DashboardController::class, 'cardsData']);
-    Route::get('admin/dashboard/data/chart/monthly', [DashboardController::class, 'monthlyChart']);
-    Route::get('admin/dashboard/data/chart/membership', [DashboardController::class, 'membershipChart']);
-    Route::get('admin/dashboard/data/last-movements', [DashboardController::class, 'lastMovements']);
+        Route::get('admin/dashboard/data/cards', [DashboardController::class, 'cardsData']);
+        Route::get('admin/dashboard/data/chart/monthly', [DashboardController::class, 'monthlyChart']);
+        Route::get('admin/dashboard/data/chart/membership', [DashboardController::class, 'membershipChart']);
+        Route::get('admin/dashboard/data/last-movements', [DashboardController::class, 'lastMovements']);
 
 
-    // Moya
-    // ADMIN → CONTABILIDAD / MEMBRESÍAS
-    Route::get('admin/contabilidad/resumen-membresias', [ResumenMembresiasController::class, 'index'])->name('admin.resumen.membresias');
-    Route::get('admin/api/resumen-contabilidad', [ResumenMembresiasController::class, 'getResumenContabilidad']);
-    Route::get('admin/exportar/contabilidad-pdf', [ResumenMembresiasController::class, 'exportContabilidadPdf']);
-    Route::get('admin/exportar/contabilidad-excel', [ResumenMembresiasController::class, 'exportContabilidadExcel']);
-    Route::get('admin/resumen-general/datos', [ResumenGeneralController::class, 'obtenerDatos'])->name('admin.general.datos');
-  });
+        // Moya
+        // ADMIN → CONTABILIDAD / MEMBRESÍAS
+        Route::get('admin/contabilidad/resumen-membresias', [ResumenMembresiasController::class, 'index'])->name('admin.resumen.membresias');
+        Route::get('admin/api/resumen-contabilidad', [ResumenMembresiasController::class, 'getResumenContabilidad']);
+        Route::get('admin/exportar/contabilidad-pdf', [ResumenMembresiasController::class, 'exportContabilidadPdf']);
+        Route::get('admin/exportar/contabilidad-excel', [ResumenMembresiasController::class, 'exportContabilidadExcel']);
+        Route::get('admin/resumen-general/datos', [ResumenGeneralController::class, 'obtenerDatos'])->name('admin.general.datos');
+    });
 
 
-  //Logout (todos los roles)
-  Route::get('errors/page-blank', [HomeController::class, 'pageBlank'])->name('errors.page-blank');
-  Route::post('/logout', [LoginController::class, 'logoutUsuario'])->name('usuario.logout');
-
+    //Logout (todos los roles)
+    Route::get('errors/page-blank', [HomeController::class, 'pageBlank'])->name('errors.page-blank');
+    Route::post('/logout', [LoginController::class, 'logoutUsuario'])->name('usuario.logout');
 });

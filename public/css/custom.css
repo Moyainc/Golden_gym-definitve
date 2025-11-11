@@ -199,6 +199,14 @@
   transition: 0.2s ease-in-out;
 }
 
+.modal-border-custom{
+    
+    border: 1px solid rgba(252, 252, 252, 0.171); /* Borde amarillo con transparencia */
+  box-shadow: 0 0 20px rgba(252, 214, 43, 0.11); /* Efecto de brillo sutil */
+  background-color: #1a1a1a; /* Asegura contraste con el borde */
+  border-radius: 1rem;
+}
+
 
 
 
