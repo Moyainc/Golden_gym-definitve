@@ -17,9 +17,11 @@ return new class extends Migration
             $table->string('metodo_pago');
             $table->unsignedBigInteger('usuario_id')->nullable();
             $table->dateTime('fecha_pago');
+            $table->enum('estado', ['Completada', 'Pendiente', 'Anulada'])->default('Pendiente');
+
             $table->timestamps();
 
-            // Relación opcional con usuarios, no se borra nada si se elimina un usuario
+            // Relación opcional con usuarios
             $table->foreign('usuario_id')
                 ->references('id')
                 ->on('usuarios')

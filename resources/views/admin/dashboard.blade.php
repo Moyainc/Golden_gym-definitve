@@ -206,7 +206,6 @@
                       <tr>
                         <th>Tipo</th>
                         <th>Cliente</th>
-                        <th>Detalle</th>
                         <th>Monto</th>
                         <th>Fecha</th>
                         <th class="text-center">Estado</th>

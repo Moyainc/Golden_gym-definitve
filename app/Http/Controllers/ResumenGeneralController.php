@@ -28,9 +28,10 @@ class ResumenGeneralController extends Controller
 
     // Clonamos la query para evitar conflictos entre los cálculos
     $pagos = (clone $baseQuery)
-      ->select('id', 'tipo_pago', 'origen_id', 'monto', 'metodo_pago', 'fecha_pago')
+      ->select('id', 'tipo_pago', 'origen_id', 'monto', 'metodo_pago', 'fecha_pago', 'estado')
       ->latest('fecha_pago')
       ->get();
+
 
     // Totales generales
     $totalGeneral = $pagos->sum('monto');
@@ -65,6 +66,7 @@ class ResumenGeneralController extends Controller
       ->orderBy('periodo')
       ->get();
 
+
     // Últimos registros
     $ultimos = $pagos->take(6)->map(function ($pago) {
       return [
@@ -74,8 +76,10 @@ class ResumenGeneralController extends Controller
         'valor' => $pago->precioFormatted($pago->monto),
         'monto' => $pago->monto,
         'metodo' => $pago->metodo_pago,
+        'estado' => $pago->estado, // <--- agregamos el estado
       ];
     });
+
 
     return response()->json([
       'totales' => [
