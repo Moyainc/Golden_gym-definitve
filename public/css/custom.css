@@ -147,35 +147,35 @@
 
 
 
-/* Fuerza el fondo uniforme oscuro real */
-#detalleModal .modal-content,
-#detalleModal .modal-header,
-#detalleModal .modal-body,
-#detalleModal .modal-footer {
+/* === Estilos base para todos los modales oscuros === */
+.modal-dark-style .modal-content,
+.modal-dark-style .modal-header,
+.modal-dark-style .modal-body,
+.modal-dark-style .modal-footer {
   background-color: #1a1a1a !important;
   color: #f5f5f5 !important;
 }
 
-/* Corrige el fondo del diálogo y elimina cualquier herencia azul */
-#detalleModal .modal-dialog {
+/* Elimina cualquier herencia de color de fondo en el contenedor del diálogo */
+.modal-dark-style .modal-dialog {
   background-color: transparent !important;
 }
 
-/* Scroll personalizado */
-#detalleModalBody::-webkit-scrollbar {
+/* Scroll personalizado solo dentro del body (si lo necesitas) */
+.modal-dark-style .modal-body::-webkit-scrollbar {
   width: 8px;
 }
 
-#detalleModalBody::-webkit-scrollbar-thumb {
+.modal-dark-style .modal-body::-webkit-scrollbar-thumb {
   background-color: #fcd52b;
   border-radius: 10px;
 }
 
-#detalleModalBody::-webkit-scrollbar-track {
+.modal-dark-style .modal-body::-webkit-scrollbar-track {
   background-color: #111;
 }
 
-/* Animación suave */
+/* Animación de aparición suave */
 .modal.fade .modal-dialog {
   transform: scale(0.96);
   opacity: 0;
@@ -187,25 +187,26 @@
   opacity: 1;
 }
 
-/* Sombra elegante */
-#detalleModalContent {
-  box-shadow: 0 0 25px rgba(252, 213, 43, 0.08), 0 0 60px rgba(0, 0, 0, 0.8);
+/* Sombra elegante del contenido */
+.modal-dark-style .modal-content {
+  box-shadow: 0 0 25px rgba(252, 213, 43, 0.08),
+              0 0 60px rgba(0, 0, 0, 0.8);
 }
 
-/* Botón hover */
-#detalleModal .btn:hover {
+/* Hover de los botones dentro del modal */
+.modal-dark-style .btn:hover {
   background-color: #ffd84f !important;
   transform: translateY(-1px);
   transition: 0.2s ease-in-out;
 }
 
-.modal-border-custom{
-    
-    border: 1px solid rgba(252, 252, 252, 0.171); /* Borde amarillo con transparencia */
-  box-shadow: 0 0 20px rgba(252, 214, 43, 0.11); /* Efecto de brillo sutil */
-  background-color: #1a1a1a; /* Asegura contraste con el borde */
-  border-radius: 1rem;
+/* Borde y forma del contenedor */
+.modal-dark-style .modal-content {
+  border: 1px solid rgba(252, 252, 252, 0.171) !important;
+  box-shadow: 0 0 20px rgba(252, 214, 43, 0.11) !important;
+  border-radius: 1rem !important;
 }
+
 
 
 

@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const ruta = "/admin/resumen-general/datos";
     const monthSelect = document.getElementById("filterMonth");
     const yearSelect = document.getElementById("filterYear");
-    const applyFilter = document.getElementById("applyFilter");
 
     const cards = {
         membresias: document.getElementById("membresiasTotal"),
@@ -15,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const eyeButtons = document.querySelectorAll(".btn-eye");
 
-    // === Estados individuales para cada card ===
     const mostrarCompletoPorCard = {
         membresiasTotal: false,
         productosTotal: false,
@@ -23,20 +21,26 @@ document.addEventListener("DOMContentLoaded", () => {
         totalGeneral: false,
     };
 
-    // === Formateadores ===
+    // Formateadores
     const formatearAbreviado = (valor) => {
-        if (valor >= 1_000_000_000)
+        if (valor >= 1_000_000_000) {
+            // Billones: 2 decimales
             return (
                 "$" +
-                (valor / 1_000_000_000).toFixed(1).replace(/\.0$/, "") +
+                (valor / 1_000_000_000).toFixed(2).replace(/\.?0+$/, "") +
                 "B"
             );
-        if (valor >= 1_000_000)
+        }
+        if (valor >= 1_000_000) {
+            // Millones: 2 decimales
             return (
-                "$" + (valor / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M"
+                "$" + (valor / 1_000_000).toFixed(2).replace(/\.?0+$/, "") + "M"
             );
-        if (valor >= 1_000)
-            return "$" + (valor / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+        }
+        if (valor >= 1_000) {
+            // Miles: sin decimales
+            return "$" + Math.round(valor / 1_000) + "K";
+        }
         return "$" + valor.toLocaleString("es-CO");
     };
 
@@ -61,10 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    // === Actualizar totales ===
+    // Actualizar totales
     const actualizarCards = (totales) => {
         const asignarValor = (elemento, valor, id) => {
-            elemento.dataset.valor = valor; // Guarda valor numérico real
+            elemento.dataset.valor = valor;
             elemento.textContent = formatearAbreviado(valor);
             mostrarCompletoPorCard[id] = false;
         };
@@ -79,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
         asignarValor(cards.general, totales.general, "totalGeneral");
     };
 
-    // === Actualizar tabla de últimos pagos ===
+    // Actualizar tabla últimos pagos
     const actualizarUltimos = (ultimos) => {
         const tbody = document.getElementById("latestRecords");
         tbody.innerHTML = "";
@@ -96,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${pago.concepto}</td>
                 <td class="text-end">${formatearAbreviado(pago.monto)}</td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-info ver-detalle" data-pago='${JSON.stringify(
+                    <button class="btn btn-sm btn-outline-warning ver-detalle" data-pago='${JSON.stringify(
                         pago
                     )}'>
                         <i data-feather="eye"></i>
@@ -108,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         feather.replace();
 
-        // Modal con valor completo
         document.querySelectorAll(".ver-detalle").forEach((btn) => {
             btn.addEventListener("click", (e) => {
                 const pago = JSON.parse(e.currentTarget.dataset.pago);
@@ -117,7 +120,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("detailConcept").textContent =
                     pago.concepto;
 
-                // Convertir a número y formatear correctamente a COP sin decimales
                 const montoNumerico = Number(pago.monto);
                 document.getElementById("detailValue").textContent =
                     montoNumerico.toLocaleString("es-CO", {
@@ -129,8 +131,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 document.getElementById("detailMethod").textContent =
                     pago.metodo;
-                document.getElementById("detailStatus").textContent =
-                    "Completado";
+
+                // Asignar estado con colores
+                const statusEl = document.getElementById("detailStatus");
+                const estado = pago.estado || "Completada";
+                statusEl.textContent = estado;
+
+                // Limpiar clases previas
+                // Limpiar clases previas
+                statusEl.className = "px-2 py-1 rounded font-bold text-sm";
+
+                // Asignar colores según estado (Bootstrap)
+                switch (estado.toLowerCase()) {
+                    case "activa":
+                    case "completada":
+                        statusEl.classList.add("bg-success", "text-white");
+                        break;
+                    case "proxima":
+                    case "pendiente":
+                        statusEl.classList.add("bg-warning", "text-dark");
+                        break;
+                    case "anulada":
+                        statusEl.classList.add("bg-danger", "text-white");
+                        break;
+                    default:
+                        statusEl.classList.add("bg-secondary", "text-white");
+                }
+
 
                 const modal = new bootstrap.Modal(
                     document.getElementById("recordDetailModal")
@@ -140,9 +167,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    // === Graficas ===
-    let chartBarras, chartPastel, chartLinea;
-
+    // Graficas
+    let chartBarras, chartPastel, chartClientes;
     const nombresMeses = [
         "Enero",
         "Febrero",
@@ -165,14 +191,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const ctxPie = document
             .getElementById("earningsDoughnut")
             .getContext("2d");
-        const ctxLine = document
-            .getElementById("revenueLineChart")
+        const ctxClients = document
+            .getElementById("clientsChart")
             .getContext("2d");
 
         if (chartBarras) chartBarras.destroy();
         if (chartPastel) chartPastel.destroy();
-        if (chartLinea) chartLinea.destroy();
+        if (chartClientes) chartClientes.destroy();
 
+        // Ingresos mensuales
         chartBarras = new Chart(ctxBar, {
             type: "bar",
             data: {
@@ -187,18 +214,19 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             options: {
                 scales: {
-                    x: { ticks: { color: "#fff" } },
+                    x: { ticks: { color: "#ccc" } },
                     y: {
                         ticks: {
-                            color: "#fff",
+                            color: "#ccc",
                             callback: (val) => formatearAbreviado(val),
                         },
                     },
                 },
-                plugins: { legend: { labels: { color: "#fff" } } },
+                plugins: { legend: { labels: { color: "#ccc" } } },
             },
         });
 
+        // Distribución por tipo de ingreso
         chartPastel = new Chart(ctxPie, {
             type: "doughnut",
             data: {
@@ -213,35 +241,68 @@ document.addEventListener("DOMContentLoaded", () => {
             options: { plugins: { legend: { labels: { color: "#fff" } } } },
         });
 
-        chartLinea = new Chart(ctxLine, {
-            type: "line",
+        // Clientes activos vs nuevos
+        chartClientes = new Chart(ctxClients, {
+            type: "bar",
             data: {
-                labels: data.tendencia.map((t) => t.periodo),
+                labels: data.clientes.meses, // ya vienen en formato "Nov 2025", "Dic 2025", etc.
                 datasets: [
                     {
-                        label: "Tendencia",
-                        data: data.tendencia.map((t) => t.total),
+                        label: "Clientes activos",
+                        data: data.clientes.activos.map((v) => v || 0),
+                        backgroundColor: "rgba(54, 162, 235, 0.6)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1,
+                        order: 1,
+                    },
+                    {
+                        label: "Clientes nuevos",
+                        data: data.clientes.nuevos.map((v) => v || 0),
+                        type: "line",
                         borderColor: "#fcd52b",
+                        backgroundColor: "rgba(252,213,43,0.4)",
                         tension: 0.3,
+                        borderWidth: 2,
+                        fill: true,
+                        pointRadius: 5,
+                        pointBackgroundColor: "#fcd52b",
+                        order: 0,
                     },
                 ],
             },
             options: {
-                scales: {
-                    x: { ticks: { color: "#fff" } },
-                    y: {
-                        ticks: {
-                            color: "#fff",
-                            callback: (val) => formatearAbreviado(val),
-                        },
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: "#fff", font: { size: 12 } } },
+                    tooltip: {
+                        backgroundColor: "#1a1a1a",
+                        titleColor: "#fcd52b",
+                        bodyColor: "#fff",
+                        borderColor: "#333",
+                        borderWidth: 1,
                     },
                 },
-                plugins: { legend: { labels: { color: "#fff" } } },
+                scales: {
+                    x: {
+                        ticks: { color: "#ccc" },
+                        grid: { color: "rgba(255,255,255,0.1)" },
+                    },
+                    y: {
+                        ticks: {
+                            color: "#ccc",
+                            stepSize: 1,
+                            callback: (val) => Number(val),
+                        },
+                        grid: { color: "rgba(255,255,255,0.1)" },
+                        beginAtZero: true,
+                    },
+                },
             },
         });
     };
 
-    // === Cargar datos ===
+    // Cargar datos
     const cargarDatos = async () => {
         const anio = yearSelect.value;
         const mes = monthSelect.value;
@@ -272,11 +333,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Actualiza los datos automáticamente al cambiar el año o el mes
-    monthSelect.addEventListener("change", () => cargarDatos());
-    yearSelect.addEventListener("change", () => cargarDatos());
+    // Actualizar al cambiar año o mes
+    monthSelect.addEventListener("change", cargarDatos);
+    yearSelect.addEventListener("change", cargarDatos);
 
-    //  Control individual de cada ojitoo
+    // Toggle de ojo para mostrar valores completos
     eyeButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
             const targetId = btn.dataset.target;
@@ -285,12 +346,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             mostrarCompletoPorCard[targetId] =
                 !mostrarCompletoPorCard[targetId];
-            const mostrarCompleto = mostrarCompletoPorCard[targetId];
-
-            elemento.textContent = mostrarCompleto
+            elemento.textContent = mostrarCompletoPorCard[targetId]
                 ? formatearCompleto(valor)
                 : formatearAbreviado(valor);
-            btn.innerHTML = mostrarCompleto
+            btn.innerHTML = mostrarCompletoPorCard[targetId]
                 ? '<i data-feather="eye-off"></i>'
                 : '<i data-feather="eye"></i>';
             feather.replace();
