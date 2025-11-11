@@ -136,9 +136,9 @@
     </main>
 
     <!-- Modal Venta Rápida -->
-    <div class="modal fade" id="ventaRapidaModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade modal-dark-style" id="ventaRapidaModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" style="max-width: 820px;">
-        <div class="modal-content text-light border-success">
+        <div class="modal-content bg-dark text-light border-success">
           <div class="modal-header border-success">
             <h5 class="modal-title text-success">
               <i data-feather="zap" class="me-1"></i>Venta Rápida

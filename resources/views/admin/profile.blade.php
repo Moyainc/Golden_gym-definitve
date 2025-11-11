@@ -133,7 +133,7 @@
 
 <!-- Modal para cambiar contraseña -->
 <div
-  class="modal fade"
+  class="modal fade modal-dark-style"
   id="changePasswordModal"
   tabindex="-1"
   aria-labelledby="changePasswordLabel"

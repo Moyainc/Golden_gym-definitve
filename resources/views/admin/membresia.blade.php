@@ -192,7 +192,7 @@
     </main>
 
     <!-- Modal compartido (Agregar / Editar) -->
-    <div class="modal fade" id="membershipModal" tabindex="-1" aria-labelledby="membershipModalLabel" aria-hidden="true">
+    <div class="modal fade modal-dark-style" id="membershipModal" tabindex="-1" aria-labelledby="membershipModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content bg-dark border-0 shadow-lg">
           <div class="modal-header border-secondary">

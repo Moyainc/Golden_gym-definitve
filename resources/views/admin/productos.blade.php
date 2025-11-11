@@ -186,7 +186,7 @@
 </div>
 
 <div
-  class="modal fade"
+  class="modal fade modal-dark-style"
   id="newCategoryModal"
   tabindex="-1"
   aria-labelledby="newCategoryModalLabel"
@@ -217,7 +217,7 @@
               type="text"
               name="nombre"
               id="categoryName"
-              class="form-control bg-black border-0 text-light"
+              class="form-control border-0 text-light"
               required />
           </div>
           <div class="mb-3">
@@ -225,7 +225,7 @@
             <textarea
               id="categoryDescription"
               name="descripcion"
-              class="form-control bg-black border-0 text-light"
+              class="form-control  border-0 text-light"
               rows="2"></textarea>
           </div>
 
@@ -246,7 +246,8 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="deleteCategoryModal" tabindex="-1">
+
+<div class="modal fade modal-dark-style" id="deleteCategoryModal" tabindex="-1">
   <div class="modal-dialog modal-dark">
     <div class="modal-content bg-dark text-white border-0">
       <div class="modal-header border-secondary">
@@ -270,7 +271,7 @@
 </div>
 
 <!-- MODAL Crear / Editar Producto -->
-<div class="modal fade" id="productModal" tabindex="-1">
+<div class="modal fade modal-dark-style" id="productModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content bg-dark text-light border-warning">
       <div class="modal-header border-secondary">
