@@ -108,8 +108,8 @@
                       <button
                         class="filter-btn btn btn-warning w-100 d-flex align-items-center justify-content-center gap-2"
                         data-filter="todas">
-                        <i data-feather="grid" class="text-dark"></i>
-                        <span class="text-dark">Todas</span>
+                        <i data-feather="grid" class="text-white"></i>
+                        <span class="text-white">Todas</span>
                       </button>
                     </div>
                   </div>
@@ -193,176 +193,177 @@
       </main>
 
       <!-- MODAL CREAR CLIENTE -->
-      <div class="modal fade" id="clientFormModal" tabindex="-1">
+      <div class="modal fade modal-dark-style" id="clientFormModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-          <div class="modal-content bg-dark border-0 text-white shadow-lg">
+          <div class="modal-content bg-dark border-0 p-0 text-white shadow-lg">
             <div class="modal-header border-secondary">
               <h5 class="modal-title text-warning">
                 <i data-feather="user-plus" class="me-1"></i> <span id="modalTitle">Registrar Cliente</span>
               </h5>
               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
+            <div class="modal-body p-3">
+              <form id="clientForm" class="row g-3 p-3" enctype="multipart/form-data">
+                <input type="hidden" id="clientId" name="id" />
 
-            <form id="clientForm" class="modal-body row g-3" enctype="multipart/form-data">
-              <input type="hidden" id="clientId" name="id" />
-
-              <!-- Foto del cliente -->
-              <div class="col-12 text-center">
-                <label class="form-label">Foto del cliente</label>
-                <div class="d-flex justify-content-center align-items-center gap-3">
-                  <img
-                    id="clientPhotoPreview"
-                    src="{{ asset('storage/usuarios/default.png') }}"
-                    alt="Foto del cliente"
-                    class="rounded-circle"
-                    style="width:100px;height:100px;object-fit:cover;" />
-                  <div>
-                    <input
-                      id="clientPhoto"
-                      name="foto"
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      class="form-control text-white border-0 mb-2" />
-                    <small class="text-muted">Selecciona una imagen o toma una foto</small>
+                <!-- Foto del cliente -->
+                <div class="col-12 text-center">
+                  <label class="form-label">Foto del cliente</label>
+                  <div class="d-flex justify-content-center align-items-center gap-3">
+                    <img
+                      id="clientPhotoPreview"
+                      src="{{ asset('storage/usuarios/default.png') }}"
+                      alt="Foto del cliente"
+                      class="rounded-circle"
+                      style="width:100px;height:100px;object-fit:cover;" />
+                    <div>
+                      <input
+                        id="clientPhoto"
+                        name="foto"
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        class="form-control text-white border-0 mb-2" />
+                      <small class="text-muted">Selecciona una imagen o toma una foto</small>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <hr class="border-secondary" />
+                <hr class="border-secondary" />
 
-              <!-- Información personal -->
-              <div class="col-md-6">
-                <label class="form-label">Nombre completo *</label>
-                <input
-                  id="clientName"
-                  name="nombre_completo"
-                  type="text"
-                  class="form-control text-white border-0"
-                  required />
-              </div>
+                <!-- Información personal -->
+                <div class="col-md-6">
+                  <label class="form-label">Nombre completo *</label>
+                  <input
+                    id="clientName"
+                    name="nombre_completo"
+                    type="text"
+                    class="form-control text-white border-0"
+                    required />
+                </div>
 
-              <div class="col-md-6">
-                <label class="form-label">Identificación *</label>
-                <input
-                  id="clientIdNumber"
-                  name="cedula"
-                  type="text"
-                  class="form-control text-white border-0"
-                  required />
-              </div>
+                <div class="col-md-6">
+                  <label class="form-label">Identificación *</label>
+                  <input
+                    id="clientIdNumber"
+                    name="cedula"
+                    type="text"
+                    class="form-control text-white border-0"
+                    required />
+                </div>
 
-              <!-- Contacto -->
-              <div class="col-md-6">
-                <label class="form-label">Correo electrónico *</label>
-                <input
-                  id="clientEmail"
-                  name="correo"
-                  type="email"
-                  class="form-control text-white border-0"
-                  required />
-              </div>
+                <!-- Contacto -->
+                <div class="col-md-6">
+                  <label class="form-label">Correo electrónico *</label>
+                  <input
+                    id="clientEmail"
+                    name="correo"
+                    type="email"
+                    class="form-control text-white border-0"
+                    required />
+                </div>
 
-              <div class="col-md-6">
-                <label class="form-label">Teléfono</label>
-                <input
-                  id="clientPhone"
-                  name="telefono"
-                  type="tel"
-                  class="form-control text-white border-0" />
-              </div>
+                <div class="col-md-6">
+                  <label class="form-label">Teléfono</label>
+                  <input
+                    id="clientPhone"
+                    name="telefono"
+                    type="tel"
+                    class="form-control text-white border-0" />
+                </div>
 
-              <div class="col-md-6">
-                <label class="form-label">EPS</label>
-                <input
-                  id="clientEps"
-                  name="eps"
-                  type="text"
-                  class="form-control text-white border-0" />
-              </div>
+                <div class="col-md-6">
+                  <label class="form-label">EPS</label>
+                  <input
+                    id="clientEps"
+                    name="eps"
+                    type="text"
+                    class="form-control text-white border-0" />
+                </div>
 
-              <div class="col-md-6">
-                <label class="form-label">Número de emergencia</label>
-                <input
-                  id="clientEmergency"
-                  name="numero_emergencia"
-                  type="tel"
-                  class="form-control text-white border-0" />
-              </div>
+                <div class="col-md-6">
+                  <label class="form-label">Número de emergencia</label>
+                  <input
+                    id="clientEmergency"
+                    name="numero_emergencia"
+                    type="tel"
+                    class="form-control text-white border-0" />
+                </div>
 
 
-              <hr class="border-secondary" />
+                <hr class="border-secondary" />
 
-              <!-- Membresía -->
-              <div class="col-md-6">
-                <label class="form-label">Tipo de membresía *</label>
-                <select
-                  id="clientMembershipType"
-                  name="membresia_id"
-                  class="form-select text-white border-0"
-                  required>
-                  <option value="">-- Seleccione una membresía --</option>
-                </select>
-              </div>
+                <!-- Membresía -->
+                <div class="col-md-6">
+                  <label class="form-label">Tipo de membresía *</label>
+                  <select
+                    id="clientMembershipType"
+                    name="membresia_id"
+                    class="form-select text-white border-0"
+                    required>
+                    <option value="">-- Seleccione una membresía --</option>
+                  </select>
+                </div>
 
-              <div class="col-md-6">
-                <label class="form-label">Método de pago *</label>
-                <select
-                  id="clientPaymentMethod"
-                  name="metodo_pago"
-                  class="form-select text-white border-0"
-                  required>
-                  <option value="efectivo">Efectivo</option>
-                  <option value="transferencia">Transferencia</option>
-                  <option value="tarjeta">Tarjeta</option>
-                </select>
-              </div>
+                <div class="col-md-6">
+                  <label class="form-label">Método de pago *</label>
+                  <select
+                    id="clientPaymentMethod"
+                    name="metodo_pago"
+                    class="form-select text-white border-0"
+                    required>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="transferencia">Transferencia</option>
+                    <option value="tarjeta">Tarjeta</option>
+                  </select>
+                </div>
 
-              <!-- Fechas -->
-              <div class="col-md-4">
-                <label class="form-label">Fecha inicio</label>
-                <input
-                  id="clientMembershipStart"
-                  name="fecha_inicio"
-                  type="date"
-                  class="form-control text-white border-0"
-                  readonly />
-              </div>
+                <!-- Fechas -->
+                <div class="col-md-4">
+                  <label class="form-label">Fecha inicio</label>
+                  <input
+                    id="clientMembershipStart"
+                    name="fecha_inicio"
+                    type="date"
+                    class="form-control text-white border-0"
+                    readonly />
+                </div>
 
-              <div class="col-md-4">
-                <label class="form-label">Fecha fin</label>
-                <input
-                  id="clientMembershipEnd"
-                  name="fecha_fin"
-                  type="date"
-                  class="form-control text-white border-0"
-                  readonly />
-              </div>
+                <div class="col-md-4">
+                  <label class="form-label">Fecha fin</label>
+                  <input
+                    id="clientMembershipEnd"
+                    name="fecha_fin"
+                    type="date"
+                    class="form-control text-white border-0"
+                    readonly />
+                </div>
 
-              <!-- Precio -->
-              <div class="col-md-4">
-                <label class="form-label">Precio</label>
-                <input
-                  id="membershipPrice"
-                  name="monto"
-                  type="text"
-                  class="form-control text-warning fw-bold border-0"
-                  readonly />
-              </div>
+                <!-- Precio -->
+                <div class="col-md-4">
+                  <label class="form-label">Precio</label>
+                  <input
+                    id="membershipPrice"
+                    name="monto"
+                    type="text"
+                    class="form-control text-warning fw-bold border-0"
+                    readonly />
+                </div>
 
-              <div class="modal-footer border-secondary">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" id="saveClientBtn" class="btn btn-warning">
-                  <i data-feather="save" class="me-1"></i> Guardar cliente
-                </button>
-              </div>
-            </form>
+                <div class="modal-footer border-secondary">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                  <button type="submit" id="saveClientBtn" class="btn btn-warning">
+                    <i data-feather="save" class="me-1"></i> Guardar cliente
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- MODAL VER CLIENTE -->
-      <div class="modal fade" id="viewClientModal" tabindex="-1">
+      <div class="modal fade modal-dark-style" id="viewClientModal" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content bg-dark border-0 text-white shadow-lg">
             <div class="modal-header border-secondary">
@@ -446,7 +447,7 @@
 
 
       <!-- MODAL EDITAR CLIENTE -->
-      <div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
+      <div class="modal fade modal-dark-style" id="editClientModal" tabindex="-1" aria-labelledby="editClientModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
           <div class="modal-content bg-dark border-0 text-white shadow-lg">
             <div class="modal-header border-secondary">
@@ -527,7 +528,7 @@
       </div>
 
       <!-- Modal para Pago Diario -->
-      <div class="modal fade" id="dailyPaymentModal" tabindex="-1">
+      <div class="modal fade modal-dark-style" id="dailyPaymentModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content bg-dark border-0 text-white shadow-lg">
             <div class="modal-header border-secondary">
@@ -595,7 +596,7 @@
       </div>
 
       <!-- Modal para Reportes -->
-      <div class="modal fade" id="reportsModal" tabindex="-1">
+      <div class="modal fade modal-dark-style" id="reportsModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content bg-dark border-0 text-white shadow-lg">
             <div class="modal-header border-secondary">

@@ -166,7 +166,7 @@
 
     <!-- Modal Agregar usuario -->
     <div
-      class="modal fade"
+      class="modal fade modal-dark-style"
       id="addEditUserModal"
       tabindex="-1"
       aria-labelledby="addEditUserModalLabel"
