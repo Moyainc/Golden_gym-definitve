@@ -131,16 +131,15 @@
         <!-- === GRÁFICOS === -->
         <div class="row g-3 mt-2">
           <div class="col-12 col-lg-8">
-            <div class="card border-0 shadow-sm bg-dark-card h-100">
+            <div class="card border-0 shadow-sm bg-dark-card h-100" style="height: 350px;">
               <div class="card-header d-flex justify-content-between align-items-center border-bottom border-secondary py-2">
                 <h6 class="mb-0 tittle-color"><i data-feather="bar-chart" class="me-1"></i>Ingresos mensuales</h6>
                 <small class="text-muted">Comparativa por meses</small>
               </div>
-              <div class="card-body p-3">
-                <canvas id="monthlyBarChart" height="110"></canvas>
-              </div>
-              <div class="card-footer border-top border-secondary text-muted small py-2">
-                <span id="monthlySummary">Resumen: -</span>
+              <div class="card-body p-3 d-flex align-items-center justify-content-center">
+                <div class="chart-container w-100 h-100">
+                  <canvas id="monthlyBarChart"></canvas>
+                </div>
               </div>
             </div>
           </div>
@@ -152,11 +151,8 @@
                 <small class="text-muted">% por fuente</small>
               </div>
               <div class="card-body d-flex flex-column align-items-center p-3">
-                <canvas id="earningsDoughnut" width="220" height="220"></canvas>
+                <canvas id="earningsDoughnut"></canvas>
                 <div id="earningsLegend" class="mt-3 small text-white"></div>
-              </div>
-              <div class="card-footer border-top border-secondary text-center text-muted small py-2">
-                <span class="text-success fw-bold">↑ 8.5%</span> más ingresos este mes
               </div>
             </div>
           </div>
@@ -186,9 +182,8 @@
             <div class="card border-0 shadow-sm bg-dark-card" style="height: 350px;">
               <div class="card-header d-flex justify-content-between align-items-center py-2">
                 <h6 class="mb-0 tittle-color">
-                  <i data-feather="list" class="me-1"></i> Últimos registros
+                  <i data-feather="list" class="me-1 my-2"></i> Últimos registros
                 </h6>
-                <button id="btnViewAll" class="btn btn-sm btn-outline-warning">Ver todo</button>
               </div>
 
               <div class="card-body p-0 d-flex flex-column">

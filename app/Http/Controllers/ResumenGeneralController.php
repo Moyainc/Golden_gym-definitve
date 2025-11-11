@@ -45,7 +45,16 @@ class ResumenGeneralController extends Controller
 
     // === Totales generales ===
     $totalGeneral = $pagos->sum('monto');
-    $totalMembresias = $pagos->where('tipo_pago', 'pagos_membresias')->sum('monto');
+    $totalMembresias = $pagos->filter(function ($pago) {
+      if ($pago->tipo_pago !== 'pagos_membresias') return false;
+
+      if (!$pago->origen_id) return true;
+
+      $membresia = PagoMembresia::find($pago->origen_id);
+      if (!$membresia) return true;
+      return $membresia->estado !== 'Anulada';
+    })->sum('monto');
+
     $totalProductos = $pagos->where('tipo_pago', 'venta_producto')->sum('monto');
     $totalPagosDiarios = $pagos->where('tipo_pago', 'pagos_diarios')->sum('monto');
 

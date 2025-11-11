@@ -51,21 +51,28 @@ class PagoMembresiaController extends Controller
             }
 
             // 💾 Crear el registro
-            $pago = PagoMembresia::create([
-                'cliente_id'   => $request->cliente_id,
-                'membresia_id' => $membresia->id,
-                'fecha_inicio' => $fechaInicio,
-                'fecha_fin'    => $fechaFin,
-                'monto'        => $membresia->precio,
-                'metodo_pago'  => $request->metodo_pago ?? 'efectivo',
-            ]);
+            try {
+                $pago = PagoMembresia::create([
+                    'cliente_id'   => $request->cliente_id,
+                    'membresia_id' => $membresia->id,
+                    'fecha_inicio' => $fechaInicio,
+                    'fecha_fin'    => $fechaFin,
+                    'monto'        => $membresia->precio,
+                    'metodo_pago'  => $request->metodo_pago ?? 'Efectivo',
+                    'estado'       => $request->estado ?? 'Activo',
+                ]);
+            } catch (\InvalidArgumentException $e) {
+                return response()->json([
+                    'error' => $e->getMessage()
+                ], 422);
+            }
+
 
             return response()->json([
                 'success' => true,
                 'message' => 'Pago de membresía registrado correctamente',
                 'pago' => $pago,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error en store PagoMembresia: ' . $e->getMessage());
             return response()->json([

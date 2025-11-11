@@ -115,6 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".ver-detalle").forEach((btn) => {
             btn.addEventListener("click", (e) => {
                 const pago = JSON.parse(e.currentTarget.dataset.pago);
+
                 document.getElementById("detailDate").textContent = pago.fecha;
                 document.getElementById("detailConcept").textContent =
                     pago.concepto;
@@ -130,8 +131,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 document.getElementById("detailMethod").textContent =
                     pago.metodo;
-                document.getElementById("detailStatus").textContent =
-                    pago.estado || "Completado";
+
+                // Asignar estado con colores
+                const statusEl = document.getElementById("detailStatus");
+                const estado = pago.estado || "Completada";
+                statusEl.textContent = estado;
+
+                // Limpiar clases previas
+                // Limpiar clases previas
+                statusEl.className = "px-2 py-1 rounded font-bold text-sm";
+
+                // Asignar colores según estado (Bootstrap)
+                switch (estado.toLowerCase()) {
+                    case "activa":
+                    case "completada":
+                        statusEl.classList.add("bg-success", "text-white");
+                        break;
+                    case "proxima":
+                    case "pendiente":
+                        statusEl.classList.add("bg-warning", "text-dark");
+                        break;
+                    case "anulada":
+                        statusEl.classList.add("bg-danger", "text-white");
+                        break;
+                    default:
+                        statusEl.classList.add("bg-secondary", "text-white");
+                }
+
 
                 const modal = new bootstrap.Modal(
                     document.getElementById("recordDetailModal")
@@ -188,15 +214,15 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             options: {
                 scales: {
-                    x: { ticks: { color: "#fff" } },
+                    x: { ticks: { color: "#ccc" } },
                     y: {
                         ticks: {
-                            color: "#fff",
+                            color: "#ccc",
                             callback: (val) => formatearAbreviado(val),
                         },
                     },
                 },
-                plugins: { legend: { labels: { color: "#fff" } } },
+                plugins: { legend: { labels: { color: "#ccc" } } },
             },
         });
 
