@@ -24,7 +24,7 @@ class PagoMembresia extends Model
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_fin' => 'date',
-        'monto' => 'decimal:2',
+        'monto' => 'decimal:0',
     ];
 
     // Relaciones

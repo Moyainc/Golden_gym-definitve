@@ -163,7 +163,7 @@
         </div>
 
 
-        <div class="row g-3 mt-2 align-items-stretch">
+        <div class="row g-3 mt-2">
           <!-- Tendencia de ingresos -->
           <div class="col-12 col-lg-8">
             <div class="card border-0 shadow-sm bg-dark-card" style="height: 350px;">
@@ -181,20 +181,19 @@
             </div>
           </div>
 
-
           <!-- Últimos registros -->
           <div class="col-12 col-lg-4">
-            <div class="card border-0 shadow-sm bg-dark-card h-100">
-              <div class="card-header border-bottom border-secondary d-flex justify-content-between align-items-center py-2">
+            <div class="card border-0 shadow-sm bg-dark-card" style="height: 350px;">
+              <div class="card-header d-flex justify-content-between align-items-center py-2">
                 <h6 class="mb-0 tittle-color">
                   <i data-feather="list" class="me-1"></i> Últimos registros
                 </h6>
-                <button id="btnViewAll" class="btn btn-sm btn-outline-info">Ver todo</button>
+                <button id="btnViewAll" class="btn btn-sm btn-outline-warning">Ver todo</button>
               </div>
 
-              <div class="card-body p-0">
-                <div class="table-responsive" style="max-height: 320px; overflow-y: auto;">
-                  <table class="table table-hover mb-0 small align-middle border-0" style="border: none !important;">
+              <div class="card-body p-0 d-flex flex-column">
+                <div class="table-responsive grow p-2" style="overflow-y: auto;">
+                  <table class="table table-hover small align-middle border-0 mb-0">
                     <thead class="text-muted border-bottom border-secondary">
                       <tr>
                         <th>Fecha</th>
@@ -210,6 +209,7 @@
             </div>
           </div>
         </div>
+
 
 
 
