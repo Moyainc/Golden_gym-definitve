@@ -43,14 +43,14 @@
             @endforeach
           </select>
 
-          <button id="applyFilter" class="btn btn-info py-3 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap">
-            Aplicar Filtro
+          <button id="applyFilter" class="btn btn-info py-1 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap">
+            Limpiar
           </button>
         </div>
 
         <button
           type="button"
-          class="btn btn-success py-3 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap"
+          class="btn btn-success py-1 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap"
           data-bs-toggle="modal"
           data-bs-target="#reportsModal">
           <i data-feather="file-text" class="me-1"></i> Reportes
@@ -85,7 +85,7 @@
                 <i data-feather="shopping-bag" class="text-warning" width="22"></i>
               </div>
               <div>
-                <h6 class="text-muted text-uppercase small mb-1">Productos</h6>
+                <h6 class="text-muted text-uppercase small mb-1">Ventas</h6>
                 <h5 id="productosTotal" class="text-warning fw-bold mb-2">$0</h5>
               </div>
               <button class="btn btn-sm btn-outline-secondary btn-eye mt-auto" data-target="productosTotal">
@@ -252,8 +252,7 @@
             </div>
           </div>
         </div>
-<<<<<<< HEAD
-        
+
         <!-- Modal para Reportes -->
         <div class="modal fade" id="reportsModal" tabindex="-1">
           <div class="modal-dialog modal-dialog-centered">
@@ -304,9 +303,6 @@
             </div>
           </div>
         </div>
-=======
-
->>>>>>> b3e1283f668a73b90d2bc9b71ed2f7e0453cd2cc
     </main>
   </div>
 </div>

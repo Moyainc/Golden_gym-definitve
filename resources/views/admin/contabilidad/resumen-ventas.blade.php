@@ -21,22 +21,20 @@
 
             <!-- Select Mes -->
             <select id="filterMonth" class="form-select form-select-sm bg-dark text-white border-0">
-              <option value="">Todos los meses</option>
             </select>
 
             <!-- Select Año -->
             <select id="filterYear" class="form-select form-select-sm bg-dark text-white border-0">
-              <option value="">Todos los años</option>
               @foreach ($anios as $anio)
               <option value="{{ $anio }}" {{ $anio == date('Y') ? 'selected' : '' }}>{{ $anio }}</option>
               @endforeach
             </select>
 
-            <button id="applyFilter" class="btn btn-info py-3 ms-md-2 mt-2 mt-md-0 text-nowrap">Aplicar Filtro</button>
+            <button id="applyFilter" class="btn btn-info py-1 ms-md-2 mt-2 mt-md-0 text-nowrap">Aplicar Filtro</button>
             <div class="d-flex flex-wrap align-items-center">
               <button
                 type="button"
-                class="btn btn-success py-3 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap"
+                class="btn btn-success py-1 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap"
                 data-bs-toggle="modal"
                 data-bs-target="#reportsVentasModal">
                 <i data-feather="file-text" class="me-1"></i> Reportes

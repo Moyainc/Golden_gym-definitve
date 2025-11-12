@@ -61,6 +61,25 @@ document.addEventListener("DOMContentLoaded", () => {
         filterMonth.appendChild(option);
     });
 
+
+    const applyFilterBtn = document.getElementById("applyFilter");
+
+    const hoy = new Date();
+    const mesActual = hoy.getMonth() + 1;
+    const anioActual = hoy.getFullYear();
+
+
+    filterMonth.value = mesActual;
+    filterYear.value = anioActual;
+
+    // Al hacer clic en Aplicar Filtro, volver al mes y año actual
+    applyFilterBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        filterMonth.value = mesActual;
+        filterYear.value = anioActual;
+        cargarDatos(); // tu función existente
+    });
+
     async function cargarDatos() {
         const params = new URLSearchParams();
         if (filterMonth.value) params.append("mes", filterMonth.value);
