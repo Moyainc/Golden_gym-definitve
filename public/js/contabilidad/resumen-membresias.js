@@ -3,8 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // VARIABLES DEL MODAL
     // ---------------------------------------------------
     const reportModalEl = document.getElementById("reportsModal");
-    const reportModal = new bootstrap.Modal(reportModalEl, { backdrop: "static", keyboard: false });
-    const reportButton = document.querySelector('button[data-report-type="membresias"]');
+    const reportModal = new bootstrap.Modal(reportModalEl, {
+        backdrop: "static",
+        keyboard: false,
+    });
+    const reportButton = document.querySelector(
+        'button[data-report-type="membresias"]'
+    );
     const reportStartDate = document.getElementById("reportStartDate");
     const reportEndDate = document.getElementById("reportEndDate");
     const includePagosDiarios = document.getElementById("includePagosDiarios");
@@ -70,8 +75,10 @@ document.addEventListener("DOMContentLoaded", () => {
         reportModal.hide();
     }
 
-    if (modalPdfBtn) modalPdfBtn.addEventListener("click", () => exportModal("pdf"));
-    if (modalExcelBtn) modalExcelBtn.addEventListener("click", () => exportModal("excel"));
+    if (modalPdfBtn)
+        modalPdfBtn.addEventListener("click", () => exportModal("pdf"));
+    if (modalExcelBtn)
+        modalExcelBtn.addEventListener("click", () => exportModal("excel"));
 
     // ---------------------------------------------------
     // INICIALIZAR FILTROS Y CARGAR DATOS
@@ -129,15 +136,15 @@ function inicializarFiltros() {
 }
 // CARGAR AÑOS QUE TIENEN DATOS
 function cargarAniosDisponibles() {
-    fetch(apiUrl('admin/api/anios-disponibles'))
-        .then(res => res.json())
-        .then(data => {
+    fetch(apiUrl("admin/api/anios-disponibles"))
+        .then((res) => res.json())
+        .then((data) => {
             if (!data.success) return;
             const anioSelect = document.getElementById("filterAnio");
             if (!anioSelect) return;
 
             anioSelect.innerHTML = ""; // limpiar opciones
-            data.anios.forEach(anio => {
+            data.anios.forEach((anio) => {
                 const option = document.createElement("option");
                 option.value = anio;
                 option.textContent = anio;
@@ -147,7 +154,7 @@ function cargarAniosDisponibles() {
             // Seleccionar último año por defecto
             anioSelect.value = Math.max(...data.anios);
         })
-        .catch(err => console.error("Error cargando años:", err));
+        .catch((err) => console.error("Error cargando años:", err));
 }
 
 // VALORES MONETARIOS ABREVIDADOS 1M
@@ -157,13 +164,25 @@ function formatearAbreviado(valor) {
     if (isNaN(numero)) return "$0";
 
     if (numero >= 1_000_000_000)
-        return `$${(numero / 1_000_000_000).toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}B`;
+        return `$${(numero / 1_000_000_000).toLocaleString("es-CO", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })}B`;
     if (numero >= 1_000_000)
-        return `$${(numero / 1_000_000).toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}M`;
+        return `$${(numero / 1_000_000).toLocaleString("es-CO", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })}M`;
     if (numero >= 1_000)
-        return `$${(numero / 1_000).toLocaleString("es-CO", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}K`;
+        return `$${(numero / 1_000).toLocaleString("es-CO", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        })}K`;
 
-    return `$${numero.toLocaleString("es-CO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `$${numero.toLocaleString("es-CO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`;
 }
 
 // VALORES MONETARIOS ABREVIADOS PARA GRÁFICAS
@@ -183,7 +202,6 @@ function formatearCOP(valor) {
     });
 }
 
-
 // ---------------------------------------------------
 // CARGAR DATOS DESDE LA API
 // ---------------------------------------------------
@@ -196,7 +214,9 @@ function cargarDatos() {
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
-                movimientosGlobal = data.movimientos.sort((a, b) => b.id - a.id);
+                movimientosGlobal = data.movimientos.sort(
+                    (a, b) => b.id - a.id
+                );
                 paginaActual = 1;
                 actualizarCards(data.cards);
                 mostrarPagina(paginaActual);
@@ -211,10 +231,16 @@ function cargarDatos() {
 // ---------------------------------------------------
 function actualizarCards(cards) {
     if (!cards) return;
-    document.getElementById("ingresoMembresias").textContent = formatearAbreviado(cards.ingreso_membresias);
-    document.getElementById("ingresoDiarios").textContent = formatearAbreviado(cards.ingreso_diarios);
-    document.getElementById("cantidadMembresias").textContent = cards.cantidad_membresias;
-    document.getElementById("ingresoTotal").textContent = formatearAbreviado(cards.ingreso_total);
+    document.getElementById("ingresoMembresias").textContent =
+        formatearAbreviado(cards.ingreso_membresias);
+    document.getElementById("ingresoDiarios").textContent = formatearAbreviado(
+        cards.ingreso_diarios
+    );
+    document.getElementById("cantidadMembresias").textContent =
+        cards.cantidad_membresias;
+    document.getElementById("ingresoTotal").textContent = formatearAbreviado(
+        cards.ingreso_total
+    );
 }
 
 function mostrarPagina(numPagina) {
@@ -230,7 +256,8 @@ function actualizarTabla(movimientos) {
     if (!tbody) return;
 
     if (!movimientos || movimientos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay datos para este período</td></tr>';
+        tbody.innerHTML =
+            '<tr><td colspan="5" class="text-center text-muted">No hay datos para este período</td></tr>';
         return;
     }
 
@@ -238,11 +265,17 @@ function actualizarTabla(movimientos) {
         .map(
             (mov) => `
         <tr>
-            <td><span class="badge ${mov.tipo === "Membresía" ? "bg-warning text-dark border border-dark" : "bg-info text-dark"}">${mov.tipo}</span></td>
+            <td><span class="badge ${
+                mov.tipo === "Membresía"
+                    ? "bg-warning text-dark border border-dark"
+                    : "bg-info text-dark"
+            }">${mov.tipo}</span></td>
             <td>${mov.metodo_pago}</td>
             <td class="fw-bold">${formatearCOP(mov.valor)}</td>
             <td>${new Date(mov.fecha).toLocaleDateString("es-CO")}</td>
-            <td><span class="badge ${getEstadoBadgeClass(mov.estado)}">${mov.estado}</span></td>
+            <td><span class="badge ${getEstadoBadgeClass(mov.estado)}">${
+                mov.estado
+            }</span></td>
         </tr>`
         )
         .join("");
@@ -252,14 +285,22 @@ function actualizarTabla(movimientos) {
 // PAGINACIÓN
 // ---------------------------------------------------
 function actualizarPaginacion() {
-    const totalPaginas = Math.ceil(movimientosGlobal.length / MOVIMIENTOS_POR_PAGINA);
-    const paginacionContainer = document.getElementById("paginacionMovimientos");
+    const totalPaginas = Math.ceil(
+        movimientosGlobal.length / MOVIMIENTOS_POR_PAGINA
+    );
+    const paginacionContainer = document.getElementById(
+        "paginacionMovimientos"
+    );
     if (!paginacionContainer) return;
 
     let html = "";
     for (let i = 1; i <= totalPaginas; i++) {
         html += `
-            <button class="btn btn-sm ${i === paginaActual ? "btn-warning text-dark" : "btn-outline-warning"} mx-1"
+            <button class="btn btn-sm ${
+                i === paginaActual
+                    ? "btn-warning text-dark"
+                    : "btn-outline-warning"
+            } mx-1"
                     onclick="cambiarPagina(${i})">${i}</button>`;
     }
     paginacionContainer.innerHTML = html;
@@ -293,19 +334,27 @@ function getEstadoBadgeClass(estado) {
 // ---------------------------------------------------
 
 function actualizarGraficas(distribucion, tendencia) {
-    // Distribución
-    // Distribución - Doughnut con valores visibles
-    const ctxIngresos = document.getElementById("chartIngresos")?.getContext("2d");
+    // ---------------------------------------------------
+    // GRÁFICO DE DISTRIBUCIÓN (DOUGHNUT)
+    // ---------------------------------------------------
+    const ctxIngresos = document
+        .getElementById("chartIngresos")
+        ?.getContext("2d");
     if (!ctxIngresos) return;
     if (chartIngresos) chartIngresos.destroy();
+
     const labelsConValores = [
-        `Membresías (${formatearGrafica(distribucion.membresias)})`,
-        `Pagos Diarios (${formatearGrafica(distribucion.diarios)})`
+        `Membresías ($${parseFloat(distribucion.membresias).toLocaleString(
+            "es-CO"
+        )})`,
+        `Pagos Diarios ($${parseFloat(distribucion.diarios).toLocaleString(
+            "es-CO"
+        )})`,
     ];
+
     chartIngresos = new Chart(ctxIngresos, {
         type: "doughnut",
         data: {
-            // ⬇️ usamos los labels nuevos aquí
             labels: labelsConValores,
             datasets: [
                 {
@@ -323,22 +372,20 @@ function actualizarGraficas(distribucion, tendencia) {
                 legend: {
                     position: "bottom",
                     labels: {
-                        color: "#fff",
+                        color: "#ccc",
                         font: { size: 14 },
                     },
                 },
-                title: {
-                    display: true,
-                    text: "Distribución de Ingresos",
-                    color: "#fff",
-                    font: { size: 16, weight: "bold" },
-                },
+                title: { display: false },
                 tooltip: {
                     callbacks: {
+                        // Tooltip con valor completo en formato COP
                         label: function (context) {
+                            const label = context.label.split(" (")[0]; // evita repetir el valor
                             const valor = context.raw;
-                            const label = context.label || "";
-                            return `${label}: ${formatearGrafica(valor)}`;
+                            return `${label}: $ ${parseFloat(
+                                valor
+                            ).toLocaleString("es-CO")}`;
                         },
                     },
                 },
@@ -350,8 +397,21 @@ function actualizarGraficas(distribucion, tendencia) {
         },
     });
 
-    // Tendencia - Line
-    const ctxTendencia = document.getElementById("chartTendencia")?.getContext("2d");
+    // ---------------------------------------------------
+    // GRÁFICO DE TENDENCIA (LINE)
+    // ---------------------------------------------------
+
+    const fechaActual = new Date();
+    const opciones = { month: "long", year: "numeric" };
+    let mesActual = fechaActual.toLocaleDateString("es-ES", opciones);
+
+    // Convertir primera letra a mayúscula
+    mesActual = mesActual.charAt(0).toUpperCase() + mesActual.slice(1);
+
+
+    const ctxTendencia = document
+        .getElementById("chartTendencia")
+        ?.getContext("2d");
     if (!ctxTendencia) return;
     if (chartTendencia) chartTendencia.destroy();
 
@@ -364,15 +424,15 @@ function actualizarGraficas(distribucion, tendencia) {
             labels: diasLabels,
             datasets: [
                 {
-                    label: "Ingresos Diarios",
+                    label:`Tendencia de Ingresos (${mesActual})`,
                     data: diasData,
                     borderColor: "#FFD54F",
                     backgroundColor: "rgba(255, 213, 79, 0.2)",
                     borderWidth: 3,
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
+                    pointRadius: diasData.map((v) => (v === 0 ? 0 : 5)),
+                    pointHoverRadius: diasData.map((v) => (v === 0 ? 0 : 7)),
                     pointBackgroundColor: "#FFD54F",
                 },
             ],
@@ -380,37 +440,35 @@ function actualizarGraficas(distribucion, tendencia) {
         options: {
             responsive: true,
             plugins: {
-                legend: { labels: { color: "#fff" } },
-                title: {
-                    display: true,
-                    text: "Tendencia de Ingresos Diarios",
-                    color: "#fff",
-                    font: { size: 16, weight: "bold" },
-                },
+                legend: { display: true },
+                title: { display: false },
                 tooltip: {
                     callbacks: {
+                        // Tooltip con valor completo en formato COP
                         label: function (context) {
-                            return formatearGrafica(context.parsed.y);
+                            const valor = context.parsed.y;
+                            return `$ ${parseFloat(valor).toLocaleString(
+                                "es-CO"
+                            )}`;
                         },
                     },
                 },
             },
             scales: {
-                yAxes: [{
+                y: {
                     ticks: {
-                        color: "#fff",
+                        color: "#cccc",
                         callback: function (value) {
-                            return formatearGrafica(value);
-                        }
+                            return formatearGrafica(value); // formato abreviado en el eje
+                        },
                     },
-                    gridLines: { color: "rgba(255,255,255,0.1)" }
-                }],
-                xAxes: [{
-                    ticks: { color: "#fff" },
-                    gridLines: { color: "rgba(255,255,255,0.1)" }
-                }]
-            }
-        }
+                    grid: { color: "rgba(255,255,255,0.1)" },
+                },
+                x: {
+                    ticks: { color: "#cccc" },
+                    grid: { color: "rgba(255,255,255,0.1)" },
+                },
+            },
+        },
     });
-
 }

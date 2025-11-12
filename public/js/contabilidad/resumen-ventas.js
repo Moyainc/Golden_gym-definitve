@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         },
                         legend: {
                             labels: {
-                                color: "#fff",
+                                color: "#cccc",
                                 generateLabels: (chart) =>
                                     chart.data.labels.map((label, i) => ({
                                         text: `${label}: ${formatAbreviado(
@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         fillStyle:
                                             chart.data.datasets[0]
                                                 .backgroundColor[i],
-                                        strokeStyle: "#fff",
+                                        strokeStyle: "#cccc",
                                         hidden: false,
                                         index: i,
                                     })),
@@ -173,18 +173,18 @@ document.addEventListener("DOMContentLoaded", () => {
                                 label: (ctx) => formatearCOP(ctx.raw),
                             },
                         },
-                        legend: { labels: { color: "#fff" } },
+                        legend: { labels: { color: "#cccc" } },
                     },
                     scales: {
                         x: {
                             ticks: {
-                                color: "#fff",
+                                color: "#cccc",
                                 callback: (v) => formatAbreviado(v),
                             },
                             grid: { color: "rgba(255,255,255,0.1)" },
                         },
                         y: {
-                            ticks: { color: "#fff" },
+                            ticks: { color: "#cccc" },
                             grid: { color: "rgba(255,255,255,0.1)" },
                         },
                     },
@@ -250,16 +250,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                 },
                             },
                         },
-                        legend: { labels: { color: "#fff" } },
+                        legend: { labels: { color: "#cccc" } },
                     },
                     scales: {
                         x: {
-                            ticks: { color: "#fff" },
+                            ticks: { color: "#cccc" },
                             grid: { color: "rgba(255,255,255,0.1)" },
                         },
                         y: {
                             ticks: {
-                                color: "#fff",
+                                color: "#cccc",
                                 callback: (v) => formatAbreviado(v),
                             },
                             grid: { color: "rgba(255,255,255,0.1)" },

@@ -118,31 +118,43 @@
           </div>
 
           <!-- GRÁFICAS -->
-          <div class="row g-3 mb-4">
-            <!-- Gráfica de Ingresos por Tipo -->
-            <div class="col-12 col-lg-6">
-              <div class="card border-0 shadow-sm bg-dark-card">
-                <div class="card-body">
+          <div class="row g-3 mb-4 align-items-stretch">
+            <!-- Gráfica de Distribución de Ingresos -->
+            <div class="col-12 col-lg-6 d-flex">
+              <div class="card flex-fill border-0 shadow-sm bg-dark-card">
+                <div class="card-body d-flex flex-column justify-content-between">
                   <h5 class="text-warning mb-3">
-                    <i data-feather="pie-chart" class="me-2"></i> Distribución de Ingresos
+                    <i data-feather="pie-chart" class="me-2"></i>
+                    Distribución de Ingresos
                   </h5>
-                  <canvas id="chartIngresos" height="200"></canvas>
+
+                  <!-- Contenedor más pequeño solo para este gráfico -->
+                  <div class="chart-container-sm grow d-flex justify-content-center align-items-center">
+                    <canvas id="chartIngresos"></canvas>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Gráfica de Tendencia Diaria -->
-            <div class="col-12 col-lg-6">
-              <div class="card border-0 shadow-sm bg-dark-card">
-                <div class="card-body">
+            <!-- Gráfica de Tendencia de Ingresos -->
+            <div class="col-12 col-lg-6 d-flex">
+              <div class="card flex-fill border-0 shadow-sm bg-dark-card">
+                <div class="card-body d-flex flex-column justify-content-between">
                   <h5 class="text-warning mb-3">
-                    <i data-feather="trending-up" class="me-2"></i> Tendencia de Ingresos
+                    <i data-feather="trending-up" class="me-2"></i>
+                    Tendencia de Ingresos
                   </h5>
-                  <canvas id="chartTendencia" height="200"></canvas>
+
+                  <!-- Contenedor más alto para este gráfico -->
+                  <div class="chart-container-lg grow d-flex justify-content-center align-items-center">
+                    <canvas id="chartTendencia"></canvas>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+
 
           <!-- TABLA DE ÚLTIMOS MOVIMIENTOS -->
           <div class="card border-0 shadow-sm mb-5">

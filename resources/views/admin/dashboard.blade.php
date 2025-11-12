@@ -7,7 +7,7 @@
   <div class="main">
     <div id="navbar"></div>
 
-    <main class="content">
+    <main class="content custom-container">
       <div class="container-fluid p-0">
         <h1 class="text-light h1 mb-4">
           <strong>Panel</strong> de Control
@@ -15,7 +15,7 @@
 
         <div class="row">
           <div class="col-xl-6 col-xxl-5 d-flex flex-column justify-content-center">
-            <div class="row g-3"> <!-- g-3 agrega espacio entre las cards -->
+            <div class="row g-3">
               <!-- CARD PRODUCTOS -->
               <div class="col-sm-6">
                 <div class="card border-0 position-relative" id="cardProductos">
@@ -141,6 +141,8 @@
 
 
           <!-- GRÁFICOS Y TABLAS DE MOVIMIENTOS -->
+
+
           <div class="col-xl-6 col-xxl-7 d-flex align-items-center">
             <div class="card flex-fill w-100 border-0">
               <div class="card-header">
@@ -157,40 +159,37 @@
             </div>
           </div>
 
-          <div class="row justify-content-center gap-2">
-            <!-- CALENDARIO -->
-            <div class="col-12 col-md-6 col-xxl-3 d-flex order-1 order-xxl-1">
-              <div class="card flex-fill">
-                <div class="card-header">
-                  <h5 class="card-title mb-0">Calendario</h5>
-                </div>
-                <div class="card-body d-flex">
-                  <div class="align-self-center w-100">
-                    <div class="chart">
-                      <div id="datetimepicker-dashboard"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+          <div class="row g-3 item align-items-center justify-content-center">
             <!-- GRÁFICO BARRA DE MEMBRESÍAS -->
-            <div class="col-12 col-lg-8 col-xxl-8 d-flex">
-              <div class="card flex-fill w-100">
+            <div class="col-xl-6 col-xxl-7 align-items-center">
+              <div class="card">
                 <div class="card-header">
                   <h5 class="card-title mb-0">
                     <i data-feather="activity" class="me-1 text-warning"></i>
                     Ingresos mensuales por Membresías
                   </h5>
                 </div>
-                <div class="card-body d-flex w-200">
-                  <div class="align-self-center chart chart-lg">
+                <div class="card-body">
+                  <div class="chart-container">
                     <canvas id="chartjs-dashboard-bar"></canvas>
                   </div>
                 </div>
               </div>
             </div>
+
+            <!-- CALENDARIO -->
+            <div class="col-12 col-md-8 col-xl-4">
+              <div class="card border-0 h-auto p-3">
+                <div class="card-header">
+                  <h5 class="card-title mb-0">Calendario</h5>
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center p-3">
+                  <div id="datetimepicker-dashboard" class="calendar-wrapper"></div>
+                </div>
+              </div>
+            </div>
           </div>
+
 
 
           <div class="row justify-content-center d-flex mt-3">
