@@ -1,6 +1,6 @@
 /* Responsive de contenido central */
 .custom-container {
-  max-width: 1800px;
+  max-width: 1600px;
 }
 
 
@@ -13,6 +13,27 @@
 }
 
 
+.card-body {
+    overflow-y: visible !important; /* o simplemente elimina esta regla */
+}
+
+.card {
+    max-height: none; /* deja que la card crezca según el contenido */
+}
+
+
+#chartjs-dashboard-line,
+#chartjs-dashboard-bar {
+    height: 300px;
+    max-height: none;
+}
+
+
+#chartjs-dashboard-line {
+    height: 350px !important;
+    max-height: 400px;
+}
+
 
 /* Bordes suaves y compactos para todas las tablas */
 .table tbody,
@@ -22,10 +43,10 @@
 .table thead,
 .table tr,
 .table > :not(:last-child) > :last-child > * {
-    border-color: #575656 !important; /* borde gris oscuro, menos llamativo */
-    border-width: 1px !important; /* grosor uniforme */
+    border-color: #575656 !important;
+    border-width: 1px !important;
     padding-right: 0 !important;
-    text-align: center !important; /* centrado del texto */
+    text-align: center !important;
 }
 
 /* Borde inferior suave para cada fila */
@@ -34,7 +55,7 @@
 }
 
 .table tbody tr:last-child {
-    border-bottom: none !important; /* quitar borde de la última fila */
+    border-bottom: none !important; /* quitar borde de la ultima fila */
 }
 
 /* Hover suave para filas */
@@ -42,35 +63,35 @@
     background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
-/* Opcional: reducir padding de celdas para tablas compactas */
+/*educir padding de celdas para tablas compactas */
 .table td,
 .table th {
-    padding: 0.4rem 0.6rem !important; /* menos padding que el default */
-    vertical-align: middle !important; /* contenido centrado verticalmente */
+    padding: 0.4rem 0.6rem !important;
+    vertical-align: middle !important;
 }
 
-/* Opcional: tamaño de fuente más pequeño */
+/* tamaño de fuente más pequeño */
 .table {
-    font-size: 0.875rem !important; /* 14px aprox */
+    font-size: 0.875rem !important;
 }
 
 .table-card .table-responsive {
-    max-height: 400px; /* Ajusta según necesites */
+    max-height: 400px;
     overflow-y: auto;
 }
 
-/* 🎨 Intercalado oscuro entre filas */
+/* Intercalado oscuro entre filas */
 .table tbody tr:nth-child(odd) {
     background-color: rgba(
         255,
         255,
         255,
         0.03
-    ) !important; /* tono más oscuro */
+    ) !important;
 }
 
 .table tbody tr:nth-child(even) {
-    background-color: rgba(255, 255, 255, 0.06) !important; /* tono más claro */
+    background-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 /* Hover suave que resalta sin romper el intercalado */
@@ -79,14 +100,12 @@
     transition: background-color 0.2s ease-in-out;
 }
 
-/* Mantiene el borde inferior suave */
 .table tbody tr {
     border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
 
 /* Estilos para el modal personalizado */
-
 
 .custom-modal {
     display: none;
@@ -97,7 +116,7 @@
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5); /* fondo oscuro semitransparente */
+    background-color: rgba(0, 0, 0, 0.5);
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
 }
@@ -146,7 +165,6 @@
 
 
 
-
 /* === Estilos base para todos los modales oscuros === */
 .modal-dark-style .modal-content,
 .modal-dark-style .modal-header,
@@ -160,8 +178,6 @@
 .modal-dark-style .modal-dialog {
   background-color: transparent !important;
 }
-
-
 
 .modal-dark-style .modal-body::-webkit-scrollbar-thumb {
   background-color: #fcd52b;
@@ -184,11 +200,12 @@
   opacity: 1;
 }
 
-/* Sombra elegante del contenido */
+/* Sombra del contenido */
 .modal-dark-style .modal-content {
   box-shadow: 0 0 25px rgba(252, 213, 43, 0.08),
               0 0 60px rgba(0, 0, 0, 0.8);
 }
+
 
 /* Borde y forma del contenedor */
 .modal-dark-style .modal-content {
@@ -204,7 +221,7 @@
 .modal-dark-style .modal-content {
   background-color: #1a1a1a !important;
   color: #f5f5f5 !important;
-  border-radius: 0.5rem !important; /* radio uniforme en las 4 puntas */
+  border-radius: 0.5rem !important;
   border: 1px solid rgba(252, 252, 252, 0.171) !important;
   box-shadow: 0 0 20px rgba(252, 214, 43, 0.11) !important;
   transition: border-radius 0.7s ease-in-out, border 0.7s ease-in-out, box-shadow 0.7s ease-in-out;
@@ -216,31 +233,32 @@
 .modal-dark-style select,
 .modal-dark-style textarea {
     background-color: #303030; /* fondo oscuro para inputs */
-    color: #f5f5f5;           /* texto claro */
-    border: 1px solid #444;    /* borde visible */
-    border-radius: 0.4rem;     /* bordes suaves */
+    color: #f5f5f5;
+    border: 1px solid #444;
+    border-radius: 0.4rem;
 }
 
 .modal-dark-style input::placeholder,
 .modal-dark-style textarea::placeholder {
-    color: #aaa; /* color del placeholder más claro */
+    color: #aaa;
 }
 
 
 /* Botón dark personalizado */
+
 .btn-dark {
-    background-color: #121212; /* un tono más oscuro que el default #212529 */
-    border-color: #121212;     /* borde del mismo color */
-    color: #000000;            /* texto claro */
+    background-color: #121212;
+    border-color: #121212;
+    color: #000000;
     transition: background-color 0.15s ease-in-out,
                 border-color 0.15s ease-in-out,
-                color 0.15s ease-in-out; /* mantiene la transición de Bootstrap */
+                color 0.15s ease-in-out;
 }
 
 .btn-dark:hover {
-    background-color: #1a1a1a; /* un poco más claro al pasar el mouse */
+    background-color: #1a1a1a;
     border-color: #1a1a1a;
-    color: #fff; /* opcional, puedes dejar igual */
+    color: #fff;
 }
 
 
@@ -279,11 +297,12 @@
     transition: opacity 0.3s ease;
 }
 .foto-container.visible {
-    width: 80px; /* ancho deseado de la columna de foto */
+    width: 80px;
 }
 .foto-container.visible img {
     opacity: 1;
 }
+
 
 /* Estilos para el cuadro de sugerencias */
 
@@ -291,30 +310,30 @@
     max-height: 200px !important;
     overflow-y: auto !important;
     border-radius: 0.4rem !important;
-    background-color: #1d1800 !important; /* 🌈 color de fondo que tú quieras */
+    background-color: #1d1800 !important;
     border: 1px solid #444 !important;
 }
 
 /* Cada sugerencia individual */
 #suggestionBox li {
-    background-color: #494949 !important; /* igual que el fondo del contenedor */
-    color: #f1f1f1 !important; /* texto claro para contraste */
+    background-color: #494949 !important;
+    color: #f1f1f1 !important;
     transition: background 0.2s ease-in-out !important;
     cursor: pointer !important;
 }
 
-/* Efecto al pasar el mouse */
+
 #suggestionBox li:hover {
-    background-color: #3d3d3d !important; /* tono más claro al pasar el mouse */
+    background-color: #3d3d3d !important;
 }
+
+
 
 .sidebar {
     margin-top: 0 !important;
 }
 
 
-
-/* Desarrolladorress  Soporteeeeeee*/
 
 .magic-title {
     letter-spacing: 1px;
@@ -436,13 +455,13 @@
 /* contrasenia
  */
 #profileForm .btn-outline-warning {
-    width: auto; /* que no ocupe todo el ancho */
+    width: auto;
 }
 
 /* Margen superior para separar cuando se apilan */
 @media (max-width: 768px) {
     #profileForm .btn-outline-warning {
-        margin-top: 0.5rem; /* separa del campo rol */
+        margin-top: 0.5rem; 
     }
 }
 
