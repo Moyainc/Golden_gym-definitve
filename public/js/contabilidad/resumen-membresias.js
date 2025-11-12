@@ -90,8 +90,39 @@ document.addEventListener("DOMContentLoaded", () => {
     const applyFilterBtn = document.getElementById("applyFilter");
     const exportPdfBtnMain = document.getElementById("exportPdfBtn");
     const exportExcelBtnMain = document.getElementById("exportExcelBtn");
+    const mesSelect = document.getElementById("filterMes");
+    const anioSelect = document.getElementById("filterAnio");
 
-    if (applyFilterBtn) applyFilterBtn.addEventListener("click", cargarDatos);
+    if (mesSelect) {
+        mesSelect.addEventListener("change", () => {
+            cargarDatos();
+        });
+    }
+
+    if (anioSelect) {
+        anioSelect.addEventListener("change", () => {
+            cargarDatos();
+        });
+    }
+
+    if (applyFilterBtn) {
+        applyFilterBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            const fechaActual = new Date();
+            const mesActual = (fechaActual.getMonth() + 1)
+                .toString()
+                .padStart(2, "0");
+            const anioActual = fechaActual.getFullYear();
+
+
+            if (mesSelect) mesSelect.value = mesActual;
+            if (anioSelect) anioSelect.value = anioActual;
+
+            cargarDatos();
+        });
+    }
+
 
     if (exportPdfBtnMain) {
         exportPdfBtnMain.addEventListener("click", () => {

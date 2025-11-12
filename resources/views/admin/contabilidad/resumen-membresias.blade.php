@@ -10,7 +10,7 @@
         <div class="container-fluid p-0">
           <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 text-white fw-bold mb-0">
-              <i data-feather="activity" class="me-2 tittle-color"></i> Resumen Contabilidad - Membresías
+              <i data-feather="activity" class="me-2 tittle-color"></i> Resumen Membresías
             </h1>
           </div>
 
@@ -18,7 +18,7 @@
           <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center my-4">
             <!-- Bloque de filtros -->
             <div class="d-flex flex-wrap flex-md-nowrap gap-2 align-items-center">
-              <small class="text-muted me-2">Filtrar por mes:</small>
+              <small class="text-muted me-2">Filtrar ganancias:</small>
 
               <select id="filterMes" class="form-control bg-dark form-control-sm text-white border-0">
                 <option value="01">Enero</option>
@@ -41,13 +41,13 @@
                 <option value="2026">2026</option>
               </select>
 
-              <button id="applyFilter" class="btn btn-info py-3 ms-md-2 mt-2 mt-md-0 text-nowrap">Aplicar Filtro</button>
+              <button id="applyFilter" class="btn btn-info py-1 ms-md-2 mt-2 mt-md-0 text-nowrap">Limpiar</button>
             </div>
 
             <!-- Boton de exportación -->
             <button
               type="button"
-              class="btn btn-success py-3 ms-md-2 mt-2 mt-md-0"
+              class="btn btn-success py-1 ms-md-2 mt-2 mt-md-0"
               data-report-type="membresias">
               <i data-feather="file-text" class="me-1"></i> Reportes
             </button>
