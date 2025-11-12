@@ -14,128 +14,131 @@
         </h1>
 
         <div class="row">
-          <div class="col-xl-6 col-xxl-5 d-flex">
-            <div class="w-100">
-              <div class="row">
-                <!-- CARD PRODUCTOS -->
-                <div class="col-sm-6">
-                  <div class="card border-0 position-relative" id="cardProductos">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col mt-0">
-                          <h5 class="card-title">Ventas</h5> <!-- Cambiado -->
-                        </div>
-                        <div class="col-auto">
-                          <span class="icon-bg"><i data-feather="dollar-sign"></i></span> <!-- Opcional: cambiar icono -->
-                        </div>
+          <div class="col-xl-6 col-xxl-5 d-flex flex-column justify-content-center">
+            <div class="row g-3"> <!-- g-3 agrega espacio entre las cards -->
+              <!-- CARD PRODUCTOS -->
+              <div class="col-sm-6">
+                <div class="card border-0 position-relative" id="cardProductos">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col mt-0">
+                        <h5 class="card-title">Ventas</h5>
                       </div>
-                      <h1 class="text-success mt-1 mb-3 fw-bold">0</h1>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                          <span class="comparison text-danger">
-                            <i class="mdi mdi-arrow-bottom-right"></i> 0%
-                          </span>
-                          <span class="text-secondary">Última</span>
-                          <select class="border-0 text-warning fw-semibold bg-dark" id="filterProductos">
-                            <option value="week">Semana</option>
-                            <option value="month">Mes</option>
-                          </select>
-                        </div>
-                        <a href="ventas.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a> <!-- Opcional: link -->
+                      <div class="col-auto">
+                        <span class="icon-bg"><i data-feather="dollar-sign"></i></span>
                       </div>
                     </div>
-                  </div>
-
-
-                  <!-- CARD MEMBRESIAS -->
-                  <div class="card border-0 mt-3 position-relative" id="cardMembresias">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col mt-0">
-                          <h5 class="card-title">Membresías</h5>
-                        </div>
-                        <div class="col-auto">
-                          <span class="icon-bg"><i data-feather="users"></i></span>
-                        </div>
+                    <h1 class="text-success mt-1 mb-3 fw-bold">0</h1>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <span class="comparison text-danger">
+                          <i class="mdi mdi-arrow-bottom-right"></i> 0%
+                        </span>
+                        <span class="text-secondary">Última</span>
+                        <select class="border-0 text-warning fw-semibold bg-dark" id="filterProductos">
+                          <option value="week">Semana</option>
+                          <option value="month">Mes</option>
+                        </select>
                       </div>
-                      <h1 class="text-success mt-1 mb-3 fw-bold">0</h1>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                          <span class="comparison text-success">
-                            <i class="mdi mdi-arrow-bottom-right"></i> 0%
-                          </span>
-                          <span class="text-secondary">Última</span>
-                          <select class="bg-dark border-0 text-warning fw-semibold" id="filterMembresias">
-                            <option value="week">Semana</option>
-                            <option value="month">Mes</option>
-                          </select>
-                        </div>
-                        <a href="membresia.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-sm-6">
-                  <!-- CARD TOTAL -->
-                  <div class="card border-0 position-relative" id="cardTotal">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col mt-0">
-                          <h5 class="card-title">Total</h5>
-                        </div>
-                        <div class="col-auto">
-                          <span class="icon-bg"><i data-feather="dollar-sign"></i></span>
-                        </div>
-                      </div>
-                      <h1 class="text-success mt-1 mb-3 fw-bold">0</h1>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                          <span class="comparison text-success">
-                            <i class="mdi mdi-arrow-bottom-right"></i> 0%
-                          </span>
-                          <span class="text-secondary">Última</span>
-                          <select class="border-0 text-warning fw-semibold bg-dark" id="filterTotal">
-                            <option value="week">Semana</option>
-                            <option value="month">Mes</option>
-                          </select>
-                        </div>
-                        <a href="contabilidad.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- CARD NUEVOS CLIENTES -->
-                  <div class="card border-0 mt-3" id="cardClientes">
-                    <div class="card-body">
-                      <div class="row">
-                        <div class="col mt-0">
-                          <h5 class="card-title">Nuevos Clientes</h5>
-                        </div>
-                        <div class="col-auto">
-                          <span class="icon-bg"><i data-feather="shopping-cart"></i></span>
-                        </div>
-                      </div>
-                      <h1 class="text-success mt-1 mb-3 fw-bold">0</h1>
-                      <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                          <span class="comparison text-danger">
-                            <i class="mdi mdi-arrow-bottom-right"></i> 0%
-                          </span>
-                          <span class="text-secondary">Última</span>
-                          <select class="border-0 text-warning fw-semibold bg-dark" id="filterClientes">
-                            <option value="week">Semana</option>
-                            <option value="month">Mes</option>
-                          </select>
-                        </div>
-                        <a href="clientes.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
-                      </div>
+                      <a href="ventas.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
                     </div>
                   </div>
                 </div>
               </div>
+
+              <!-- CARD MEMBRESÍAS -->
+              <div class="col-sm-6">
+                <div class="card border-0 position-relative" id="cardMembresias">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col mt-0">
+                        <h5 class="card-title">Membresías</h5>
+                      </div>
+                      <div class="col-auto">
+                        <span class="icon-bg"><i data-feather="users"></i></span>
+                      </div>
+                    </div>
+                    <h1 class="text-success mt-1 mb-3 fw-bold">0</h1>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <span class="comparison text-success">
+                          <i class="mdi mdi-arrow-bottom-right"></i> 0%
+                        </span>
+                        <span class="text-secondary">Última</span>
+                        <select class="bg-dark border-0 text-warning fw-semibold" id="filterMembresias">
+                          <option value="week">Semana</option>
+                          <option value="month">Mes</option>
+                        </select>
+                      </div>
+                      <a href="membresia.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CARD TOTAL -->
+              <div class="col-sm-6">
+                <div class="card border-0 position-relative" id="cardTotal">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col mt-0">
+                        <h5 class="card-title">Total</h5>
+                      </div>
+                      <div class="col-auto">
+                        <span class="icon-bg"><i data-feather="dollar-sign"></i></span>
+                      </div>
+                    </div>
+                    <h1 class="text-success mt-1 mb-3 fw-bold">0</h1>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <span class="comparison text-success">
+                          <i class="mdi mdi-arrow-bottom-right"></i> 0%
+                        </span>
+                        <span class="text-secondary">Última</span>
+                        <select class="border-0 text-warning fw-semibold bg-dark" id="filterTotal">
+                          <option value="week">Semana</option>
+                          <option value="month">Mes</option>
+                        </select>
+                      </div>
+                      <a href="contabilidad.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CARD NUEVOS CLIENTES -->
+              <div class="col-sm-6">
+                <div class="card border-0 position-relative" id="cardClientes">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col mt-0">
+                        <h5 class="card-title">Nuevos Clientes</h5>
+                      </div>
+                      <div class="col-auto">
+                        <span class="icon-bg"><i data-feather="shopping-cart"></i></span>
+                      </div>
+                    </div>
+                    <h1 class="text-success mt-1 mb-3 fw-bold">0</h1>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <span class="comparison text-danger">
+                          <i class="mdi mdi-arrow-bottom-right"></i> 0%
+                        </span>
+                        <span class="text-secondary">Última</span>
+                        <select class="border-0 text-warning fw-semibold bg-dark" id="filterClientes">
+                          <option value="week">Semana</option>
+                          <option value="month">Mes</option>
+                        </select>
+                      </div>
+                      <a href="clientes.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
+
 
           <!-- GRÁFICOS Y TABLAS DE MOVIMIENTOS -->
           <div class="col-xl-6 col-xxl-7 d-flex align-items-center">
@@ -208,7 +211,6 @@
                         <th>Cliente</th>
                         <th>Monto</th>
                         <th>Fecha</th>
-                        <th class="text-center">Estado</th>
                       </tr>
                     </thead>
                     <tbody>

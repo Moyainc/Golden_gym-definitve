@@ -418,13 +418,6 @@ document.addEventListener("DOMContentLoaded", () => {
             .join(" ");
     };
 
-    // Últimos movimientos
-    const estadoColor = {
-        Completado: "text-success",
-        Pendiente: "text-warning",
-        Anulado: "text-danger",
-    };
-
     const loadMovements = () => {
         fetch(apiUrl("admin/dashboard/data/last-movements"))
             .then((res) => res.json())
@@ -432,34 +425,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 const tbody = document.querySelector("table tbody");
                 tbody.innerHTML = "";
 
-                const estadoColor = {
-                    Completada: "text-success",
-                    Pendiente: "text-warning",
-                    Anulada: "text-danger",
-                };
-
                 data.forEach((m) => {
-                    // Determinar el estado según tipo
-                    let estado = "Pendiente"; // valor por defecto
-                    if (m.tipo.toLowerCase().includes("venta")) {
-                        estado = m.estado || "Pendiente";
-                    } else if (m.tipo.toLowerCase().includes("membresia")) {
-                        estado = m.estado_pago || "Pendiente";
-                    }
+                    // Si el cliente es "-", poner "Venta rápida"
+                    const cliente =
+                        m.cliente && m.cliente.trim() !== "-"
+                            ? m.cliente
+                            : "Venta rápida";
 
                     const row = document.createElement("tr");
                     row.innerHTML = `
-                    <td>${formatTipo(m.tipo)}</td>
-                    <td>${m.cliente}</td>
-                    <td title="${m.monto}">$${Number(m.monto).toLocaleString(
-                        "es-CO",
-                        { minimumFractionDigits: 0 }
-                    )}</td>
-                    <td>${m.fecha}</td>
-                    <td class="text-center ${
-                        estadoColor[estado] || ""
-                    }">${estado}</td>
-                `;
+        <td>${formatTipo(m.tipo)}</td>
+        <td>${cliente}</td>
+        <td title="${m.monto}">$${Number(m.monto).toLocaleString("es-CO", {
+                        minimumFractionDigits: 0,
+                    })}</td>
+        <td>${m.fecha}</td>
+    `;
                     tbody.appendChild(row);
                 });
 

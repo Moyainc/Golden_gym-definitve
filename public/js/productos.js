@@ -352,7 +352,16 @@ const initializePage = () => {
             row.innerHTML = `
             <td>${prod.nombre}</td>
             <td>${prod.categoria?.nombre || "Sin categoría"}</td>
-            <td>${prod.stock}</td>
+            <td>
+                ${prod.stock}
+                ${
+                    Number(prod.stock) === 0
+                    ? '<span class="badge bg-danger ms-2">Agotado</span>'
+                    : Number(prod.stock) <= 10
+                        ? '<span class="badge bg-warning text-dark">Bajo</span>'
+                        : ""}
+            </td>
+
             <td>${prod.precio_formatted}</td>
             <td>${prod.estado}</td>
             <td>
@@ -483,11 +492,14 @@ const initializePage = () => {
             const matchCategory = !category || prod.categoria_id == category;
             let matchStatus = true;
             if (status) {
-                if (status === "bajo stock")
-                    matchStatus = prod.stock > 0 && prod.stock <= 5;
-                else if (status === "agotado") matchStatus = prod.stock == 0;
+                if (status === "bajo_stock")
+                    matchStatus =
+                        Number(prod.stock) > 0 && Number(prod.stock) <= 10;
+                else if (status === "agotado")
+                    matchStatus = Number(prod.stock) === 0;
                 else matchStatus = prod.estado.toLowerCase() === status;
             }
+
             return (
                 matchCategory &&
                 matchStatus &&
@@ -603,9 +615,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function exportarInventario(tipo) {
         // Validar campos requeridos
-        const inicio = document.getElementById("reportStartDateInventario").value;
+        const inicio = document.getElementById(
+            "reportStartDateInventario"
+        ).value;
         const fin = document.getElementById("reportEndDateInventario").value;
-        
+
         if (!inicio || !fin) {
             Swal.fire({
                 icon: "warning",
@@ -613,8 +627,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 text: "Selecciona un rango de fechas",
                 background: "#1a1a1a",
                 color: "#fff",
-            })
-            return
+            });
+            return;
         }
         // Validar rango de fechas
         if (new Date(inicio) > new Date(fin)) {
@@ -645,4 +659,3 @@ document.addEventListener("DOMContentLoaded", () => {
     exportPdfBtn.addEventListener("click", () => exportarInventario("pdf"));
     exportExcelBtn.addEventListener("click", () => exportarInventario("excel"));
 });
-

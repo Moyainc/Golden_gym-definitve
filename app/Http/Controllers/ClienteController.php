@@ -216,7 +216,7 @@ class ClienteController extends Controller
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
-            PagoMembresia::create([
+            $pagoMembresia = PagoMembresia::create([
                 'cliente_id' => $cliente->id,
                 'membresia_id' => $membresia->id,
                 'fecha_inicio' => $fechaInicio,
@@ -225,6 +225,18 @@ class ClienteController extends Controller
                 'estado' => $estado,
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
             ]);
+
+
+            PagoGeneral::create([
+                'origen_id' => $pagoMembresia->id,
+                'origen_type' => PagoMembresia::class,
+                'tipo_pago' => 'pagos_membresias',
+                'monto' => $membresia->precio,
+                'metodo_pago' => $request->metodo_pago ?? 'efectivo',
+                'usuario_id' => $request->usuario_id ?? null,
+                'fecha_pago' => Carbon::now(),
+            ]);
+
 
             return response()->json(['success' => true, 'message' => 'Membresía renovada correctamente']);
         } catch (\Exception $e) {

@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const bootstrap = window.bootstrap;
     const Swal = window.Swal;
 
-    // 🚀 Cargar membresías
+    //Cargar membresías
     loadMembresias();
 
     function loadMembresias() {
@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .catch((err) => console.error("Error cargando membresías:", err));
     }
 
-    // ➕ NUEVA MEMBRESÍA
+    //NUEVA MEMBRESÍA
     document.getElementById("addMembershipBtn").addEventListener("click", () => {
         editingMembershipId = null;
         form.reset();
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
         feather.replace();
     });
 
-    // ✏️ EDITAR MEMBRESÍA
+    // EDITAR MEMBRESÍA
     tableBody.addEventListener("click", (e) => {
         const editBtn = e.target.closest(".editMembership");
         if (!editBtn) return;
@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
     });
 
-    // 💾 GUARDAR / ACTUALIZAR
+    // GUARDAR / ACTUALIZAR
     saveBtn.addEventListener("click", (e) => {
         e.preventDefault();
         const formData = new FormData(form);
@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     form.reset();
                     editingMembershipId = null;
                     loadMembresias();
-                    cargarEstadisticasMembresias(); // 👈 recarga estadísticas también
+                    cargarEstadisticasMembresias();
                 } else {
                     Swal.fire({
                         icon: "error",
@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     });
 
-    // 🗑️ ELIMINAR MEMBRESÍA
+    //ELIMINAR MEMBRESÍA
     tableBody.addEventListener("click", (e) => {
         const btn = e.target.closest(".deleteMembership");
         if (!btn) return;
@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 showConfirmButton: false,
                             });
                             loadMembresias();
-                            cargarEstadisticasMembresias(); // 👈 recarga estadísticas también
+                            cargarEstadisticasMembresias();
                         } else {
                             Swal.fire({
                                 icon: "error",
@@ -252,9 +252,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // === Estadísticas ===
-    // Variables globales para destruir gráficos anteriores
 
+
+    // Variables globales para destruir gráficos anteriores
     let graficoPopularidadInstance = null;
 
     async function cargarEstadisticasMembresias() {
@@ -326,7 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         display: true,
                         position: "top",
                         labels: {
-                            color: "#000",
+                            color: "#fff",
                             font: { size: 13 },
                             padding: 12
                         }
