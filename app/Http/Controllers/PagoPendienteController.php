@@ -7,6 +7,7 @@ use App\Models\PagoDiario;
 use App\Models\PagoMembresia;
 use App\Models\Venta;
 use App\Models\Comprobante;
+use App\Models\Usuario;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,14 +22,12 @@ class PagoPendienteController extends Controller
   // Subir comprobante
   public function subirComprobante(Request $request)
   {
-    // Validación básica
     $request->validate([
       'pago_id' => 'required',
       'tipo' => 'required|in:diario,membresia,venta',
       'comprobante' => 'required|image|max:2048',
     ]);
 
-    // Validación de existencia del pago según el tipo
     switch ($request->tipo) {
       case 'diario':
         if (!PagoDiario::find($request->pago_id)) {
@@ -47,7 +46,6 @@ class PagoPendienteController extends Controller
         break;
     }
 
-    // Guardar el comprobante
     $filePath = $request->file('comprobante')->store('comprobantes', 'public');
 
     $comprobanteData = [
@@ -74,11 +72,13 @@ class PagoPendienteController extends Controller
     return response()->json(['message' => 'Comprobante subido correctamente.']);
   }
 
-
-
+  // Obtener pagos pendientes en JSON
   public function getPagosPendientesJson()
   {
-    // Misma lógica de index pero devuelve JSON
+    // Traer todos los usuarios de una sola vez
+    $usuarios = Usuario::all()->keyBy('id');
+
+    // Pagos diarios
     $pagosDiarios = PagoDiario::where('metodo_pago', 'Transferencia')
       ->whereDoesntHave('comprobante')
       ->get()
@@ -86,44 +86,56 @@ class PagoPendienteController extends Controller
         return [
           'id' => $p->id,
           'cliente' => $p->nombre_cliente,
+          'vendedor' => 'NN',
           'monto' => number_format($p->monto, 0, ',', '.'),
           'metodo' => $p->metodo_pago,
           'fecha' => $p->fecha->format('Y-m-d'),
-          'tipo' => 'diario'
+          'tipo' => 'diario',
+          'foto_comprobante' => optional($p->comprobante)->foto_comprobante,
         ];
       });
 
+    // Pagos membresías
     $pagosMembresias = PagoMembresia::where('metodo_pago', 'Transferencia')
       ->whereDoesntHave('comprobante')
       ->with('cliente')
       ->get()
-      ->map(function ($p) {
+      ->map(function ($p) use ($usuarios) {
+        $vendedor = $usuarios->get($p->usuario_id);
         return [
           'id' => $p->id,
-          'cliente' => $p->cliente->nombre ?? 'Desconocido',
+          'cliente' => $p->cliente->nombre_completo ?? 'Desconocido',
+          'vendedor' => $vendedor->nombre_completo ?? 'Desconocido',
           'monto' => number_format($p->monto, 0, ',', '.'),
           'metodo' => $p->metodo_pago,
           'fecha' => $p->fecha_inicio->format('Y-m-d'),
-          'tipo' => 'membresia'
+          'tipo' => 'membresia',
+          'foto_comprobante' => optional($p->comprobante)->foto_comprobante,
         ];
       });
 
+    // Ventas
     $ventas = Venta::where('metodo_pago', 'Transferencia')
       ->whereDoesntHave('comprobante')
       ->with('cliente')
       ->get()
-      ->map(function ($v) {
+      ->map(function ($v) use ($usuarios) {
+        $vendedor = $usuarios->get($v->usuario_id);
         return [
           'id' => $v->id,
-          'cliente' => $v->cliente->nombre ?? 'Desconocido',
+          'cliente' => $v->cliente->nombre_completo ?? 'Desconocido',
+          'vendedor' => $vendedor->nombre_completo ?? 'Desconocido',
           'monto' => number_format($v->total, 0, ',', '.'),
           'metodo' => $v->metodo_pago,
           'fecha' => $v->fecha_venta->format('Y-m-d'),
-          'tipo' => 'venta'
+          'tipo' => 'venta',
+          'foto_comprobante' => optional($v->comprobante)->foto_comprobante,
         ];
       });
 
-    $pagosPendientes = $pagosDiarios->concat($pagosMembresias)->concat($ventas)
+    $pagosPendientes = $pagosDiarios
+      ->concat($pagosMembresias)
+      ->concat($ventas)
       ->sortByDesc('fecha')
       ->values();
 

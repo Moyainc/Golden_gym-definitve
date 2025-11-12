@@ -2,31 +2,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const paymentsTable = document.getElementById("paymentsTable");
     const pendingCount = document.getElementById("pendingPayments");
 
-    // Función para cargar pagos pendientes desde el servidor
     const cargarPagos = async () => {
-        const res = await fetch(apiUrl('admin/pagos/pendientes/json')); // Ruta que devolverá JSON
+        const res = await fetch(apiUrl("admin/pagos/pendientes/json"));
         const pagosPendientes = await res.json();
         renderTable(pagosPendientes);
     };
 
-    // Función para renderizar la tabla
     const renderTable = (pagosPendientes) => {
         paymentsTable.innerHTML = "";
 
-        pagosPendientes.forEach((pago, index) => {
+        pagosPendientes.forEach((pago) => {
             const row = document.createElement("tr");
             row.innerHTML = `
                 <td>${pago.cliente}</td>
+                <td>${pago.vendedor}</td>
                 <td>$${pago.monto}</td>
                 <td>${pago.metodo}</td>
                 <td>${pago.fecha}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-info view-proof" data-bs-toggle="modal" data-bs-target="#proofModal" data-proof="">
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-info view-proof" data-bs-toggle="modal" data-bs-target="#proofModal" data-proof="${
+                        pago.foto_comprobante ?? ""
+                    }">
                         <i data-feather="image"></i>
                     </button>
                 </td>
-                <td>
-                    <button class="btn btn-sm btn-outline-success me-1 confirm-btn" data-id="${pago.id}" data-tipo="${pago.tipo}"><i data-feather="check"></i></button>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-success me-1 confirm-btn" data-id="${
+                        pago.id
+                    }" data-tipo="${pago.tipo}">
+                        <i data-feather="check"></i>
+                    </button>
                 </td>
             `;
             paymentsTable.appendChild(row);
@@ -35,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
         pendingCount.textContent = pagosPendientes.length;
         feather.replace();
 
-        // Subir comprobante
+        // Botón enviar (chulo)
         document.querySelectorAll(".confirm-btn").forEach((btn) => {
             btn.addEventListener("click", async (e) => {
                 const pagoId = e.currentTarget.dataset.id;
@@ -46,10 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     input: "file",
                     inputAttributes: {
                         accept: "image/*",
-                        "aria-label": "Sube tu comprobante",
+                        "aria-label": "Selecciona tu comprobante",
                     },
                     showCancelButton: true,
-                    confirmButtonText: "Subir",
+                    confirmButtonText: "Enviar",
                     background: "#1a1a1a",
                     color: "#fff",
                     confirmButtonColor: "#fcd52b",
@@ -63,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     formData.append("_token", "{{ csrf_token() }}");
 
                     const res = await fetch(
-                        apiUrl('admin/pagos/subirComprobante'),
+                        apiUrl("admin/pagos/subirComprobante"),
                         {
                             method: "POST",
                             body: formData,
@@ -74,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         Swal.fire({
                             icon: "success",
                             title: "Éxito",
-                            text: "Comprobante subido correctamente",
+                            text: "Comprobante enviado correctamente",
                             background: "#1a1a1a",
                             color: "#fff",
                             confirmButtonColor: "#fcd52b",
@@ -86,8 +91,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         });
+
+        // Abrir modal para ver comprobante
+        document.querySelectorAll(".view-proof").forEach((btn) => {
+            btn.addEventListener("click", (e) => {
+                const imgSrc = e.currentTarget.dataset.proof;
+                const modalImg = document.getElementById("modalProofImage");
+                modalImg.src = imgSrc ? `/storage/${imgSrc}` : "";
+            });
+        });
     };
 
-    // Carga inicial de pagos pendientes
     cargarPagos();
 });
