@@ -37,5 +37,10 @@ class PagoMembresia extends Model
     {
         return $this->belongsTo(Membresia::class);
     }
+
+    public function comprobante()
+    {
+        return $this->hasOne(Comprobante::class, 'id_pago_membresia');
+    }
 }
 

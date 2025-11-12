@@ -14,6 +14,7 @@ use App\Http\Controllers\ResumenVentasController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResumenGeneralController;
+use App\Http\Controllers\PagoPendienteController;
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
 // =========================
@@ -63,6 +64,10 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/excel', [ResumenGeneralController::class, 'exportExcel'])->name('resumen.excel');
         });
 
+
+        Route::get('admin/pagos/pendientes', [PagoPendienteController::class, 'index'])->name('pagos.pendientes');
+        Route::post('admin/pagos/subir-comprobante', [PagoPendienteController::class, 'subirComprobante'])->name('pagos.subirComprobante');
+        Route::get('admin/pagos/pendientes/json', [PagoPendienteController::class, 'getPagosPendientesJson'])->name('pagos.pendientes.json');
 
 
         // ADMIN → CLIENTES

@@ -93,11 +93,6 @@
                   </select>
                 </div>
 
-                <!-- Contenedor QR para Venta Detallada -->
-                <div id="qrContainerDetallada" class="col mt-3 px-4">
-                  <div id="qrSmallDetallada"></div>
-                </div>
-
                 <div class="col-12 mb-1">
                   <button type="button" class="btn btn-warning text-dark fw-bold" id="guardarVentaDetalladaBtn">Guardar Venta</button>
                 </div>
@@ -131,12 +126,6 @@
                 </thead>
                 <tbody id="ventasUltimas5" class="text-light">
                   <!-- JS insertará las últimas 5 ventas -->
-                  <td>
-                    <span class="badge">
-                      ${estado}
-                    </span>
-                    ${estado === 'Pendiente' ? `<button class="btn btn-sm btn-light qr-icon" data-id="${v.id}" title="Ver QR"><i class="bi bi-qr-code"></i></button>` : ''}
-                  </td>
 
                 </tbody>
               </table>
@@ -146,21 +135,6 @@
 
       </div>
     </main>
-
-    <div class="modal fade" id="qrZoomModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-light">
-          <div class="modal-header">
-            <h5 class="modal-title">Comprobante QR</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body d-flex justify-content-center">
-            <div id="qrZoom"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
 
     <!-- Modal Venta Rápida -->
     <div class="modal fade modal-dark-style" id="ventaRapidaModal" tabindex="-1" aria-hidden="true">
@@ -243,10 +217,7 @@
                     <option value="Transferencia">Transferencia</option>
                   </select>
                 </div>
-                <!-- Contenedor QR para Venta Rápida -->
-                <div id="qrContainerRapida" class="my-2 px-5">
-                  <div id="qrSmallRapida"></div>
-                </div>
+
 
 
                 <div class="col-3">
@@ -278,17 +249,6 @@
   </div>
 </div>
 
-<div class="modal fade" id="qrZoomModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
-    <div class="modal-content bg-dark p-3 border-0">
-      <div class="modal-body d-flex justify-content-center">
-        <div id="qrZoom" style="width: 400px; height: 400px;"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="{{ asset('js/ventas/funcionalidad-ventas.js') }}"></script>
 <script src="{{ asset('js/ventas/venta-productos.js') }}"></script>
 
