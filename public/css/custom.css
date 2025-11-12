@@ -13,26 +13,20 @@
 }
 
 
-.card-body {
-    overflow-y: visible !important; /* o simplemente elimina esta regla */
-}
+.chart-container-sm {
+    max-width: 320px;  /* tamaño más pequeño del canvas */
+    height: 320px;
+    margin: 0 auto;
+  }
 
-.card {
-    max-height: none; /* deja que la card crezca según el contenido */
-}
+  /* En pantallas medianas o pequeñas que el gráfico use todo el ancho */
+  @media (max-width: 992px) {
+    .chart-container-sm {
+      max-width: 100%;
+      height: auto;
+    }
+  }
 
-
-#chartjs-dashboard-line,
-#chartjs-dashboard-bar {
-    height: 300px;
-    max-height: none;
-}
-
-
-#chartjs-dashboard-line {
-    height: 350px !important;
-    max-height: 400px;
-}
 
 
 /* Bordes suaves y compactos para todas las tablas */
@@ -432,7 +426,7 @@
 /* Pantallas muy pequeñas (<576px) */
 @media (max-width: 576px) {
     .card .card-title {
-        font-size: 0.9rem;
+        font-size: 0.9rem !important;
     }
 
     .card h1 {
@@ -461,7 +455,7 @@
 /* Margen superior para separar cuando se apilan */
 @media (max-width: 768px) {
     #profileForm .btn-outline-warning {
-        margin-top: 0.5rem; 
+        margin-top: 0.5rem; /* separa del campo rol */
     }
 }
 

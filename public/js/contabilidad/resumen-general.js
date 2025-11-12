@@ -191,15 +191,15 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             options: {
                 scales: {
-                    x: { ticks: { color: "#ccc" } },
+                    x: { ticks: { color: "#cccc" } },
                     y: {
                         ticks: {
-                            color: "#ccc",
+                            color: "#cccc",
                             callback: (val) => formatearAbreviado(val),
                         },
                     },
                 },
-                plugins: { legend: { labels: { color: "#ccc" } } },
+                plugins: { legend: { labels: { color: "#cccc" } } },
             },
         });
 
@@ -243,23 +243,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { labels: { color: "#fff", font: { size: 12 } } },
+                    legend: { labels: { color: "#cccc", font: { size: 12 } } },
                     tooltip: {
                         backgroundColor: "#1a1a1a",
                         titleColor: "#fcd52b",
-                        bodyColor: "#fff",
+                        bodyColor: "#cccc",
                         borderColor: "#333",
                         borderWidth: 1,
                     },
                 },
                 scales: {
                     x: {
-                        ticks: { color: "#ccc" },
+                        ticks: { color: "#cccc" },
                         grid: { color: "rgba(255,255,255,0.1)" },
                     },
                     y: {
                         ticks: {
-                            color: "#ccc",
+                            color: "#cccc",
                             stepSize: 1,
                             callback: (val) => Number(val),
                         },
@@ -402,7 +402,7 @@ exportExcelBtn.addEventListener("click", () => {
             customClass: {
                 confirmButton: "text-black font-bold",
             },
-        }); 
+        });
         return;
     }
 

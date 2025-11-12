@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
             gradient.addColorStop(0, "rgba(252, 213, 43, 0.4)");
             gradient.addColorStop(1, "rgba(252, 213, 43, 0)");
 
-            // Mapeo abreviaturas ingles → español
+            // Mapeo abreviaturas ingles a español
             const mesesMap = {
                 Jan: "Ene",
                 Feb: "Feb",
