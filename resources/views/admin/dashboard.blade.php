@@ -179,7 +179,7 @@
 
             <!-- CALENDARIO -->
             <div class="col-12 col-md-8 col-xl-4">
-              <div class="card border-0 h-auto">
+              <div class="card border-0 h-auto p-3">
                 <div class="card-header">
                   <h5 class="card-title mb-0">Calendario</h5>
                 </div>
