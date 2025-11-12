@@ -131,6 +131,13 @@
                 </thead>
                 <tbody id="ventasUltimas5" class="text-light">
                   <!-- JS insertará las últimas 5 ventas -->
+                  <td>
+                    <span class="badge">
+                      ${estado}
+                    </span>
+                    ${estado === 'Pendiente' ? `<button class="btn btn-sm btn-light qr-icon" data-id="${v.id}" title="Ver QR"><i class="bi bi-qr-code"></i></button>` : ''}
+                  </td>
+
                 </tbody>
               </table>
             </div>
@@ -139,6 +146,21 @@
 
       </div>
     </main>
+
+    <div class="modal fade" id="qrZoomModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-light">
+          <div class="modal-header">
+            <h5 class="modal-title">Comprobante QR</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body d-flex justify-content-center">
+            <div id="qrZoom"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- Modal Venta Rápida -->
     <div class="modal fade modal-dark-style" id="ventaRapidaModal" tabindex="-1" aria-hidden="true">
