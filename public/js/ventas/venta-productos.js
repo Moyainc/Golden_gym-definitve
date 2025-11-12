@@ -357,6 +357,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 metodoPagoSelect.selectedIndex = 0;
                 totalInput.value = "$0";
 
+                resetQR(metodoPago, qrContainerDetallada, qrSmallDetallada);
+
                 await cargarUltimasVentas();
 
                 // Resetear todos los productos al estado inicial
@@ -655,9 +657,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     form.reset();
                     calcularTotalRapida();
                     await cargarUltimasVentas();
-                    const modal = bootstrap.Modal.getInstance(
-                        document.getElementById("ventaRapidaModal")
-                    );
+
+                    resetQR(metodoPago, qrContainerDetallada, qrSmallDetallada);
+
                     if (btnClose) btnClose.click();
                 } else {
                     showAlert(
@@ -750,6 +752,136 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error al cargar ventas:", error);
         }
     }
+
+    // --------------------------
+    // Elementos DOM
+    // --------------------------
+    const metodoPago = document.getElementById("metodoPago");
+    const qrContainerDetallada = document.getElementById(
+        "qrContainerDetallada"
+    );
+    const qrSmallDetallada = document.getElementById("qrSmallDetallada");
+
+    const metodoRapida = document.getElementById("metodoRapida");
+    const qrContainerRapida = document.getElementById("qrContainerRapida");
+    const qrSmallRapida = document.getElementById("qrSmallRapida");
+
+    const qrZoomModalEl = document.getElementById("qrZoomModal");
+    const qrZoomContainer = document.getElementById("qrZoom");
+
+    function resetQR(metodoSelect, qrContainer, qrSmall) {
+        metodoSelect.value = "Efectivo"; // volver a efectivo
+        qrContainer.style.display = "none"; // ocultar QR
+        qrSmall.innerHTML = ""; // limpiar contenido del QR
+    }
+
+    function mostrarQRPequenoDetallada() {
+        if (
+            metodoPago.value === "Transferencia" &&
+            typeof comprobanteIdDetallada !== "undefined"
+        ) {
+            qrContainerDetallada.classList.add("show");
+
+            if (!qrSmallDetallada.innerHTML.trim()) {
+                generarQR(qrSmallDetallada, comprobanteIdDetallada, 50);
+            }
+
+            setTimeout(() => qrSmallDetallada.classList.add("zoom"), 100);
+        } else {
+            qrSmallDetallada.classList.remove("zoom");
+            setTimeout(() => {
+                qrContainerDetallada.classList.remove("show");
+                qrSmallDetallada.innerHTML = "";
+            }); // espera a que termine la transición
+        }
+    }
+
+    function mostrarQRPequenoRapida() {
+        if (
+            metodoRapida.value === "Transferencia" &&
+            typeof comprobanteIdRapida !== "undefined"
+        ) {
+            qrContainerRapida.classList.add("show");
+
+            if (!qrSmallRapida.innerHTML.trim()) {
+                generarQR(qrSmallRapida, comprobanteIdRapida, 50);
+            }
+
+            setTimeout(() => qrSmallRapida.classList.add("zoom"), 100);
+        } else {
+            qrSmallRapida.classList.remove("zoom");
+            setTimeout(() => {
+                qrContainerRapida.classList.remove("show");
+                qrSmallRapida.innerHTML = "";
+            });
+        }
+    }
+
+
+    metodoPago.addEventListener("change", mostrarQRPequenoDetallada);
+    metodoRapida.addEventListener("change", mostrarQRPequenoRapida);
+
+    // --------------------------
+    // Zoom QR en modal
+    // --------------------------
+    function abrirQRZoom(comprobanteId) {
+        qrZoomContainer.innerHTML = ""; // limpiar previo
+        generarQR(qrZoomContainer, comprobanteId, 400); // QR grande
+
+        const qrZoom = new bootstrap.Modal(qrZoomModalEl, {
+            backdrop: true,
+            keyboard: true,
+        });
+        qrZoom.show();
+    }
+
+    let comprobanteIdDetallada = null;
+    let comprobanteIdRapida = null;
+
+    qrSmallDetallada.addEventListener("click", () => {
+        if (typeof comprobanteIdDetallada !== "undefined") {
+            abrirQRZoom(comprobanteIdDetallada);
+        }
+    });
+
+    qrSmallRapida.addEventListener("click", () => {
+        if (typeof comprobanteIdRapida !== "undefined") {
+            abrirQRZoom(comprobanteIdRapida);
+        }
+    });
+
+    // Limpiar QR al cerrar modal zoom
+    qrZoomModalEl.addEventListener("hidden.bs.modal", () => {
+        qrZoomContainer.innerHTML = "";
+    });
+
+    // --------------------------
+    // Función genérica para generar QR
+    // --------------------------
+    function generarQR(contenedor, comprobanteId, size = 150) {
+        contenedor.innerHTML = ""; // limpiar previo
+        const url = apiUrl(`/admin/comprobantes/upload/${comprobanteId}`);
+        new QRCode(contenedor, {
+            text: url,
+            width: size,
+            height: size,
+        });
+    }
+
+    // --------------------------
+    // Después de guardar venta
+    // --------------------------
+    guardarVentaDetalladaBtn.addEventListener("click", async () => {
+        const idGenerado = await guardarVentaDetallada();
+        comprobanteIdDetallada = idGenerado;
+        mostrarQRPequenoDetallada();
+    });
+
+    guardarRapidaBtn.addEventListener("click", async () => {
+        const idGenerado = await guardarVentaRapida();
+        comprobanteIdRapida = idGenerado;
+        mostrarQRPequenoRapida();
+    });
 
     cargarUltimasVentas();
 });

@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currency: "COP",
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
-        })
+        });
     }
 
     function recalcularTotal() {
@@ -119,38 +119,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Recalcular total al cambiar producto o cantidad
     productosContainer.addEventListener("change", (e) => {
-        productosContainer.addEventListener("change", (e) => {
-            const item = e.target.closest(".producto-item");
-            if (!item) return;
+        const item = e.target.closest(".producto-item");
+        if (!item) return;
 
-            // ⚡ Solo actuar si cambió un select de producto
-            if (e.target.classList.contains("producto")) {
-                const seleccionado = e.target.value;
+        // ⚡ Solo actuar si cambió un select de producto
+        if (e.target.classList.contains("producto")) {
+            const seleccionado = e.target.value;
 
-                // Obtener todos los productos seleccionados en otros items
-                const productosSeleccionados = Array.from(
-                    productosContainer.querySelectorAll(".producto")
-                )
-                    .filter((p) => p !== e.target) // excluir el que cambió
-                    .map((p) => p.value);
+            // Obtener todos los productos seleccionados en otros items
+            const productosSeleccionados = Array.from(
+                productosContainer.querySelectorAll(".producto")
+            )
+                .filter((p) => p !== e.target) // excluir el que cambió
+                .map((p) => p.value);
 
-                if (
-                    productosSeleccionados.includes(seleccionado) &&
-                    seleccionado !== ""
-                ) {
-                    showAlert(
-                        "warning",
-                        "Ya agregaste este producto en otra casilla.",
-                        "Producto duplicado"
-                    );
+            if (
+                productosSeleccionados.includes(seleccionado) &&
+                seleccionado !== ""
+            ) {
+                showAlert(
+                    "warning",
+                    "Ya agregaste este producto en otra casilla.",
+                    "Producto duplicado"
+                );
 
-                    // Resetear el select
-                    e.target.value = "";
-                }
+                // Resetear el select
+                e.target.value = "";
             }
+        }
 
-            // Recalcular total después de cualquier cambio
-            recalcularTotal();
-        });
+        // Recalcular total después de cualquier cambio
+        recalcularTotal();
     });
 });
