@@ -43,7 +43,6 @@
                   <th>Método</th>
                   <th>Fecha</th>
                   <th>Comprobante</th>
-                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody id="paymentsTable" class="text-light">
@@ -64,11 +63,37 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
               <div class="modal-body text-center">
-                <img id="modalProofImage" src="" alt="Comprobante" class="img-fluid rounded shadow" />
+                <!-- Imagen de vista previa -->
+                <img
+                  id="modalProofImage"
+                  src=""
+                  alt="Comprobante"
+                  class="img-fluid rounded shadow mb-3"
+                  style="max-width: 100%; max-height: 350px;" />
+
+                <!-- Input para subir nueva imagen -->
+                <input
+                  type="file"
+                  id="modalProofFile"
+                  class="form-control mb-3"
+                  accept="image/*" />
+
+                <!-- Botones -->
+                <div class="d-flex justify-content-center gap-2">
+                  <button id="saveProofBtn" class="btn btn-sm btn-outline-success">
+                    <i data-feather="check"></i> Enviar
+                  </button>
+                  <button id="deleteProofBtn" class="btn btn-sm btn-outline-danger">
+                    <i data-feather="trash-2"></i> Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+
+
 
       </div>
     </main>

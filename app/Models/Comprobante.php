@@ -19,7 +19,6 @@ class Comprobante extends Model
         'id_pago_membresia',
         'id_pagos_diarios',
         'id_ventas',
-        'estado',
         'fecha_subida',
     ];
 
