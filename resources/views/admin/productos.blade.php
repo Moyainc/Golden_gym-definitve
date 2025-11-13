@@ -14,31 +14,34 @@
           </h1>
 
 
-          <div class="d-flex gap-2">
+          <div class="d-flex flex-column flex-md-row gap-2">
             <button
-              class="btn btn-warning text-dark fw-bold shadow-sm"
+              class="btn btn-warning text-dark fw-bold shadow-sm d-flex align-items-center justify-content-center"
               data-bs-toggle="modal"
               data-bs-target="#newCategoryModal">
-              <i data-feather="folder-plus" class="me-1"></i>Nueva Categoría
+              <i data-feather="folder-plus" class="me-1"></i>
+              <span class="text-truncate">Nueva Categoría</span>
             </button>
 
             <button
-              class="btn btn-warning text-dark fw-bold shadow-sm"
+              class="btn btn-warning text-dark fw-bold shadow-sm d-flex align-items-center justify-content-center"
               data-bs-toggle="modal"
               data-bs-target="#productModal"
               data-mode="create">
-              <i data-feather="plus-circle" class="me-1"></i>Nuevo Producto
+              <i data-feather="plus-circle" class="me-1"></i>
+              <span class="text-truncate">Nuevo Producto</span>
             </button>
 
             <button
               type="button"
-              class="btn btn-success py-3 ms-md-2 mt-2 mt-md-0 d-inline-flex align-items-center flex-nowrap text-nowrap"
+              class="btn btn-success d-flex align-items-center justify-content-center flex-nowrap text-nowrap"
               data-bs-toggle="modal"
               data-bs-target="#reportsInventarioModal">
-              <i data-feather="file-text" class="me-1"></i> Reportes
+              <i data-feather="file-text" class="me-1"></i>
+              <span class="text-truncate">Reportes</span>
             </button>
-
           </div>
+
         </div>
 
         <!-- FILTROS -->

@@ -145,6 +145,7 @@ class PagoPendienteController extends Controller
       });
 
     $ventas = Venta::where('metodo_pago', 'Transferencia')
+      ->where('estado', '!=', 'Anulada') // <-- excluye ventas anuladas
       ->where(function ($q) {
         $q->whereDoesntHave('comprobante')
           ->orWhereHas('comprobante', function ($sub) {
@@ -168,6 +169,7 @@ class PagoPendienteController extends Controller
           'foto_comprobante' => optional($v->comprobante)->foto_comprobante,
         ];
       });
+
 
     $pagosPendientes = $pagosDiarios
       ->concat($pagosMembresias)
@@ -224,6 +226,11 @@ class PagoPendienteController extends Controller
         // Detectar tipo según el ID presente
         if ($c->id_ventas) {
           $venta = $c->venta;
+
+          if ($venta && $venta->estado === 'Anulada') {
+            continue;
+          }
+
           $detalle = [
             'cliente' => $venta->cliente->nombre_completo ?? 'Desconocido',
             'vendedor' => $venta->usuario->nombre_completo ?? 'Desconocido',

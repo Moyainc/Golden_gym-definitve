@@ -328,24 +328,44 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".filter-btn").forEach((btn) => {
         btn.addEventListener("click", (e) => {
             const filterValue = e.currentTarget.dataset.filter;
+
             document.querySelectorAll(".filter-btn").forEach((b) => {
                 b.classList.remove("btn-warning");
                 b.classList.add("btn-dark");
+
+                const span = b.querySelector("span");
+                if (span) {
+                    span.classList.remove("text-dark");
+                    span.classList.add("text-light"); // texto claro para btn-dark
+                }
             });
+
             e.currentTarget.classList.remove("btn-dark");
             e.currentTarget.classList.add("btn-warning");
+
+            const span = e.currentTarget.querySelector("span");
+            if (span) {
+                span.classList.remove("text-light");
+                span.classList.add(""); // texto negro para btn-warning
+            }
+
             currentFilter = filterValue;
+
             const filterLabels = {
                 activa: "Activas",
                 proxima: "Próximas a vencer",
                 vencida: "Vencidas",
                 todas: "Todas",
             };
+
             clientsFilteredLabel.textContent =
                 filterLabels[filterValue] || "Todas";
+
             applyCurrentFilter();
         });
     });
+
+
 
     // === Búsqueda ===
     if (searchInput) {

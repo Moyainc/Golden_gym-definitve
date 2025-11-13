@@ -106,7 +106,7 @@
 
 
 <!-- Modal para ver o editar comprobante -->
-<div class="modal fade" id="proofModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade modal-dark-style" id="proofModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content bg-dark text-light border-warning">
       <div class="modal-header border-warning">
@@ -123,13 +123,6 @@
           alt="Comprobante"
           class="img-fluid rounded shadow mb-3"
           style="max-width: 100%; max-height: 350px;" />
-
-        <!-- Input para subir nueva imagen -->
-        <input
-          type="file"
-          id="modalProofFile"
-          class="form-control mb-3"
-          accept="image/*" />
 
         <!-- Botones -->
         <div class="d-flex justify-content-center gap-2">

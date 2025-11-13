@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\PagoGeneral;
 use App\Models\PagoMembresia;
-use App\Models\DetalleVenta;
 use App\Models\PagoDiario;
 use App\Models\Venta;
 use Illuminate\Http\Request;
@@ -50,23 +49,31 @@ class ResumenGeneralController extends Controller
     // === Cargar pagos relevantes ===
     $pagos = (clone $baseQuery)
       ->select('id', 'tipo_pago', 'origen_id', 'monto', 'metodo_pago', 'fecha_pago', 'estado')
+      ->where(function ($q) {
+        $q->where('estado', '!=', 'Anulada')
+          ->orWhereNull('estado');
+      })
       ->latest('fecha_pago')
       ->get();
 
+
     // === Totales generales ===
     $totalGeneral = $pagos->sum('monto');
+
     $totalMembresias = $pagos->filter(function ($pago) {
       if ($pago->tipo_pago !== 'pagos_membresias') return false;
-
       if (!$pago->origen_id) return true;
-
       $membresia = PagoMembresia::find($pago->origen_id);
-      if (!$membresia) return true;
-      return $membresia->estado !== 'Anulada';
+      return $membresia && $membresia->estado !== 'Anulada';
     })->sum('monto');
 
-    $totalProductos = $pagos->where('tipo_pago', 'venta_producto')->sum('monto');
-    $totalPagosDiarios = $pagos->where('tipo_pago', 'pagos_diarios')->sum('monto');
+    $totalProductos = $pagos->where('tipo_pago', 'venta_producto')
+      ->where('estado', '!=', 'Anulada')
+      ->sum('monto');
+
+    $totalPagosDiarios = $pagos->where('tipo_pago', 'pagos_diarios')
+      ->where('estado', '!=', 'Anulada')
+      ->sum('monto');
 
     // === Datos mensuales (gráfico de barras) ===
     $mensuales = (clone $baseQuery)
@@ -74,9 +81,14 @@ class ResumenGeneralController extends Controller
         DB::raw('MONTH(fecha_pago) as mes'),
         DB::raw('SUM(monto) as total')
       )
+      ->where(function ($q) {
+        $q->where('estado', '!=', 'Anulada')
+          ->orWhereNull('estado');
+      })
       ->groupBy('mes')
       ->orderBy('mes')
       ->get();
+
 
     // === Distribución para gráfico pastel ===
     $distribucion = [
@@ -86,36 +98,38 @@ class ResumenGeneralController extends Controller
     ];
 
     // === Últimos registros ===
-    $ultimos = $pagos->take(6)->map(function ($pago) {
-      $estado = ucfirst($pago->estado ?? 'Completado');
+    $ultimos = $pagos->reject(fn($pago) => strtolower($pago->estado) === 'anulada')
+      ->take(6)
+      ->map(function ($pago) {
+        $estado = ucfirst($pago->estado ?? 'Completado');
 
-      // Solo para pagos de membresías
-      if ($pago->tipo_pago === 'pagos_membresias' && $pago->origen_id) {
-        $membresia = PagoMembresia::find($pago->origen_id);
-        if ($membresia) {
-          $hoy = Carbon::now();
-          if ($membresia->estado === 'anulada') {
-            $estado = 'Anulada';
-          } elseif ($hoy->gt($membresia->fecha_fin)) {
-            $estado = 'Vencida';
-          } elseif ($hoy->lt($membresia->fecha_inicio)) {
-            $estado = 'Próxima';
-          } else {
-            $estado = 'Activa';
+        if ($pago->tipo_pago === 'pagos_membresias' && $pago->origen_id) {
+          $membresia = PagoMembresia::find($pago->origen_id);
+          if ($membresia) {
+            $hoy = Carbon::now();
+            if ($membresia->estado === 'anulada') {
+              $estado = 'Anulada';
+            } elseif ($hoy->gt($membresia->fecha_fin)) {
+              $estado = 'Vencida';
+            } elseif ($hoy->lt($membresia->fecha_inicio)) {
+              $estado = 'Próxima';
+            } else {
+              $estado = 'Activa';
+            }
           }
         }
-      }
 
-      return [
-        'id' => $pago->id,
-        'fecha' => $pago->fecha_pago ? $pago->fecha_pago->format('d/m/Y') : 'N/D',
-        'concepto' => ucfirst(str_replace('_', ' ', $pago->tipo_pago)),
-        'monto' => $pago->monto,
-        'valor' => $this->formatearCOP($pago->monto),
-        'metodo' => $pago->metodo_pago ?? 'Desconocido',
-        'estado' => $estado,
-      ];
-    });
+        return [
+          'id' => $pago->id,
+          'fecha' => $pago->fecha_pago ? $pago->fecha_pago->format('d/m/Y') : 'N/D',
+          'concepto' => ucfirst(str_replace('_', ' ', $pago->tipo_pago)),
+          'monto' => $pago->monto,
+          'valor' => $this->formatearCOP($pago->monto),
+          'metodo' => $pago->metodo_pago ?? 'Desconocido',
+          'estado' => $estado,
+        ];
+      });
+
 
 
     // === Datos de Clientes para gráfico "Activos vs Nuevos" (últimos 12 meses) ===
@@ -462,10 +476,8 @@ class ResumenGeneralController extends Controller
         'message' => 'Error al generar el PDF: ' . $e->getMessage(),
       ], 500);
     }
-
- 
-}
- /**
+  }
+  /**
    * Formatea valores numéricos en formato de moneda COP.
    */
   private function formatearCOP($valor)

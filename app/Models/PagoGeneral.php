@@ -20,6 +20,7 @@ class PagoGeneral extends Model
         'metodo_pago',
         'usuario_id',
         'fecha_pago',
+        'estado'
     ];
 
     protected $casts = [

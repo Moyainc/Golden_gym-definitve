@@ -14,7 +14,7 @@
           </h1>
           <button
             id="addMembershipBtn"
-            class="btn btn-warning tittle-color btn-sm p-2"
+            class="btn btn-warning tittle-color btn-sm p-2 fs-6"
             data-bs-toggle="modal"
             data-bs-target="#membershipModal">
             <i data-feather="plus-circle" class="me-1"></i> Nueva membresía
