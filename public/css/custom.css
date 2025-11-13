@@ -133,7 +133,7 @@
 .custom-modal .modal-header,
 .custom-modal .modal-body,
 .custom-modal .modal-footer {
-    padding: 1rem;
+    padding: 0.5rem;
 }
 
 .custom-modal .modal-header {

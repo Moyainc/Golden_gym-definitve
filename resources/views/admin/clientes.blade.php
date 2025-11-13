@@ -14,10 +14,9 @@
               <i data-feather="users" class="me-2 tittle-color"></i>Clientes
             </h1>
 
-            <div class="d-flex gap-2">
-              <div class="input-group input-group-sm">
-                <span
-                  class="input-group-text bg-secondary border-0 text-muted">
+            <div class="d-flex flex-column flex-md-row gap-2 align-items-stretch">
+              <div class="input-group input-group-sm grow">
+                <span class="input-group-text bg-secondary border-0 text-muted">
                   <i data-feather="search" class="feather-sm"></i>
                 </span>
                 <input
@@ -25,32 +24,34 @@
                   class="form-control form-control-sm bg-dark text-white border-0"
                   placeholder="Buscar cliente por nombre, correo o identificación..." />
               </div>
+              <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+                <button
+                  type="button"
+                  class="btn btn-success btn-sm grow"
+                  data-bs-toggle="modal"
+                  data-bs-target="#reportsModal">
+                  <i data-feather="file-text" class="me-1"></i> Reportes
+                </button>
 
-              <!-- Agregando botón de reportes -->
-              <button
-                type="button"
-                class="btn btn-success btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#reportsModal">
-                <i data-feather="file-text" class="me-1"></i> Reportes
-              </button>
+                <button
+                  type="button"
+                  class="btn btn-info btn-sm grow"
+                  data-bs-toggle="modal"
+                  data-bs-target="#dailyPaymentModal">
+                  <i data-feather="dollar-sign" class="me-1"></i> Pago Diario
+                </button>
 
-              <button
-                type="button"
-                class="btn btn-info btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#dailyPaymentModal">
-                <i data-feather="dollar-sign" class="me-1"></i> Pago Diario
-              </button>
+                <button
+                  type="button"
+                  class="btn btn-warning tittle-color btn-sm grow"
+                  data-bs-toggle="modal"
+                  data-bs-target="#clientFormModal">
+                  <i data-feather="user-plus" class="me-1"></i> Nuevo cliente
+                </button>
+              </div>
 
-              <button
-                type="button"
-                class="btn btn-warning tittle-color btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#clientFormModal">
-                <i data-feather="user-plus" class="me-1"></i> Nuevo cliente
-              </button>
             </div>
+
           </div>
 
           <!-- Reorganizando layout: filtros arriba, tabla abajo -->
@@ -82,7 +83,7 @@
                         class="filter-btn btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2"
                         data-filter="activa">
                         <i data-feather="check-circle" class="text-success"></i>
-                        <span class="text-white">Activas</span>
+                        <span class="text-light">Activas</span>
                       </button>
                     </div>
 
@@ -91,7 +92,7 @@
                         class="filter-btn btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2"
                         data-filter="proxima">
                         <i data-feather="clock" class="text-warning"></i>
-                        <span class="text-white">Próximas a vencer</span>
+                        <span class="text-light">Próximas a vencer</span>
                       </button>
                     </div>
 
@@ -100,17 +101,16 @@
                         class="filter-btn btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2"
                         data-filter="vencida">
                         <i data-feather="x-circle" class="text-danger"></i>
-                        <span class="text-white">Vencidas</span>
+                        <span class="text-light">Vencidas</span>
                       </button>
                     </div>
 
                     <div class="col-md-3">
-                      <button
-                        class="filter-btn btn btn-warning w-100 d-flex align-items-center justify-content-center gap-2"
-                        data-filter="todas">
-                        <i data-feather="grid" class="text-white"></i>
-                        <span class="text-white">Todas</span>
+                      <button class="filter-btn btn btn-warning w-100 d-flex align-items-center justify-content-center gap-2" data-filter="todas">
+                        <i data-feather="grid" class="text-secondary"></i>
+                        <span>Todas</span>
                       </button>
+
                     </div>
                   </div>
                 </div>
