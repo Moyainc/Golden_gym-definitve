@@ -68,7 +68,7 @@
         </div>
 
         <!-- Modal Comprobante -->
-        <div class="modal fade" id="proofModal" tabindex="-1" aria-hidden="true">
+        <div class="modal fade modal-dark-style" id="proofModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content bg-dark text-light border-warning">
               <div class="modal-header border-warning">
@@ -97,9 +97,6 @@
                 <div class="d-flex justify-content-center gap-2">
                   <button id="saveProofBtn" class="btn btn-sm btn-outline-success">
                     <i data-feather="check"></i> Enviar
-                  </button>
-                  <button id="deleteProofBtn" class="btn btn-sm btn-outline-danger">
-                    <i data-feather="trash-2"></i> Eliminar
                   </button>
                 </div>
               </div>

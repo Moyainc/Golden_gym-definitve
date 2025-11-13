@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -10,18 +11,20 @@ return new class extends Migration
         Schema::create('pagos_membresias', function (Blueprint $table) {
             $table->id();
 
-            // Relaciones
             $table->foreignId('cliente_id')
                 ->constrained('clientes')
                 ->onDelete('cascade');
 
-            // Si existe la tabla 'membresias'
             $table->foreignId('membresia_id')
                 ->nullable()
                 ->constrained('membresias')
                 ->onDelete('set null');
 
-            // Datos del pago
+            $table->foreignId('usuario_id')
+                ->nullable()
+                ->constrained('usuarios')
+                ->onDelete('set null');
+
             $table->date('fecha_inicio')->nullable();
             $table->date('fecha_fin')->nullable();
             $table->decimal('monto', 11, 0);

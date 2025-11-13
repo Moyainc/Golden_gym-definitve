@@ -26,69 +26,73 @@ class PagoPendienteController extends Controller
   // Subir comprobante
   public function subirComprobante(Request $request)
   {
-    // Validaciones del request
     $request->validate([
       'pago_id' => 'required|integer',
       'tipo' => 'required|in:diario,membresia,venta',
       'comprobante' => 'required|image|max:2048',
-    ], [
-      'pago_id.required' => 'No se encontró el pago a subir.',
-      'comprobante.required' => 'Debes seleccionar un archivo de imagen.',
-      'comprobante.image' => 'El archivo debe ser una imagen válida.',
-      'comprobante.max' => 'El archivo no debe superar los 2 MB.',
     ]);
 
-    // Verificar que el pago exista según tipo
+    $user = Auth::user();
+
     switch ($request->tipo) {
       case 'diario':
         $pago = PagoDiario::find($request->pago_id);
         if (!$pago) return response()->json(['error' => 'Pago diario no encontrado.'], 404);
         $campo = 'id_pagos_diarios';
+
+        if ($user->rol !== 'Administrador' && $pago->id_usuario !== $user->id) {
+          return response()->json(['error' => 'No tienes permiso para subir el comprobante de este pago.'], 403);
+        }
         break;
+
       case 'membresia':
         $pago = PagoMembresia::find($request->pago_id);
         if (!$pago) return response()->json(['error' => 'Pago de membresía no encontrado.'], 404);
         $campo = 'id_pago_membresia';
+
+        if ($user->rol !== 'Administrador' && $pago->usuario_id !== $user->id) {
+          return response()->json(['error' => 'No tienes permiso para subir el comprobante de esta membresía.'], 403);
+        }
         break;
+
       case 'venta':
         $pago = Venta::find($request->pago_id);
         if (!$pago) return response()->json(['error' => 'Venta no encontrada.'], 404);
         $campo = 'id_ventas';
+
+        if ($user->rol !== 'Administrador' && $pago->usuario_id !== $user->id) {
+          return response()->json(['error' => 'No tienes permiso para subir el comprobante de esta venta.'], 403);
+        }
         break;
     }
 
     // Guardar archivo
     $filePath = $request->file('comprobante')->store('comprobantes', 'public');
 
-    // Buscar si ya existe un comprobante para este pago
+    // Buscar comprobante existente
     $comprobanteExistente = Comprobante::where($campo, $request->pago_id)->first();
 
     if ($comprobanteExistente) {
-      // Eliminar la imagen anterior si existe
       if ($comprobanteExistente->foto_comprobante && Storage::disk('public')->exists($comprobanteExistente->foto_comprobante)) {
         Storage::disk('public')->delete($comprobanteExistente->foto_comprobante);
       }
-
-      // Actualizar solo la ruta y el updated_at (automático)
       $comprobanteExistente->update([
         'foto_comprobante' => $filePath,
       ]);
-
       return response()->json(['message' => 'Comprobante actualizado correctamente.']);
     }
 
-    // Si no existe, crear el registro
-    $comprobanteData = [
+    // Crear nuevo comprobante
+    Comprobante::create([
       'foto_comprobante' => $filePath,
-      'id_usuario' => Auth::id(),
+      'id_usuario' => $user->id,
       'fecha_subida' => now(),
       $campo => $request->pago_id,
-    ];
-
-    Comprobante::create($comprobanteData);
+    ]);
 
     return response()->json(['message' => 'Comprobante subido correctamente.']);
   }
+
 
 
   // Obtener pagos pendientes en JSON
@@ -212,7 +216,7 @@ class PagoPendienteController extends Controller
         ->orderByDesc('created_at');
 
       // Si no es administrador, limitar a los últimos 10 comprobantes
-      if ($user->rol !== 'Administrador') {
+      if (!in_array($user->rol, ['Administrador', 'Contador'])) {
         $query->limit(10);
       }
 
@@ -293,6 +297,16 @@ class PagoPendienteController extends Controller
         return response()->json([
           'error' => 'El comprobante no existe.'
         ], 404);
+      }
+
+
+      $usuario = Auth::user();
+
+      // Validar que sea el mismo usuario que subió o sea Administrador
+      if ($comprobante->id_usuario !== $usuario->id && $usuario->rol !== 'Administrador') {
+        return response()->json([
+          'error' => 'No tienes permisos suficientes para eliminar este comprobante.'
+        ], 403);
       }
 
       // Eliminar archivo físico si existe

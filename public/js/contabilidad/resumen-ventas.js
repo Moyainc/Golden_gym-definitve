@@ -61,13 +61,11 @@ document.addEventListener("DOMContentLoaded", () => {
         filterMonth.appendChild(option);
     });
 
-
     const applyFilterBtn = document.getElementById("applyFilter");
 
     const hoy = new Date();
     const mesActual = hoy.getMonth() + 1;
     const anioActual = hoy.getFullYear();
-
 
     filterMonth.value = mesActual;
     filterYear.value = anioActual;
@@ -318,8 +316,20 @@ document.addEventListener("DOMContentLoaded", () => {
             <td>${v.metodo_pago}</td>
             <td>${formatearCOP(d.subtotal)}</td>
             <td>${new Date(v.fecha_venta).toLocaleDateString()}</td>
-            <td><span class="badge ${v.estado === "Completada" ? "bg-success" : "bg-warning"
-                        } text-black">${v.estado}</span></td>
+            <td>
+  <span class="badge ${
+      v.estado === "Completada"
+          ? "bg-success"
+          : v.estado === "Pendiente"
+          ? "bg-warning"
+          : v.estado === "Anulada"
+          ? "bg-danger"
+          : "bg-secondary"
+  } text-black">
+    ${v.estado}
+  </span>
+</td>
+
           </tr>
         `);
                 });
@@ -349,19 +359,21 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarUltimasVentas();
 });
 
-
 // === EXPORTAR REPORTES DE VENTAS ===
 document.addEventListener("DOMContentLoaded", () => {
     const exportPdfVentasBtn = document.getElementById("exportPdfVentasBtn");
-    const exportExcelVentasBtn = document.getElementById("exportExcelVentasBtn");
+    const exportExcelVentasBtn = document.getElementById(
+        "exportExcelVentasBtn"
+    );
     const reportsVentasForm = document.getElementById("reportsVentasForm");
 
-
     const validarFormulario = () => {
-
-
-        const inicio = reportsVentasForm.querySelector("#reportStartDateVentas").value;
-        const fin = reportsVentasForm.querySelector("#reportEndDateVentas").value;
+        const inicio = reportsVentasForm.querySelector(
+            "#reportStartDateVentas"
+        ).value;
+        const fin = reportsVentasForm.querySelector(
+            "#reportEndDateVentas"
+        ).value;
         // === Validación del formulario ===
         if (!inicio || !fin) {
             Swal.fire({
@@ -370,8 +382,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 text: "Selecciona un rango de fechas",
                 background: "#1a1a1a",
                 color: "#fff",
-            })
-            return
+            });
+            return;
         }
 
         if (inicio && fin && new Date(inicio) > new Date(fin)) {
@@ -392,37 +404,47 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // === PDF ===
-    exportPdfVentasBtn.addEventListener("click", e => {
+    exportPdfVentasBtn.addEventListener("click", (e) => {
         e.preventDefault();
         if (!validarFormulario()) return;
 
-        const inicio = reportsVentasForm.querySelector("#reportStartDateVentas").value;
-        const fin = reportsVentasForm.querySelector("#reportEndDateVentas").value;
+        const inicio = reportsVentasForm.querySelector(
+            "#reportStartDateVentas"
+        ).value;
+        const fin = reportsVentasForm.querySelector(
+            "#reportEndDateVentas"
+        ).value;
 
         // Enviar con los mismos nombres que espera el controlador
         const params = new URLSearchParams({
             fecha_inicio: inicio,
-            fecha_fin: fin
+            fecha_fin: fin,
         });
 
-        const url = apiUrl("/admin/resumen-ventas/pdf") + "?" + params.toString();
+        const url =
+            apiUrl("/admin/resumen-ventas/pdf") + "?" + params.toString();
         window.open(url, "_blank");
     });
 
     // === EXCEL ===
-    exportExcelVentasBtn.addEventListener("click", e => {
+    exportExcelVentasBtn.addEventListener("click", (e) => {
         e.preventDefault();
         if (!validarFormulario()) return;
 
-        const inicio = reportsVentasForm.querySelector("#reportStartDateVentas").value;
-        const fin = reportsVentasForm.querySelector("#reportEndDateVentas").value;
+        const inicio = reportsVentasForm.querySelector(
+            "#reportStartDateVentas"
+        ).value;
+        const fin = reportsVentasForm.querySelector(
+            "#reportEndDateVentas"
+        ).value;
 
         const params = new URLSearchParams({
             fecha_inicio: inicio,
-            fecha_fin: fin
+            fecha_fin: fin,
         });
 
-        const url = apiUrl("/admin/resumen-ventas/excel") + "?" + params.toString();
+        const url =
+            apiUrl("/admin/resumen-ventas/excel") + "?" + params.toString();
         window.open(url, "_blank");
     });
 });

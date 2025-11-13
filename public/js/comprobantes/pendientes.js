@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalImg = document.getElementById("modalProofImage");
     const modalFile = document.getElementById("modalProofFile");
     const saveBtn = document.getElementById("saveProofBtn");
-    const deleteBtn = document.getElementById("deleteProofBtn");
+    // const deleteBtn = document.getElementById("deleteProofBtn"); // eliminado
     const paginationContainer = document.querySelector(".pagination-modern");
     const paginationInfo = document.getElementById("paginationInfo");
 
@@ -194,80 +194,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 icon: "error",
                 title: "Error",
                 text: error.message || "No se pudo subir el comprobante",
-                background: "#1a1a1a",
-                color: "#fff",
-                confirmButtonColor: "#fcd52b",
-                confirmButtonText: "Aceptar",
-                customClass: { confirmButton: "text-black font-bold" },
-            });
-        }
-    });
-
-    deleteBtn.addEventListener("click", async () => {
-        if (!currentPagoId || !currentTipo) {
-            return Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "No se pudo identificar el pago seleccionado.",
-                background: "#1a1a1a",
-                color: "#fff",
-                confirmButtonColor: "#fcd52b",
-                confirmButtonText: "Aceptar",
-                customClass: { confirmButton: "text-black font-bold" },
-            });
-        }
-
-        const confirm = await Swal.fire({
-            icon: "warning",
-            title: "Eliminar comprobante",
-            text: "¿Seguro que deseas eliminar este comprobante?",
-            showCancelButton: true,
-            confirmButtonText: "Sí, eliminar",
-            cancelButtonText: "Cancelar",
-            background: "#1a1a1a",
-            color: "#fff",
-            confirmButtonColor: "#fcd52b",
-            customClass: { confirmButton: "text-black font-bold" },
-        });
-
-        if (!confirm.isConfirmed) return;
-
-        try {
-            const res = await fetch(apiUrl("admin/pagos/eliminarComprobante"), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
-                    Accept: "application/json",
-                },
-                body: JSON.stringify({
-                    pago_id: currentPagoId,
-                    tipo: currentTipo,
-                }),
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-
-            Swal.fire({
-                icon: "success",
-                title: "Eliminado",
-                text: data.message || "Comprobante eliminado correctamente",
-                background: "#1a1a1a",
-                color: "#fff",
-                confirmButtonColor: "#fcd52b",
-                confirmButtonText: "Aceptar",
-                customClass: { confirmButton: "text-black font-bold" },
-            });
-
-            modalImg.src = "";
-            modalFile.value = "";
-            cargarPagos();
-        } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: error.message || "No se pudo eliminar el comprobante",
                 background: "#1a1a1a",
                 color: "#fff",
                 confirmButtonColor: "#fcd52b",

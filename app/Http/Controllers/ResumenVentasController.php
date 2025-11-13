@@ -14,12 +14,6 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class ResumenVentasController extends Controller
 {
-  // ✅ Formatear números sin decimales
-  private function formatNumber($value)
-  {
-    return round($value);
-  }
-
   // ✅ Página principal
   public function index()
   {
@@ -42,26 +36,39 @@ class ResumenVentasController extends Controller
         'mes' => 'nullable|integer',
       ]);
 
-      $query = Venta::query();
+      $query = Venta::query()
+        ->where('estado', '!=', 'Anulada'); // Excluir ventas anuladas
 
-      if ($request->filled('anio')) $query->whereYear('fecha_venta', $request->anio);
-      if ($request->filled('mes')) $query->whereMonth('fecha_venta', $request->mes);
+      if ($request->filled('anio')) {
+        $query->whereYear('fecha_venta', $request->anio);
+      }
+
+      if ($request->filled('mes')) {
+        $query->whereMonth('fecha_venta', $request->mes);
+      }
+
+      if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
+        $query->whereBetween('fecha_venta', [$request->fecha_inicio, $request->fecha_fin]);
+      }
 
       $ventas = $query->with(['detalles.producto.categoria'])->get();
 
+      // Totales generales
       $totalVentas = round($ventas->sum('total'));
       $numVentas = $ventas->count();
       $numProductos = $ventas->sum(fn($v) => $v->detalles->sum('cantidad'));
       $pendientes = $ventas->where('estado', 'Pendiente')->count();
 
+      // Ventas agrupadas por categoría y producto
       $ventasPorCategoria = [];
       $ventasPorProducto = [];
+
       foreach ($ventas as $venta) {
         foreach ($venta->detalles as $detalle) {
           $categoria = $detalle->producto->categoria->nombre ?? 'Sin Categoría';
-          $ventasPorCategoria[$categoria] = ($ventasPorCategoria[$categoria] ?? 0) + $detalle->subtotal;
-
           $producto = $detalle->producto->nombre ?? 'Producto Eliminado';
+
+          $ventasPorCategoria[$categoria] = ($ventasPorCategoria[$categoria] ?? 0) + $detalle->subtotal;
           $ventasPorProducto[$producto] = ($ventasPorProducto[$producto] ?? 0) + $detalle->subtotal;
         }
       }
@@ -69,7 +76,9 @@ class ResumenVentasController extends Controller
       $ventasPorCategoria = array_map(fn($v) => round($v), $ventasPorCategoria);
       $ventasPorProducto = array_map(fn($v) => round($v), $ventasPorProducto);
 
-      $ventasPorMes = $ventas->groupBy(fn($v) => Carbon::parse($v->fecha_venta)->format('Y-m'))
+      // Agrupación mensual (solo de ventas no anuladas)
+      $ventasPorMes = $ventas
+        ->groupBy(fn($v) => Carbon::parse($v->fecha_venta)->format('Y-m'))
         ->map(fn($v) => round($v->sum('total')))
         ->sortKeys();
 
@@ -91,6 +100,7 @@ class ResumenVentasController extends Controller
       ], 500);
     }
   }
+
 
   // ✅ Últimas ventas JSON seguras
   public function ultimasVentas()
