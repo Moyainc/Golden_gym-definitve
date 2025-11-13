@@ -1,31 +1,31 @@
 /* Responsive de contenido central */
 .custom-container {
-  max-width: 1600px;
+    max-width: 1600px;
 }
 
 
 /* Eliminacion de Scroll Innecesario */
 .main {
-    min-height: calc(
-        100vh - 60px - 60px
-    ); /* altura de navbar + footer aproximada */
+    min-height: calc(100vh - 60px - 60px);
+    /* altura de navbar + footer aproximada */
     overflow-x: hidden;
 }
 
 
 .chart-container-sm {
-    max-width: 320px;  /* tamaño más pequeño del canvas */
+    max-width: 320px;
+    /* tamaño más pequeño del canvas */
     height: 320px;
     margin: 0 auto;
-  }
+}
 
-  /* En pantallas medianas o pequeñas que el gráfico use todo el ancho */
-  @media (max-width: 992px) {
+/* En pantallas medianas o pequeñas que el gráfico use todo el ancho */
+@media (max-width: 992px) {
     .chart-container-sm {
-      max-width: 100%;
-      height: auto;
+        max-width: 100%;
+        height: auto;
     }
-  }
+}
 
 
 
@@ -36,7 +36,7 @@
 .table th,
 .table thead,
 .table tr,
-.table > :not(:last-child) > :last-child > * {
+.table> :not(:last-child)> :last-child>* {
     border-color: #575656 !important;
     border-width: 1px !important;
     padding-right: 0 !important;
@@ -49,7 +49,8 @@
 }
 
 .table tbody tr:last-child {
-    border-bottom: none !important; /* quitar borde de la ultima fila */
+    border-bottom: none !important;
+    /* quitar borde de la ultima fila */
 }
 
 /* Hover suave para filas */
@@ -76,12 +77,10 @@
 
 /* Intercalado oscuro entre filas */
 .table tbody tr:nth-child(odd) {
-    background-color: rgba(
-        255,
-        255,
-        255,
-        0.03
-    ) !important;
+    background-color: rgba(255,
+            255,
+            255,
+            0.03) !important;
 }
 
 .table tbody tr:nth-child(even) {
@@ -106,7 +105,8 @@
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 1050; /* nivel sobre el resto del contenido */
+    z-index: 1050;
+    /* nivel sobre el resto del contenido */
     width: 100%;
     height: 100%;
     overflow: auto;
@@ -164,69 +164,70 @@
 .modal-dark-style .modal-header,
 .modal-dark-style .modal-body,
 .modal-dark-style .modal-footer {
-  background-color: #1a1a1a !important;
-  color: #f5f5f5 !important;
+    background-color: #1a1a1a !important;
+    color: #f5f5f5 !important;
 }
 
 /* Elimina cualquier herencia de color de fondo en el contenedor del diálogo */
 .modal-dark-style .modal-dialog {
-  background-color: transparent !important;
+    background-color: transparent !important;
 }
 
 .modal-dark-style .modal-body::-webkit-scrollbar-thumb {
-  background-color: #fcd52b;
-  border-radius: 10px;
+    background-color: #fcd52b;
+    border-radius: 10px;
 }
 
 .modal-dark-style .modal-body::-webkit-scrollbar-track {
-  background-color: #111;
+    background-color: #111;
 }
 
 /* Animación de aparición suave */
 .modal.fade .modal-dialog {
-  transform: scale(0.96);
-  opacity: 0;
-  transition: all 0.25s ease-out;
+    transform: scale(0.96);
+    opacity: 0;
+    transition: all 0.25s ease-out;
 }
 
 .modal.show .modal-dialog {
-  transform: scale(1);
-  opacity: 1;
+    transform: scale(1);
+    opacity: 1;
 }
 
 /* Sombra del contenido */
 .modal-dark-style .modal-content {
-  box-shadow: 0 0 25px rgba(252, 213, 43, 0.08),
-              0 0 60px rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 25px rgba(252, 213, 43, 0.08),
+        0 0 60px rgba(0, 0, 0, 0.8);
 }
 
 
 /* Borde y forma del contenedor */
 .modal-dark-style .modal-content {
-  border: 1px solid rgba(252, 252, 252, 0.171) !important;
-  border-radius: 1rem !important;
-  box-shadow: 0 0 20px rgba(252, 214, 43, 0.11) !important;
+    border: 1px solid rgba(252, 252, 252, 0.171) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 0 20px rgba(252, 214, 43, 0.11) !important;
 
-  /* Transición para bordes y box-shadow */
-  transition: border 0.7s ease-in-out, box-shadow 0.7s ease-in-out;
+    /* Transición para bordes y box-shadow */
+    transition: border 0.7s ease-in-out, box-shadow 0.7s ease-in-out;
 }
 
 
 .modal-dark-style .modal-content {
-  background-color: #1a1a1a !important;
-  color: #f5f5f5 !important;
-  border-radius: 0.5rem !important;
-  border: 1px solid rgba(252, 252, 252, 0.171) !important;
-  box-shadow: 0 0 20px rgba(252, 214, 43, 0.11) !important;
-  transition: border-radius 0.7s ease-in-out, border 0.7s ease-in-out, box-shadow 0.7s ease-in-out;
-  overflow: hidden;
+    background-color: #1a1a1a !important;
+    color: #f5f5f5 !important;
+    border-radius: 0.5rem !important;
+    border: 1px solid rgba(252, 252, 252, 0.171) !important;
+    box-shadow: 0 0 20px rgba(252, 214, 43, 0.11) !important;
+    transition: border-radius 0.7s ease-in-out, border 0.7s ease-in-out, box-shadow 0.7s ease-in-out;
+    overflow: hidden;
 }
 
 
 .modal-dark-style input,
 .modal-dark-style select,
 .modal-dark-style textarea {
-    background-color: #303030; /* fondo oscuro para inputs */
+    background-color: #303030;
+    /* fondo oscuro para inputs */
     color: #f5f5f5;
     border: 1px solid #444;
     border-radius: 0.4rem;
@@ -245,8 +246,8 @@
     border-color: #121212;
     color: #000000;
     transition: background-color 0.15s ease-in-out,
-                border-color 0.15s ease-in-out,
-                color 0.15s ease-in-out;
+        border-color 0.15s ease-in-out,
+        color 0.15s ease-in-out;
 }
 
 .btn-dark:hover {
@@ -256,7 +257,7 @@
 }
 
 
-.bg-dark{
+.bg-dark {
     background-color: #242424 !important;
 }
 
@@ -273,6 +274,7 @@
         transform: translateY(-30px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -286,13 +288,16 @@
     width: 0;
     transition: all 0.3s ease;
 }
+
 .foto-container img {
     opacity: 0;
     transition: opacity 0.3s ease;
 }
+
 .foto-container.visible {
     width: 80px;
 }
+
 .foto-container.visible img {
     opacity: 1;
 }
@@ -349,11 +354,9 @@
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    background: radial-gradient(
-        circle,
-        rgba(255, 193, 7, 0.1) 0%,
-        rgba(255, 193, 7, 0.03) 80%
-    );
+    background: radial-gradient(circle,
+            rgba(255, 193, 7, 0.1) 0%,
+            rgba(255, 193, 7, 0.03) 80%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -378,6 +381,7 @@
 }
 
 @keyframes pulse {
+
     0%,
     100% {
         box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
@@ -417,7 +421,7 @@
         font-size: 1.4rem;
     }
 
-    .card{
+    .card {
         font-size: 0.8rem;
         padding: 0.3rem 0.8rem;
     }
@@ -455,7 +459,8 @@
 /* Margen superior para separar cuando se apilan */
 @media (max-width: 768px) {
     #profileForm .btn-outline-warning {
-        margin-top: 0.5rem; /* separa del campo rol */
+        margin-top: 0.5rem;
+        /* separa del campo rol */
     }
 }
 
@@ -464,39 +469,45 @@
 /* Responsive Titulos */
 
 @media (max-width: 768px) {
-  h1.h3 {
-    font-size: 1.2rem;
-  }
-  .tittle-color {
-    font-size: 0.9rem;
-  }
+    h1.h3 {
+        font-size: 1.2rem;
+    }
 
-  /* Botones más pequeños y ajustados */
-  .btn, .btn-sm {
-    font-size: 0.85rem;
-    padding: 0.35rem 0.7rem;
-  }
+    .tittle-color {
+        font-size: 0.9rem;
+    }
 
-  /* Inputs un poco más compactos */
-  .form-control {
-    font-size: 0.9rem;
-  }
+    /* Botones más pequeños y ajustados */
+    .btn,
+    .btn-sm {
+        font-size: 0.85rem;
+        padding: 0.35rem 0.7rem;
+    }
+
+    /* Inputs un poco más compactos */
+    .form-control {
+        font-size: 0.9rem;
+    }
 }
 
 @media (max-width: 576px) {
-  h1.h3 {
-    font-size: 1.0rem;
-  }
-  .tittle-color {
-    font-size: 0.75rem;
-  }
-  .btn, .btn-sm {
-    font-size: 0.7rem;
-    padding: 0.3rem 0.6rem;
-  }
-  .form-control {
-    font-size: 0.85rem;
-  }
+    h1.h3 {
+        font-size: 1.0rem;
+    }
+
+    .tittle-color {
+        font-size: 0.75rem;
+    }
+
+    .btn,
+    .btn-sm {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .form-control {
+        font-size: 0.85rem;
+    }
 }
 
 
@@ -504,10 +515,10 @@
 /* Productoss Tarjetass  */
 
 @media (max-width: 400px) {
-  .resumen-card-col {
-    flex: 0 0 100%;
-    max-width: 100%;
-  }
+    .resumen-card-col {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
 }
 
 
@@ -515,25 +526,87 @@
 
 /* Scrollbar completo */
 ::-webkit-scrollbar {
-  width: 8px; /* ancho de la scrollbar vertical */
-  height: 8px; /* alto de la scrollbar horizontal */
+    width: 8px;
+    /* ancho de la scrollbar vertical */
+    height: 8px;
+    /* alto de la scrollbar horizontal */
 }
 
 /* Track (fondo de la barra) */
 ::-webkit-scrollbar-track {
-  background: #1a1a1a; /* fondo oscuro */
-  border-radius: 4px;
+    background: #1a1a1a;
+    /* fondo oscuro */
+    border-radius: 4px;
 }
 
 /* Thumb (la parte que se mueve) */
 ::-webkit-scrollbar-thumb {
-  background-color: #fcd62b85; /* color de la barra */
-  border-radius: 4px;
-  border: 2px solid #1a1a1a; /* un pequeño borde para separar del track */
+    background-color: #fcd62b85;
+    /* color de la barra */
+    border-radius: 4px;
+    border: 2px solid #1a1a1a;
+    /* un pequeño borde para separar del track */
 }
 
 /* Hover sobre la barra */
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #eab308;
+    background-color: #eab308;
 }
 
+
+
+
+
+
+/* Efecto Boton de Usuario en el Navbar */
+.nav-link.bg-icono {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background-color: #6e6500;
+    /* fondo amarillo */
+    color: #1a1a1a;
+    /* texto oscuro */
+    overflow: hidden;
+    font-weight: bold;
+    transition: transform 0.2s;
+}
+
+/* Pseudo-elemento para el brillo */
+.nav-link.bg-icono::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -75%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(120deg,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+}
+
+/* Hover: animación de la línea brillante */
+.nav-link.bg-icono:hover::before {
+    animation: shine 0.7s forwards;
+}
+
+/* Animación de la franja brillante */
+@keyframes shine {
+    0% {
+        left: -75%;
+    }
+
+    100% {
+        left: 125%;
+    }
+}
+
+/* Opcional: efecto pequeño de levantamiento al hover */
+.nav-link.bg-icono:hover {
+    transform: translateY(-2px);
+}
