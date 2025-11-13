@@ -161,7 +161,7 @@
 
           <div class="row g-3 item align-items-center justify-content-center">
             <!-- GRÁFICO BARRA DE MEMBRESÍAS -->
-            <div class="col-xl-6 col-xxl-7 align-items-center">
+            <div class="col-xl-8 col-xxl-7 align-items-center">
               <div class="card">
                 <div class="card-header">
                   <h5 class="card-title mb-0">
