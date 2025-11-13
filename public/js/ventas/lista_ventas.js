@@ -105,9 +105,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${det.categoria}</td>
                 <td>${venta.metodo_pago}</td>
                 <td>${det.subtotal_formatted}</td>
-                <td>${
-                    new Date(venta.fecha_venta).toLocaleDateString("es-ES")
-                }</td>
+                <td>${new Date(venta.fecha_venta).toLocaleDateString(
+                    "es-ES"
+                )}</td>
                 <td>
                     <span class="badge" style="background:${bg}; color:${color}; font-weight:600;">
                         ${estado}
@@ -141,15 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!res.ok) throw new Error("No se pudo cargar la venta");
                     const data = await res.json();
 
-                    let html = `
-                    <p><strong>Vendedor:</strong> ${data.usuario}</p>
-                    <p><strong>Fecha:</strong> ${new Date(
-                        data.fecha_venta
-                    ).toLocaleDateString()}</p>
-                    <p><strong>Método de pago:</strong> ${data.metodo_pago}</p>
-                        `;
-
-                    // Colores coherentes con la tabla
+                    // Construimos todo el HTML primero
                     const estadoConfig = {
                         Completada: { bg: "#28a745", color: "#fff" },
                         Pendiente: { bg: "#fcd52b", color: "#000" },
@@ -160,49 +152,143 @@ document.addEventListener("DOMContentLoaded", () => {
                         color: "#fff",
                     };
 
-                    html += `
-    <p><strong>Estado:</strong>
-        <span class="badge" style="background:${bg}; color:${color}; font-weight:600; padding:6px 10px;">
-            ${data.estado}
-        </span>
-    </p>
-
-    <table class="table table-sm table-bordered text-light mt-3">
-        <thead class="text-warning">
-            <tr>
-                <th>Producto</th>
-                <th>Categoría</th>
-                <th>Cantidad</th>
-                <th>Precio Unitario</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-`;
-
+                    let html = `
+            <p><strong>Vendedor:</strong> ${data.usuario}</p>
+            <p><strong>Fecha:</strong> ${new Date(
+                data.fecha_venta
+            ).toLocaleDateString()}</p>
+            <p><strong>Método de pago:</strong> ${data.metodo_pago}</p>
+            <p><strong>Estado:</strong>
+                <span class="badge" style="background:${bg}; color:${color}; font-weight:600; padding:6px 10px;">
+                    ${data.estado}
+                </span>
+            </p>
+            <table class="table table-sm table-bordered text-light mt-3">
+                <thead class="text-warning">
+                    <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
                     data.detalles.forEach((d) => {
                         html += `
-        <tr>
-            <td>${d.producto}</td>
-            <td>${d.categoria}</td>
-            <td>${d.cantidad}</td>
-            <td>${d.precio_unitario_formatted}</td>
-            <td>${d.subtotal_formatted}</td>
-        </tr>
-    `;
+                <tr>
+                    <td>${d.producto}</td>
+                    <td>${d.categoria}</td>
+                    <td>${d.cantidad}</td>
+                    <td>${d.precio_unitario_formatted}</td>
+                    <td>${d.subtotal_formatted}</td>
+                </tr>
+            `;
                     });
+                    html += `</tbody></table><p class="mt-2"><strong>Total:</strong> ${data.total_formatted}</p>`;
 
-                    html += `
-        </tbody>
-    </table>
-    <p class="mt-2"><strong>Total:</strong> ${data.total_formatted}</p>
-`;
+                    // Asignamos el HTML al modal
                     modalBody.innerHTML = html;
+
+                    // Mostramos u ocultamos el botón de anular según el estado
+                    const btnAnularVenta =
+                        document.getElementById("btnAnularVenta");
+                    if (data.estado === "Anulada") {
+                        btnAnularVenta.style.display = "none";
+                    } else {
+                        btnAnularVenta.style.display = "inline-flex";
+                    }
+
+                    // Asignamos el onclick
+                    btnAnularVenta.onclick = async () => {
+                        Swal.fire({
+                            icon: "warning",
+                            title: "¿Está seguro?",
+                            text: "Desea anular esta venta",
+                            background: "#1a1a1a",
+                            color: "#fff",
+                            showCancelButton: true,
+                            confirmButtonColor: "#fcd52b",
+                            cancelButtonColor: "#dc3545",
+                            confirmButtonText: "Sí, anular",
+                            cancelButtonText: "Cancelar",
+                            customClass: {
+                                confirmButton: "text-black font-bold",
+                                cancelButton: "text-white font-bold",
+                            },
+                        }).then(async (result) => {
+                            if (!result.isConfirmed) return;
+
+                            try {
+                                const res = await fetch(
+                                    apiUrl(`/admin/ventas/${data.id}/anular`),
+                                    {
+                                        method: "PATCH",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRF-TOKEN":
+                                                document.querySelector(
+                                                    'meta[name="csrf-token"]'
+                                                ).content,
+                                        },
+                                        body: JSON.stringify({
+                                            estado: "Anulada",
+                                        }),
+                                    }
+                                );
+
+                                if (!res.ok)
+                                    throw new Error(
+                                        "No se pudo anular la venta"
+                                    );
+
+                                // Actualizamos badge y ocultamos botón
+                                const estadoBadge =
+                                    modalBody.querySelector("span.badge");
+                                estadoBadge.textContent = "Anulada";
+                                estadoBadge.style.background = "#dc3545";
+                                estadoBadge.style.color = "#fff";
+
+                                btnAnularVenta.style.display = "none";
+
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Venta anulada",
+                                    text: "La venta ha sido anulada correctamente",
+                                    background: "#1a1a1a",
+                                    color: "#fff",
+                                    confirmButtonColor: "#fcd52b",
+                                    confirmButtonText: "Aceptar",
+                                    customClass: {
+                                        confirmButton: "text-black font-bold",
+                                    },
+                                }).then(() => {
+                                    fetchVentas(); // refresca la tabla
+                                });
+                            } catch (err) {
+                                console.error(err);
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Error",
+                                    text: "La venta ya ha sido anulada",
+                                    background: "#1a1a1a",
+                                    color: "#fff",
+                                    confirmButtonColor: "#fcd52b",
+                                    confirmButtonText: "Aceptar",
+                                    customClass: {
+                                        confirmButton: "text-black font-bold",
+                                    },
+                                });
+                            }
+                        });
+                    };
                 } catch (err) {
                     console.error(err);
                     modalBody.innerHTML = `<div class="text-center text-danger py-3">Error al cargar los detalles de la venta</div>`;
                 }
             });
+
         });
     };
 
@@ -252,11 +338,41 @@ document.addEventListener("DOMContentLoaded", () => {
         (el) => el.addEventListener("change", () => fetchVentas(1))
     );
 
-
     searchVenta.addEventListener("input", () => {
         clearTimeout(searchVenta._timeout);
         searchVenta._timeout = setTimeout(() => fetchVentas(1), 400);
     });
+
+    btnAnularVenta.onclick = async () => {
+        if (!confirm("¿Está seguro que desea anular esta venta?")) return;
+
+        try {
+            const res = await fetch(apiUrl(`/admin/ventas/${data.id}/anular`), {
+                method: "PATCH", // o PUT según tu backend
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector(
+                        'meta[name="csrf-token"]'
+                    ).content,
+                },
+                body: JSON.stringify({ estado: "Anulada" }),
+            });
+
+            if (!res.ok) throw new Error("No se pudo anular la venta");
+
+            // Actualizar el estado en el modal
+            const estadoBadge = modalBody.querySelector("span.badge");
+            estadoBadge.textContent = "Anulada";
+            estadoBadge.style.background = "#dc3545";
+            estadoBadge.style.color = "#fff";
+
+            btnAnularVenta.style.display = "none"; // ocultamos el botón
+            alert("Venta anulada correctamente"); // puedes usar SweetAlert2
+        } catch (err) {
+            console.error(err);
+            alert("Error al anular la venta");
+        }
+    };
 
     fetchVentas();
 });

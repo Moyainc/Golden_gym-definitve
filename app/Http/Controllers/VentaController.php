@@ -366,7 +366,7 @@ class VentaController extends Controller
     }
 
     // Solo las 5 más recientes
-    $ventas = $query->take(5)->get();
+    $ventas = $query->take(7)->get();
 
     return response()->json([
       'success' => true,
@@ -381,7 +381,7 @@ class VentaController extends Controller
     $fechaDesde = $request->query('fecha_desde');
     $fechaHasta = $request->query('fecha_hasta');
     $estado = $request->query('estado'); // Nuevo: permite filtrar por estado
-    $perPage = 10;
+    $perPage = 3;
 
     // Base query
     $query = Venta::with(['detalles.producto.categoria', 'usuario'])
@@ -513,4 +513,22 @@ class VentaController extends Controller
       'detalles' => $detalles
     ]);
   }
+
+
+  public function anularVenta(Request $request, Venta $venta)
+{
+    $request->validate([
+        'estado' => 'required|in:Anulada',
+    ]);
+
+    if ($venta->estado === 'Anulada') {
+        return response()->json(['message' => 'La venta ya está anulada'], 400);
+    }
+
+    $venta->estado = 'Anulada';
+    $venta->save();
+
+    return response()->json(['message' => 'Venta anulada correctamente']);
+}
+
 }

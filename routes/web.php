@@ -178,6 +178,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/ventas/rapida', [VentaController::class, 'storeFast'])->name('ventas.storeFast');
         Route::get('/admin/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
         Route::get('/admin/ventas/{id}', [VentaController::class, 'showVentaDetalle'])->name('ventas.detalle');
+        Route::patch('/admin/ventas/{venta}/anular', [VentaController::class, 'anularVenta']);
     });
 
     //                   ----------------------------- CONTADOR =============================

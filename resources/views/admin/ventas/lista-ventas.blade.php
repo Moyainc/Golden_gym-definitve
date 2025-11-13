@@ -144,12 +144,24 @@
       </div>
 
       <!-- Footer -->
-      <div class="modal-footer border-0 pt-0 d-flex justify-content-end">
-        <button type="button" class="btn fw-bold px-4"
-          style="background-color: #fcd52b; color: #000; border-radius: 10px; font-weight: 600;"
-          data-bs-dismiss="modal">
-          Cerrar
+      <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
+
+        <button type="button" id="btnAnularVenta"
+          class="btn btn-danger btn-custom fw-bold px-2 d-flex align-items-center"
+          style="display:none;">
+          <i data-feather="x-circle" class="me-1 mt-1"></i> Anular Venta
         </button>
+
+
+
+        <div class="ms-auto">
+          <button type="button"
+            class="btn btn-warning btn-custom fw-bold px-4 ms-auto"
+            data-bs-dismiss="modal">
+            Cerrar
+          </button>
+
+        </div>
       </div>
     </div>
   </div>
