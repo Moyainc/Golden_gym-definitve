@@ -7,13 +7,14 @@
         <ul class="sidebar-nav">
             <li class="sidebar-header">Páginas</li>
 
-            {{-- Panel Principal: Todos los roles --}}
+            @if(in_array(auth()->user()->rol, ['Administrador', 'Contador']))
             <li class="sidebar-item {{ Route::is('admin.dashboard') ? 'active' : '' }}">
                 <a class="sidebar-link" href="{{ route('admin.dashboard') }}">
                     <i class="align-middle" data-feather="sliders"></i>
                     <span class="align-middle">Panel principal</span>
                 </a>
             </li>
+            @endif
 
             {{-- Cuenta: Todos los roles --}}
             <li class="sidebar-item {{ Route::is('admin.profile') ? 'active' : '' }}">
@@ -117,7 +118,7 @@
                 @endif
 
                 {{-- Pagos: Administrador + Contador --}}
-                @if(in_array(auth()->user()->rol, ['Administrador', 'Contador']))
+                @if(in_array(auth()->user()->rol, ['Administrador', 'Contador', 'Recepcionista']))
                 <li class="sidebar-item">
                     <a
                         class="sidebar-link d-flex justify-content-between align-items-center {{ Request::routeIs('admin.lista_pagos') || Request::routeIs('admin.pagos_pendientes') ? '' : 'collapsed' }}"
@@ -133,7 +134,7 @@
                         <i data-feather="chevron-down" class="icon-sm"></i>
                     </a>
 
-                    <div class="collapse {{ Request::routeIs('admin.lista_pagos') || Request::routeIs('admin.pagos_pendientes') ? 'show' : '' }}"
+                    <div class="collapse {{ Request::routeIs('admin.pagos.*') ? 'show' : '' }}"
                         id="pagosMenu" data-bs-parent="#sidebarAccordion">
                         <ul class="sidebar-nav ps-4">
                             <li class="sidebar-item {{ Route::is('admin.pagos.confirmados') ? 'active' : '' }}">
@@ -156,7 +157,7 @@
                 <li class="sidebar-header">Componentes</li>
 
                 {{-- Membresías: Administrador + Recepcionista --}}
-                @if(in_array(auth()->user()->rol, ['Administrador', 'Recepcionista']))
+                @if(in_array(auth()->user()->rol, ['Administrador']))
                 <li class="sidebar-item {{ Route::is('admin.membresias') ? 'active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.membresias') }}">
                         <i class="align-middle" data-feather="star"></i>
@@ -176,7 +177,7 @@
                 @endif
 
                 {{-- Productos: Solo Administrador --}}
-                @if(auth()->user()->rol == 'Administrador')
+                @if(in_array(auth()->user()->rol, ['Administrador', 'Recepcionista']))
                 <li class="sidebar-item {{ Route::is('admin.productos') ? 'active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.productos') }}">
                         <i class="align-middle" data-feather="grid"></i>

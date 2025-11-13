@@ -14,6 +14,7 @@ class PagoMembresia extends Model
     protected $fillable = [
         'cliente_id',
         'membresia_id',
+        'usuario_id',
         'fecha_inicio',
         'fecha_fin',
         'monto',
@@ -24,7 +25,7 @@ class PagoMembresia extends Model
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_fin' => 'date',
-        'monto' => 'decimal:2',
+        'monto' => 'decimal:0',
     ];
 
     // Relaciones
@@ -38,9 +39,14 @@ class PagoMembresia extends Model
         return $this->belongsTo(Membresia::class);
     }
 
+    public function usuario()
+    {
+        // Si el usuario se elimina, el pago se mantiene
+        return $this->belongsTo(Usuario::class, 'usuario_id')->withDefault();
+    }
+
     public function comprobante()
     {
         return $this->hasOne(Comprobante::class, 'id_pago_membresia');
     }
 }
-

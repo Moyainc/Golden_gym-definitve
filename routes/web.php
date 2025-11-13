@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/admin/perfil/actualizar', [PerfilController::class, 'updateProfile'])->name('perfil.update');
     Route::post('/admin/perfil/cambiar-contrasena', [PerfilController::class, 'changePassword'])->name('perfil.changePassword');
     Route::post('/admin/perfil/eliminar-foto', [PerfilController::class, 'deletePhoto'])->name('perfil.eliminar-foto');
+    Route::get('/admin/soporte', [HomeController::class, 'soporte'])->name('admin.soporte');
 
 
     // _------------------------------------- ADMINISTRADOR ==================================
@@ -63,14 +64,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/excel', [ResumenGeneralController::class, 'exportExcel'])->name('resumen.excel');
         });
 
-        Route::get('/admin/pagos/confirmados', [PagoPendienteController::class, 'indexList'])->name('admin.pagos.confirmados');
-        Route::get('admin/pagos/pendientes', [PagoPendienteController::class, 'index'])->name('admin.pagos.pendientes');
-        Route::get('/admin/pagos/confirmados/json', [PagoPendienteController::class, 'listar'])->name('admin.pagos.confirmados.json');
-        Route::post('admin/pagos/subir-comprobante', [PagoPendienteController::class, 'subirComprobante'])->name('pagos.subirComprobante');
-        Route::get('admin/pagos/pendientes/json', [PagoPendienteController::class, 'getPagosPendientesJson'])->name('pagos.pendientes.json');
-        Route::post('/admin/pagos/eliminar-comprobante', [PagoPendienteController::class, 'eliminarComprobante'])->name('admin.pagos.eliminarComprobante');
-
-
 
         // ADMIN → CLIENTES
         Route::get('admin/clientes', [HomeController::class, 'clientes'])->name('admin.clientes');
@@ -85,14 +78,18 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/export/pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export.pdf');
             Route::get('/export/excel', [ClienteController::class, 'exportExcel'])->name('clientes.export.excel');
         });
+
+
         // ADMIN → CLIENTES → PAGOS DIARIOS
         Route::prefix('admin/pagos-diarios')->group(function () {
             Route::get('/list/json', [PagoDiarioController::class, 'index']);
             Route::post('/json', [PagoDiarioController::class, 'store']);
             Route::delete('/json/{id}', [PagoDiarioController::class, 'destroy']);
         });
-        // 🔸 Usuarios
-        Route::get('/admin/soporte', [HomeController::class, 'soporte'])->name('admin.soporte');
+
+
+
+        // Usuarios
         Route::get('/admin/usuarios', [HomeController::class, 'usuarios'])->name('admin.usuarios');
         Route::post('/admin/usuarios', [HomeController::class, 'store'])->name('admin.usuarios.store');
         Route::get('/admin/usuarios/{id}/edit', [HomeController::class, 'editUsuario'])->name('admin.usuarios.edit');
@@ -104,13 +101,11 @@ Route::middleware(['auth'])->group(function () {
         //Membresias
         Route::get('/admin/membresias/estadisticas', [MembresiaController::class, 'estadisticas']);
         Route::get('admin/membresias', [HomeController::class, 'membresias'])->name('admin.membresias');
-        Route::prefix('admin/membresias')->group(function () {
-            Route::get('/list/json', [MembresiaController::class, 'index']);
-            Route::get('/json/{id}', [MembresiaController::class, 'edit']);
-            Route::post('/json', [MembresiaController::class, 'store']);
-            Route::put('/json/{id}', [MembresiaController::class, 'update']);
-            Route::delete('/json/{id}', [MembresiaController::class, 'destroy']);
-        });
+        Route::get('admin/membresias/json/{id}', [MembresiaController::class, 'edit']);
+        Route::post('admin/membresias/json', [MembresiaController::class, 'store']);
+        Route::put('admin/membresias/json/{id}', [MembresiaController::class, 'update']);
+        Route::delete('admin/membresias/json/{id}', [MembresiaController::class, 'destroy']);
+
 
 
         //contabilidad y pagos
@@ -138,6 +133,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/export/pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export.pdf');
             Route::get('/export/excel', [ClienteController::class, 'exportExcel'])->name('clientes.export.excel');
         });
+        Route::get('admin/membresias/list/json', [MembresiaController::class, 'index']);
 
 
         //Categorias
@@ -179,6 +175,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
         Route::get('/admin/ventas/{id}', [VentaController::class, 'showVentaDetalle'])->name('ventas.detalle');
         Route::patch('/admin/ventas/{venta}/anular', [VentaController::class, 'anularVenta']);
+
+
+        Route::get('/admin/pagos/confirmados', [PagoPendienteController::class, 'indexList'])->name('admin.pagos.confirmados');
+        Route::get('admin/pagos/pendientes', [PagoPendienteController::class, 'index'])->name('admin.pagos.pendientes');
+        Route::get('/admin/pagos/confirmados/json', [PagoPendienteController::class, 'listar'])->name('admin.pagos.confirmados.json');
+        Route::post('admin/pagos/subir-comprobante', [PagoPendienteController::class, 'subirComprobante'])->name('pagos.subirComprobante');
+        Route::get('admin/pagos/pendientes/json', [PagoPendienteController::class, 'getPagosPendientesJson'])->name('pagos.pendientes.json');
+        Route::post('/admin/pagos/eliminar-comprobante', [PagoPendienteController::class, 'eliminarComprobante'])->name('admin.pagos.eliminarComprobante');
     });
 
     //                   ----------------------------- CONTADOR =============================
@@ -213,6 +217,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('admin/resumen-general/datos', [ResumenGeneralController::class, 'obtenerDatos'])->name('admin.general.datos');
     });
 
+
+    Route::middleware(['checkrole:Administrador,Contador,Recepcionista'])->group(function () {
+
+        Route::get('/admin/pagos/confirmados', [PagoPendienteController::class, 'indexList'])->name('admin.pagos.confirmados');
+        Route::get('admin/pagos/pendientes', [PagoPendienteController::class, 'index'])->name('admin.pagos.pendientes');
+        Route::get('/admin/pagos/confirmados/json', [PagoPendienteController::class, 'listar'])->name('admin.pagos.confirmados.json');
+        Route::post('admin/pagos/subir-comprobante', [PagoPendienteController::class, 'subirComprobante'])->name('pagos.subirComprobante');
+        Route::get('admin/pagos/pendientes/json', [PagoPendienteController::class, 'getPagosPendientesJson'])->name('pagos.pendientes.json');
+        Route::post('/admin/pagos/eliminar-comprobante', [PagoPendienteController::class, 'eliminarComprobante'])->name('admin.pagos.eliminarComprobante');
+    });
 
     //Logout (todos los roles)
     Route::get('errors/page-blank', [HomeController::class, 'pageBlank'])->name('errors.page-blank');
