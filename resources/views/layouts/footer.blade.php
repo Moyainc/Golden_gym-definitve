@@ -12,16 +12,7 @@
       <div class="col-md-4 text-center mb-md-0">
         <ul class="list-inline mb-0">
           <li class="list-inline-item mx-2">
-            <a class="text-secondary text-decoration-none hover-yellow" href="#">Support</a>
-          </li>
-          <li class="list-inline-item mx-2">
-            <a class="text-secondary text-decoration-none hover-yellow" href="#">Help Center</a>
-          </li>
-          <li class="list-inline-item mx-2">
-            <a class="text-secondary text-decoration-none hover-yellow" href="#">Privacy</a>
-          </li>
-          <li class="list-inline-item mx-2">
-            <a class="text-secondary text-decoration-none hover-yellow" href="#">Terms</a>
+            <a class="text-secondary text-decoration-none hover-yellow" href="{{ route('admin.soporte') }}">Centro de ayuda</a>
           </li>
         </ul>
       </div>
