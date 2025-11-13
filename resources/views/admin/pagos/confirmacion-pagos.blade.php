@@ -50,6 +50,20 @@
                 <!-- Filas generadas dinámicamente -->
               </tbody>
             </table>
+
+            <div class="card-footer border-0 d-flex justify-content-between align-items-center py-3 px-3">
+              <nav aria-label="Paginación de pagos">
+                <ul class="pagination-modern d-flex align-items-center gap-2 mb-0 list-unstyled">
+                  <!-- generado por JS -->
+                </ul>
+              </nav>
+
+              <span id="paginationInfo" class="text-light small fw-light opacity-75">
+                <!-- info de paginación -->
+              </span>
+            </div>
+
+
           </div>
         </div>
 

@@ -26,12 +26,10 @@
             <div class="row g-2 align-items-end">
               <!-- Método -->
               <div class="col-md-2">
-                <label class="form-label text-light">Método de Pago</label>
+                <label class="form-label text-light">Comprobante</label>
                 <select id="filterMetodo" class="form-select form-select-sm">
                   <option value="">Todos</option>
-                  <option value="Efectivo">Efectivo</option>
-                  <option value="Transferencia">Transferencia</option>
-                  <option value="Tarjeta">Tarjeta</option>
+                  <option value="Efectivo">Sin comprobante</option>
                 </select>
               </div>
 
@@ -55,6 +53,13 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="text-white mb-0">
+            <i data-feather="list"></i>
+            <span id="contadorPagos">Cargando pagos...</span>
+          </h6>
         </div>
 
         <!-- Tabla -->
