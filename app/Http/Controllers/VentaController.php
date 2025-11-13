@@ -81,16 +81,17 @@ class VentaController extends Controller
    */
   public function store(Request $request)
   {
-    $request->validate([
-      'cliente_id' => 'required|exists:clientes,id',
-      'usuario_id' => 'required|exists:usuarios,id',
-      'productos' => 'required|array|min:1',
-      'productos.*.producto_id' => 'required|exists:productos,id',
-      'productos.*.cantidad' => 'required|integer|min:1',
-      'productos.*.subtotal' => 'required|numeric|min:0',
-      'total' => 'required|numeric|min:0',
-      'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
-    ],
+    $request->validate(
+      [
+        'cliente_id' => 'required|exists:clientes,id',
+        'usuario_id' => 'required|exists:usuarios,id',
+        'productos' => 'required|array|min:1',
+        'productos.*.producto_id' => 'required|exists:productos,id',
+        'productos.*.cantidad' => 'required|integer|min:1',
+        'productos.*.subtotal' => 'required|numeric|min:0',
+        'total' => 'required|numeric|min:0',
+        'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
+      ],
       [
         'productos.required' => 'Debe agregar al menos un producto.',
         'productos.*.producto_id.exists' => 'El producto seleccionado no existe.',
@@ -98,7 +99,8 @@ class VentaController extends Controller
         'estado.in' => 'El estado no valido.',
         'metodo_pago.in' => 'El método de pago debe ser Efectivo o Transferencia.',
 
-      ]);
+      ]
+    );
 
     DB::beginTransaction();
 
@@ -516,19 +518,24 @@ class VentaController extends Controller
 
 
   public function anularVenta(Request $request, Venta $venta)
-{
+  {
     $request->validate([
-        'estado' => 'required|in:Anulada',
+      'estado' => 'required|in:Anulada',
     ]);
 
     if ($venta->estado === 'Anulada') {
-        return response()->json(['message' => 'La venta ya está anulada'], 400);
+      return response()->json(['message' => 'La venta ya está anulada'], 400);
     }
 
+    // Cambiar estado de la venta
     $venta->estado = 'Anulada';
     $venta->save();
 
-    return response()->json(['message' => 'Venta anulada correctamente']);
-}
+    // Actualizar el registro asociado en PagosGenerales
+    PagoGeneral::where('origen_type', Venta::class)
+      ->where('origen_id', $venta->id)
+      ->update(['estado' => 'Anulada']);
 
+    return response()->json(['message' => 'Venta anulada correctamente']);
+  }
 }

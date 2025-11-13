@@ -25,15 +25,21 @@ class DashboardController extends Controller
     $start = $filter === 'week' ? Carbon::now()->startOfWeek() : Carbon::now()->startOfMonth();
     $end = Carbon::now();
 
-    // Productos vendidos
-    $ventas = Venta::whereBetween('fecha_venta', [$start, $end])->sum('total');
+    // Productos vendidos (excluyendo anuladas)
+    $ventas = Venta::whereBetween('fecha_venta', [$start, $end])
+      ->where('estado', '!=', 'Anulada')
+      ->sum('total');
 
-    // Membresías (PagoMembresia + PagoDiario)
+    // Membresías (PagoMembresia + PagoDiario) no requieren estado
     $membresias = PagoMembresia::whereBetween('fecha_inicio', [$start, $end])->sum('monto') +
       PagoDiario::whereBetween('fecha', [$start, $end])->sum('monto');
 
-    // Total (pagos_generales)
-    $total = PagoGeneral::whereBetween('fecha_pago', [$start, $end])->sum('monto');
+    // Total (pagos_generales) excluyendo ventas anuladas
+    $total = PagoGeneral::whereBetween('fecha_pago', [$start, $end])
+      ->where(function ($q) {
+        $q->where('estado', '!=', 'Anulada')->orWhereNull('estado');
+      })
+      ->sum('monto');
 
     // Nuevos clientes
     $clientes = Cliente::whereBetween('created_at', [$start, $end])->count();
@@ -45,12 +51,27 @@ class DashboardController extends Controller
     $comparisons = [
       'ventas' => $this->percentageChange(
         $ventas,
-        Venta::whereBetween('fecha_venta', [$prevStart, $prevEnd])->sum('total')
+        Venta::whereBetween('fecha_venta', [$prevStart, $prevEnd])
+          ->where('estado', '!=', 'Anulada')
+          ->sum('total')
       ),
-      'membresias' => $this->percentageChange($membresias, PagoMembresia::whereBetween('fecha_inicio', [$prevStart, $prevEnd])->sum('monto') +
-        PagoDiario::whereBetween('fecha', [$prevStart, $prevEnd])->sum('monto')),
-      'total' => $this->percentageChange($total, PagoGeneral::whereBetween('fecha_pago', [$prevStart, $prevEnd])->sum('monto')),
-      'clientes' => $this->percentageChange($clientes, Cliente::whereBetween('created_at', [$prevStart, $prevEnd])->count()),
+      'membresias' => $this->percentageChange(
+        $membresias,
+        PagoMembresia::whereBetween('fecha_inicio', [$prevStart, $prevEnd])->sum('monto') +
+          PagoDiario::whereBetween('fecha', [$prevStart, $prevEnd])->sum('monto')
+      ),
+      'total' => $this->percentageChange(
+        $total,
+        PagoGeneral::whereBetween('fecha_pago', [$prevStart, $prevEnd])
+          ->where(function ($q) {
+            $q->where('estado', '!=', 'Anulada')->orWhereNull('estado');
+          })
+          ->sum('monto')
+      ),
+      'clientes' => $this->percentageChange(
+        $clientes,
+        Cliente::whereBetween('created_at', [$prevStart, $prevEnd])->count()
+      ),
     ];
 
     return response()->json([
@@ -70,6 +91,10 @@ class DashboardController extends Controller
       DB::raw('SUM(monto) as total')
     )
       ->whereYear('fecha_pago', Carbon::now()->year)
+      ->where(function ($q) {
+        $q->where('estado', '!=', 'Anulada')
+          ->orWhereNull('estado');
+      })
       ->groupBy('month')
       ->orderBy('month')
       ->get();
@@ -82,6 +107,7 @@ class DashboardController extends Controller
       'totals' => $totals,
     ]);
   }
+
 
   // Gráfico ingresos por membresías
   public function membershipChart()
