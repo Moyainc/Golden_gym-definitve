@@ -105,4 +105,9 @@ class Venta extends Model
         $this->total = $this->detalles()->sum('subtotal');
         $this->save();
     }
+
+    public function comprobante()
+    {
+        return $this->hasOne(Comprobante::class, 'id_ventas');
+    }
 }

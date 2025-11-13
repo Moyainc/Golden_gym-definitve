@@ -126,6 +126,7 @@
                 </thead>
                 <tbody id="ventasUltimas5" class="text-light">
                   <!-- JS insertará las últimas 5 ventas -->
+
                 </tbody>
               </table>
             </div>
@@ -217,6 +218,8 @@
                   </select>
                 </div>
 
+
+
                 <div class="col-3">
                   <label for="totalRapida" class="form-label">Total Final</label>
                   <input
@@ -245,7 +248,6 @@
     </div>
   </div>
 </div>
-
 
 <script src="{{ asset('js/ventas/funcionalidad-ventas.js') }}"></script>
 <script src="{{ asset('js/ventas/venta-productos.js') }}"></script>

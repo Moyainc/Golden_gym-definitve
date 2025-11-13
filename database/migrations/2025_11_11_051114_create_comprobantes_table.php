@@ -11,11 +11,13 @@ return new class extends Migration
         Schema::create('comprobantes', function (Blueprint $table) {
             $table->id();
             $table->string('foto_comprobante')->nullable();
-            $table->foreignId('id_usuario')->nullable()->constrained('usuarios');
-            $table->foreignId('id_cliente')->nullable()->constrained('clientes');
-            $table->foreignId('id_pago_membresia')->nullable()->constrained('pagos_membresias');
-            $table->foreignId('id_pagos_diarios')->nullable()->constrained('pagos_diarios');
-            $table->foreignId('id_ventas')->nullable()->constrained('ventas');
+            $table->foreignId('id_usuario')->nullable()->constrained('usuarios')->nullOnDelete();
+            $table->foreignId('id_cliente')->nullable()->constrained('clientes')->nullOnDelete();
+            $table->foreignId('id_pago_membresia')->nullable()->constrained('pagos_membresias')->nullOnDelete();
+            $table->foreignId('id_pagos_diarios')->nullable()->constrained('pagos_diarios')->nullOnDelete();
+            $table->foreignId('id_ventas')->nullable()->constrained('ventas')->nullOnDelete();
+            $table->timestamp('fecha_subida')->useCurrent(); // fecha en que se subió el pantallazo, por defecto ahora
+
             $table->timestamps();
             $table->softDeletes();
         });

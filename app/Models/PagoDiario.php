@@ -22,4 +22,9 @@ class PagoDiario extends Model
         'fecha' => 'date:Y-m-d',
         'monto' => 'decimal:2',
     ];
+
+    public function comprobante()
+    {
+        return $this->hasOne(Comprobante::class, 'id_pagos_diarios');
+    }
 }

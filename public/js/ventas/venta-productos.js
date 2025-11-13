@@ -655,9 +655,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     form.reset();
                     calcularTotalRapida();
                     await cargarUltimasVentas();
-                    const modal = bootstrap.Modal.getInstance(
-                        document.getElementById("ventaRapidaModal")
-                    );
+
                     if (btnClose) btnClose.click();
                 } else {
                     showAlert(

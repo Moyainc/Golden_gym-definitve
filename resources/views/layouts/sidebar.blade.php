@@ -116,6 +116,43 @@
                 </li>
                 @endif
 
+                {{-- Pagos: Administrador + Contador --}}
+                @if(in_array(auth()->user()->rol, ['Administrador', 'Contador']))
+                <li class="sidebar-item">
+                    <a
+                        class="sidebar-link d-flex justify-content-between align-items-center {{ Request::routeIs('admin.lista_pagos') || Request::routeIs('admin.pagos_pendientes') ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse"
+                        href="#pagosMenu"
+                        role="button"
+                        aria-expanded="{{ Request::routeIs('admin.lista_pagos') || Request::routeIs('admin.pagos_pendientes') ? 'true' : 'false' }}"
+                        aria-controls="pagosMenu">
+                        <span>
+                            <i class="align-middle" data-feather="credit-card"></i>
+                            <span class="align-middle">Pagos</span>
+                        </span>
+                        <i data-feather="chevron-down" class="icon-sm"></i>
+                    </a>
+
+                    <div class="collapse {{ Request::routeIs('admin.lista_pagos') || Request::routeIs('admin.pagos_pendientes') ? 'show' : '' }}"
+                        id="pagosMenu" data-bs-parent="#sidebarAccordion">
+                        <ul class="sidebar-nav ps-4">
+                            <li class="sidebar-item {{ Route::is('admin.pagos.confirmados') ? 'active' : '' }}">
+                                <a class="sidebar-link" href="{{ route('admin.pagos.confirmados') }}">
+                                    <i class="align-middle" data-feather="list"></i>
+                                    <span class="align-middle">Lista de Pagos</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-item {{ Route::is('admin.pagos.pendientes') ? 'active' : '' }}">
+                                <a class="sidebar-link" href="{{ route('admin.pagos.pendientes') }}">
+                                    <i class="align-middle" data-feather="clock"></i>
+                                    <span class="align-middle">Pagos Pendientes</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+                @endif
+
                 <li class="sidebar-header">Componentes</li>
 
                 {{-- Membresías: Administrador + Recepcionista --}}
@@ -147,19 +184,7 @@
                     </a>
                 </li>
                 @endif
-
-
-
-                {{-- Confirmación de Pagos: Administrador + Contador --}}
-                @if(in_array(auth()->user()->rol, ['Administrador', 'Contador']))
-                <li class="sidebar-item {{ Route::is('admin.confirmacion_pagos') ? 'active' : '' }}">
-                    <a class="sidebar-link" href="{{ route('admin.confirmacion_pagos') }}">
-                        <i class="align-middle" data-feather="check-circle"></i>
-                        <span class="align-middle">Confirmación de Pagos</span>
-                    </a>
-                </li>
-                @endif
-
+            </div>
         </ul>
     </div>
 </nav>

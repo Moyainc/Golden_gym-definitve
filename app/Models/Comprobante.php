@@ -19,7 +19,9 @@ class Comprobante extends Model
         'id_pago_membresia',
         'id_pagos_diarios',
         'id_ventas',
+        'fecha_subida',
     ];
+
 
     /* Relaciones */
 

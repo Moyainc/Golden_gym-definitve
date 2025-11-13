@@ -312,9 +312,8 @@
                     name="metodo_pago"
                     class="form-select text-white border-0"
                     required>
-                    <option value="efectivo">Efectivo</option>
-                    <option value="transferencia">Transferencia</option>
-                    <option value="tarjeta">Tarjeta</option>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
                   </select>
                 </div>
 
