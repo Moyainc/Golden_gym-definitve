@@ -16,8 +16,6 @@ return new class extends Migration
             $table->foreignId('id_pago_membresia')->nullable()->constrained('pagos_membresias')->nullOnDelete();
             $table->foreignId('id_pagos_diarios')->nullable()->constrained('pagos_diarios')->nullOnDelete();
             $table->foreignId('id_ventas')->nullable()->constrained('ventas')->nullOnDelete();
-
-            $table->string('estado')->default('pendiente'); // 'pendiente' o 'completado'
             $table->timestamp('fecha_subida')->useCurrent(); // fecha en que se subió el pantallazo, por defecto ahora
 
             $table->timestamps();

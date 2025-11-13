@@ -21,10 +21,6 @@ class HomeController extends Controller
     {
         return view('admin/clientes');
     }
-    public function confirmacion_pagos()
-    {
-        return view('admin/confirmacion-pagos');
-    }
     public function soporte()
     {
         return view('admin/soporte');

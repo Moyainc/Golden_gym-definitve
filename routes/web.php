@@ -47,7 +47,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['checkrole:Administrador'])->group(function () {
 
-        Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
         Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
         Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
 
@@ -64,10 +63,13 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/excel', [ResumenGeneralController::class, 'exportExcel'])->name('resumen.excel');
         });
 
-
-        Route::get('admin/pagos/pendientes', [PagoPendienteController::class, 'index'])->name('pagos.pendientes');
+        Route::get('/admin/pagos/confirmados', [PagoPendienteController::class, 'indexList'])->name('admin.pagos.confirmados');
+        Route::get('admin/pagos/pendientes', [PagoPendienteController::class, 'index'])->name('admin.pagos.pendientes');
+        Route::get('/admin/pagos/confirmados/json', [PagoPendienteController::class, 'listar'])->name('admin.pagos.confirmados.json');
         Route::post('admin/pagos/subir-comprobante', [PagoPendienteController::class, 'subirComprobante'])->name('pagos.subirComprobante');
         Route::get('admin/pagos/pendientes/json', [PagoPendienteController::class, 'getPagosPendientesJson'])->name('pagos.pendientes.json');
+        Route::post('/admin/pagos/eliminar-comprobante', [PagoPendienteController::class, 'eliminarComprobante'])->name('admin.pagos.eliminarComprobante');
+
 
 
         // ADMIN → CLIENTES
@@ -112,7 +114,6 @@ Route::middleware(['auth'])->group(function () {
 
 
         //contabilidad y pagos
-        Route::get('admin/confirmacion-pagos', [HomeController::class, 'confirmacion_pagos'])->name('admin.confirmacion_pagos');
         Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
         Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
         Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');

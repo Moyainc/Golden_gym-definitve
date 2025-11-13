@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         pagosPendientes.forEach((pago) => {
             const row = document.createElement("tr");
             row.innerHTML = `
+                <td>${pago.transaccion}</td>
                 <td>${pago.cliente}</td>
                 <td>${pago.vendedor}</td>
                 <td>$${pago.monto}</td>
@@ -50,9 +51,17 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.addEventListener("click", (e) => {
                 currentPagoId = e.currentTarget.dataset.id;
                 currentTipo = e.currentTarget.dataset.tipo;
-                modalImg.src = e.currentTarget.dataset.proof
-                    ? `/storage/${e.currentTarget.dataset.proof}`
-                    : "";
+
+                const proofPath = e.currentTarget.dataset.proof;
+                if (proofPath) {
+                    // Construir la URL de manera segura sin duplicar /
+                    modalImg.src = apiUrl(
+                        `storage/${proofPath.replace(/^\/+/, "")}`
+                    );
+                } else {
+                    modalImg.src = "";
+                }
+
                 modalFile.value = "";
             });
         });
