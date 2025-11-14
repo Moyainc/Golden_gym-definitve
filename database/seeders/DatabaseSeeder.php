@@ -2,37 +2,18 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Usuario;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-
+    /**
+     * Seed the application's database.
+     */
     public function run(): void
     {
-        // // Crear un usuario de prueba si no existe
-        // Usuario::firstOrCreate(
-        //     ['correo' => 'admin@example.com'],
-        //     [
-        //         'nombre_completo' => 'Admin',
-        //         'rol' => 'Administrador',
-        //         'password' => bcrypt('password')
-        //     ]
-        // );
-
-        // Aquí llamas al seeder de entrenadores
-        $this->call(EntrenadoresSeeder::class);
-
+        // Solo ejecuta el seeder de super admin
         $this->call([
-            ClientesSeeder::class,
-            ProductosSeeder::class,
-            MembresiasSeeder::class,
-            VentasSeeder::class,
-            PagosMembresiaSeeder::class,
-            ComprobantesSeeder::class,
+            SuperAdminSeeder::class,
         ]);
     }
 }
