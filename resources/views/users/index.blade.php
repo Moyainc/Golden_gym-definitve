@@ -128,11 +128,20 @@
     <div class="footer-content">
 
       <div class="footer-social">
-        <a href="#" class="social-link"><i data-feather="facebook"></i></a>
-        <a href="#" class="social-link"><i data-feather="instagram"></i></a>
-        <a href="#" class="social-link"><i data-feather="twitter"></i></a>
-        <a href="#" class="social-link"><i data-feather="youtube"></i></a>
+        <a href="{{ $links?->facebook ?? '#' }}" target="_blank" class="social-link">
+          <i data-feather="facebook"></i>
+        </a>
+        <a href="{{ $links?->instagram ?? '#' }}" target="_blank" class="social-link">
+          <i data-feather="instagram"></i>
+        </a>
+        <a href="{{ $links?->twitter ?? '#' }}" target="_blank" class="social-link">
+          <i data-feather="twitter"></i>
+        </a>
+        <a href="{{ $links?->youtube ?? '#' }}" target="_blank" class="social-link">
+          <i data-feather="youtube"></i>
+        </a>
       </div>
+
 
       <p>&copy; 2025 Golden Gym. Todos los derechos reservados. | Diseñado para inspirar grandeza</p>
 

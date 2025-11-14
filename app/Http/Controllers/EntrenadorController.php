@@ -73,4 +73,31 @@ class EntrenadorController extends Controller
 
         return back()->with('success', 'Visibilidad actualizada.');
     }
+
+
+
+  // Enlaces Socialesssssss
+
+  // Guardar o actualizar enlaces
+  public function storeSocialLinks(Request $request)
+  {
+    $data = $request->only(['facebook', 'instagram', 'twitter', 'youtube']);
+
+    // Si ya hay registro, actualizar
+    $social = \App\Models\EnlaceSocial::first();
+    if ($social) {
+      $social->update($data);
+    } else {
+      \App\Models\EnlaceSocial::create($data);
+    }
+
+    return response()->json(['success' => true]);
+  }
+
+  // Obtener los links existentes (opcional si quieres precargar)
+  public function getSocialLinks()
+  {
+    $social = \App\Models\EnlaceSocial::first();
+    return response()->json($social);
+  }
 }

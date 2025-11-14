@@ -16,8 +16,11 @@ class HomeController extends Controller
     public function index()
     {
         $entrenadores = Entrenador::orderBy('id')->get();
-        return view('users.index', compact('entrenadores'));
+        $links = \App\Models\EnlaceSocial::first(); // Obtener los enlaces de redes sociales
+
+        return view('users.index', compact('entrenadores', 'links'));
     }
+
 
 
     public function clientes()

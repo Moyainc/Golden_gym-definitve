@@ -113,31 +113,28 @@
 
               <div class="card-body">
 
-                <form method="POST" action="">
+                <form id="socialLinksForm">
                   @csrf
 
                   <label class="form-label text-muted">Facebook</label>
-                  <input type="text" name="facebook" class="form-control input-dark mb-3"
-                    value="">
+                  <input type="text" name="facebook" id="facebook" class="form-control input-dark mb-3" value="">
 
                   <label class="form-label text-muted">Instagram</label>
-                  <input type="text" name="instagram" class="form-control input-dark mb-3"
-                    value="">
+                  <input type="text" name="instagram" id="instagram" class="form-control input-dark mb-3" value="">
 
                   <label class="form-label text-muted">Twitter</label>
-                  <input type="text" name="twitter" class="form-control input-dark mb-3"
-                    value="">
+                  <input type="text" name="twitter" id="twitter" class="form-control input-dark mb-3" value="">
 
                   <label class="form-label text-muted">YouTube</label>
-                  <input type="text" name="youtube" class="form-control input-dark mb-3"
-                    value="">
+                  <input type="text" name="youtube" id="youtube" class="form-control input-dark mb-3" value="">
 
-                  <button class="btn btn-warning fw-bold text-dark w-100 mt-3">
+                  <button type="submit" class="btn btn-warning fw-bold text-dark w-100 mt-3">
                     <i data-feather="save" class="me-1"></i> Guardar Cambios
                   </button>
                 </form>
 
               </div>
+
             </div>
           </div>
 
@@ -167,27 +164,28 @@
 
         <div class="modal-body">
 
-          <img id="previewImage"
-            src=""
-            class="img-fluid rounded mb-3 d-none border border-secondary"
-            alt="Vista previa">
+          <!-- Contenedor centrado de la imagen -->
+          <div id="previewContainer" class="d-none mb-3 d-flex justify-content-center">
+            <img id="previewImage" src="" class="img-fluid rounded border border-secondary"
+              style="max-height: 200px; object-fit: contain;"
+              alt="Vista previa">
+          </div>
 
           <label class="form-label text-muted">Nombre</label>
           <input type="text" name="nombre" id="trainerName"
-            class="form-control text-light bg-dark border-secondary mb-3" required>
+            class="form-control text-light mb-3" required>
 
           <label class="form-label text-muted">Descripción</label>
           <textarea name="descripcion" id="trainerDescription"
-            class="form-control text-light bg-dark border-secondary mb-3" rows="3"></textarea>
+            class="form-control text-light mb-3" rows="3"></textarea>
 
           <label class="form-label text-muted">Imagen</label>
           <input type="file" name="imagen" id="trainerImageInput"
-            class="form-control text-light bg-dark border-secondary">
+            class="form-control text-light">
         </div>
 
         <div class="modal-footer border-secondary">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-
           <button type="submit" class="btn btn-warning fw-bold text-dark">Guardar</button>
         </div>
 
@@ -195,6 +193,7 @@
     </div>
   </div>
 </div>
+
 
 <script src="{{ asset('js/edit-index.js') }}"></script>
 @endsection
