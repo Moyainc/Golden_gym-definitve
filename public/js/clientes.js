@@ -200,9 +200,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!res.ok) throw new Error("Error al cargar clientes");
             const data = await res.json();
             allClients = data.data || [];
-            clientsCountSpan.textContent = allClients.length;
+            clientsCountSpan.textContent = data.pagination.total;
             applyCurrentFilter();
+            renderClients(
+                allClients,
+                data.pagination.current_page,
+                data.pagination.per_page
+            );
             renderClientPagination(data.pagination);
+
         } catch (err) {
             console.error("Error cargando clientes:", err);
             tableBody.innerHTML = `<tr> <td colspan="9" class="text-center text-danger">Error al cargar clientes</td> </tr>`;
@@ -249,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    function renderClients(clients) {
+    function renderClients(clients, currentPage = 1, perPage = 10) {
         if (!clients.length) {
             tableBody.innerHTML = `<tr> <td colspan="9" class="text-center text-muted">No hay clientes registrados</td> </tr>`;
             return;
@@ -261,52 +267,54 @@ document.addEventListener("DOMContentLoaded", () => {
                         ? `${window.app.baseUrl}/storage/${cliente.foto}`
                         : apiUrl("/img/avatars/user.png");
 
-                    return `
-                    <tr>
+                // Número global
+                const globalIndex = (currentPage - 1) * perPage + index + 1;
 
-                    <td>${index + 1}</td>
-                    <td>
-                        <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
-                    </td>
-                    <td class="fw-semibold text-white">${
-                        cliente.nombre_completo
-                    }</td>
-                    <td class="text-muted">${cliente.cedula || "N/A"}</td>
-                    <td>
-                        <span class="badge bg-primary bg-opacity-75">${
-                            cliente.membresia_nombre || "Sin membresía"
-                        }</span>
-                    </td>
-                    <td class="text-muted small">${formatDateDisplay(
-                        cliente.fecha_inicio
-                    )}</td>
-                    <td class="text-muted small">${formatDateDisplay(
-                        cliente.fecha_fin
-                    )}</td>
-                    <td>${getEstadoBadge(cliente.estado)}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${
-                            cliente.id
-                        }" title="Ver cliente">
-                            <i data-feather="eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${
-                            cliente.id
-                        }" title="Editar">
-                            <i data-feather="edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${
-                            cliente.id
-                        }" title="Renovar membresía">
-                            <i data-feather="refresh-cw"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${
-                            cliente.id
-                        }" title="Eliminar">
-                            <i data-feather="trash-2"></i>
-                        </button>
-                    </td>
-                </tr>`;
+                return `
+            <tr>
+                <td>${globalIndex}</td>
+                <td>
+                    <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
+                </td>
+                <td class="fw-semibold text-white">${
+                    cliente.nombre_completo
+                }</td>
+                <td class="text-muted">${cliente.cedula || "N/A"}</td>
+                <td>
+                    <span class="badge bg-primary bg-opacity-75">${
+                        cliente.membresia_nombre || "Sin membresía"
+                    }</span>
+                </td>
+                <td class="text-muted small">${formatDateDisplay(
+                    cliente.fecha_inicio
+                )}</td>
+                <td class="text-muted small">${formatDateDisplay(
+                    cliente.fecha_fin
+                )}</td>
+                <td>${getEstadoBadge(cliente.estado)}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${
+                        cliente.id
+                    }" title="Ver cliente">
+                        <i data-feather="eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${
+                        cliente.id
+                    }" title="Editar">
+                        <i data-feather="edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${
+                        cliente.id
+                    }" title="Renovar membresía">
+                        <i data-feather="refresh-cw"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${
+                        cliente.id
+                    }" title="Eliminar">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </td>
+            </tr>`;
             })
             .join("");
         feather.replace();
