@@ -85,7 +85,7 @@
           </div>
         </div>
         <div class="map-container fade-in">
-          <iframe src="https://www.google.com/maps/embed?pb=!1m12!1m8!1m3!1d1985.0928203377246!2d-76.64194168785639!3d5.686291339816675!3m2!1i1024!2i768!4f13.1!2m1!1smaps%20google%20golden%20gym%20quibdo%20choco!5e0!3m2!1ses!2sco!4v1763114658858!5m2!1ses!2sco" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d992.5464173885115!2d-76.64183989422426!3d5.686287154267455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e488f628796fb3b%3A0xdc72e49194fbdcdc!2zQ2wuIDI0ICMgMjUtMTQzLCBRdWliZMOzLCBDaG9jw7M!5e0!3m2!1ses!2sco!4v1763145672569!5m2!1ses!2sco" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
       </div>
     </div>
