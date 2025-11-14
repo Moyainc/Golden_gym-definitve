@@ -18,15 +18,6 @@ class Handler extends ExceptionHandler
 
   public function render($request, Throwable $exception)
   {
-    // Código de error por defecto
-    $status = 500;
-
-    // Si es una excepción HTTP (404, 403, etc.)
-    if ($this->isHttpException($exception) && $exception instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
-      $status = $exception->getStatusCode();
-    }
-
-    // Devuelve la misma vista para todos los errores
-    return response()->view('errors/page-blank', ['code' => $status], $status);
+    return parent::render($request, $exception);
   }
 }
