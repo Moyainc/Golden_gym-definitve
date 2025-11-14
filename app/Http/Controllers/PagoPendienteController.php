@@ -100,6 +100,7 @@ class PagoPendienteController extends Controller
   {
     $usuarios = Usuario::all()->keyBy('id');
 
+    // Pagos diarios pendientes
     $pagosDiarios = PagoDiario::where('metodo_pago', 'Transferencia')
       ->where(function ($q) {
         $q->whereDoesntHave('comprobante')
@@ -115,14 +116,15 @@ class PagoPendienteController extends Controller
           'vendedor' => 'Desconocido',
           'monto' => number_format($p->monto, 0, ',', '.'),
           'metodo' => $p->metodo_pago,
-          'fecha' => $p->fecha->format('Y-m-d'),
-          'fecha_completa' => $p->fecha,
+          'fecha' => $p->created_at->format('Y-m-d'),
+          'fecha_completa' => $p->created_at,
           'tipo' => 'diario',
           'transaccion' => 'Pago Diario',
           'foto_comprobante' => optional($p->comprobante)->foto_comprobante,
         ];
       });
 
+    // Pagos de membresía pendientes
     $pagosMembresias = PagoMembresia::where('metodo_pago', 'Transferencia')
       ->where(function ($q) {
         $q->whereDoesntHave('comprobante')
@@ -140,16 +142,17 @@ class PagoPendienteController extends Controller
           'vendedor' => $vendedor->nombre_completo ?? 'Desconocido',
           'monto' => number_format($p->monto, 0, ',', '.'),
           'metodo' => $p->metodo_pago,
-          'fecha' => $p->fecha_inicio->format('Y-m-d'),
-          'fecha_completa' => $p->fecha_inicio,
+          'fecha' => $p->created_at->format('Y-m-d'),
+          'fecha_completa' => $p->created_at,
           'tipo' => 'membresia',
           'transaccion' => 'Pago Membresía',
           'foto_comprobante' => optional($p->comprobante)->foto_comprobante,
         ];
       });
 
+    // Ventas pendientes
     $ventas = Venta::where('metodo_pago', 'Transferencia')
-      ->where('estado', '!=', 'Anulada') // <-- excluye ventas anuladas
+      ->where('estado', '!=', 'Anulada')
       ->where(function ($q) {
         $q->whereDoesntHave('comprobante')
           ->orWhereHas('comprobante', function ($sub) {
@@ -162,19 +165,19 @@ class PagoPendienteController extends Controller
         $vendedor = $usuarios->get($v->usuario_id);
         return [
           'id' => $v->id,
-          'cliente' => $v->cliente->nombre_completo ?? 'Desconocido',
+          'cliente' => $v->cliente->nombre_completo ?? 'Venta Rápida',
           'vendedor' => $vendedor->nombre_completo ?? 'Desconocido',
           'monto' => number_format($v->total, 0, ',', '.'),
           'metodo' => $v->metodo_pago,
-          'fecha' => $v->fecha_venta->format('Y-m-d'),
-          'fecha_completa' => $v->fecha_venta,
+          'fecha' => $v->created_at->format('Y-m-d'),
+          'fecha_completa' => $v->created_at,
           'tipo' => 'venta',
           'transaccion' => 'Venta',
           'foto_comprobante' => optional($v->comprobante)->foto_comprobante,
         ];
       });
 
-
+    // Combinar todas las transacciones y ordenar por created_at descendente
     $pagosPendientes = $pagosDiarios
       ->concat($pagosMembresias)
       ->concat($ventas)
@@ -187,6 +190,9 @@ class PagoPendienteController extends Controller
 
     return response()->json($pagosPendientes);
   }
+
+
+
 
 
 

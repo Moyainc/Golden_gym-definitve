@@ -1,3 +1,9 @@
+#spinnerProducts {
+    display: none;
+    /* se mostrará dinámicamente */
+    height: 150px;
+    /* altura del área de la tabla mientras carga */
+}
 
 /* Responsive de contenido central */
 .custom-container {

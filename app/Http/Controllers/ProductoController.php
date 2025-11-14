@@ -19,15 +19,17 @@ class ProductoController extends Controller
 {
   use HasPrecioFormatted;
 
-  // Listar todos los productos
-  public function list()
+  // Listar todos las ventas
+  public function listParaVenta()
   {
-    $productos = Producto::with('categoria')->get()->map(function ($producto) {
+    $productos = Producto::with('categoria')->orderBy('id')->get();
+
+    $productos = $productos->map(function ($producto) {
       return [
         'id' => $producto->id,
         'nombre' => $producto->nombre,
-        'categoria' => $producto->categoria,
         'categoria_id' => $producto->categoria_id,
+        'categoria' => $producto->categoria,
         'stock' => $producto->stock,
         'precio' => $producto->precio,
         'precio_formatted' => $producto->precioFormatted($producto->precio),
@@ -37,6 +39,36 @@ class ProductoController extends Controller
 
     return response()->json($productos);
   }
+
+
+
+  // Listar todos los productos
+  public function list(Request $request)
+{
+    $perPage = $request->input('per_page', 20); // productos por "página"
+    $page = $request->input('page', 1);
+
+    $query = Producto::with('categoria')->orderBy('id');
+
+    $productos = $query->paginate($perPage, ['*'], 'page', $page);
+
+    // Agregar precio formateado y otros campos
+    $productos->getCollection()->transform(function ($producto) {
+        return [
+            'id' => $producto->id,
+            'nombre' => $producto->nombre,
+            'categoria' => $producto->categoria,
+            'categoria_id' => $producto->categoria_id,
+            'stock' => $producto->stock,
+            'precio' => $producto->precio,
+            'precio_formatted' => $producto->precioFormatted($producto->precio),
+            'estado' => $producto->estado,
+        ];
+    });
+
+    return response()->json($productos);
+}
+
 
 
   // Crear un nuevo producto

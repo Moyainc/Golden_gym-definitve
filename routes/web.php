@@ -194,6 +194,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
         Route::get('/admin/ventas/{id}', [VentaController::class, 'showVentaDetalle'])->name('ventas.detalle');
         Route::patch('/admin/ventas/{venta}/anular', [VentaController::class, 'anularVenta']);
+        Route::get('/admin/productos/venta', [ProductoController::class, 'listParaVenta']);
+
 
 
         Route::get('/admin/pagos/confirmados', [PagoPendienteController::class, 'indexList'])->name('admin.pagos.confirmados');

@@ -148,11 +148,14 @@
                   </tr>
                 </thead>
                 <tbody id="productTable" class="text-light">
-                  <!-- JS insertará filas aquí -->
+                  <!-- Aquí van las filas de productos -->
                 </tbody>
               </table>
 
+              <!-- Sentinel al final -->
+              <div id="scrollSentinel" style="height: 1px;"></div>
             </div>
+
           </div>
         </div>
 

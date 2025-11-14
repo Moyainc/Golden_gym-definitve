@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!categoriaId) return;
 
             try {
-                const res = await fetch(apiUrl(`/admin/productos/list`));
+                const res = await fetch(apiUrl(`/admin/productos/venta`));
                 const productos = await res.json();
                 const filtrados = productos.filter(
                     (p) => p.categoria_id == categoriaId
@@ -427,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         async function cargarProductosRapida(categoriaId, selectProducto) {
             try {
-                const res = await fetch(apiUrl(`/admin/productos/list`));
+                const res = await fetch(apiUrl(`/admin/productos/venta`));
                 const productos = await res.json();
                 const filtrados = productos.filter(
                     (p) => p.categoria_id == categoriaId
