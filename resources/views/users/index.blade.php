@@ -2,90 +2,139 @@
 <html lang="es">
 
 <head>
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <meta name="description" content="Responsive Admin &amp; Dashboard Template" />
-  <meta name="author" content="AdminKit" />
-  <meta name="keywords" content="adminkit, bootstrap, dashboard, template, responsive, css, html" />
-
-  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Golden Gym - Transforma tu Cuerpo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="shortcut icon" href="{{ asset('img/icons/golden_gym.png') }}" />
-  <link rel="canonical" href="https://demo-basic.adminkit.io/" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="{{ asset('css/inicio_public.css') }}" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 
-  <title>Golden Gym</title>
-
-  <link href="{{ asset('css/app.css') }}" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
 
 </head>
 
 <body>
-  <!-- Preloader -->
-  <div id="preloader">
-    <div class="spinner"></div>
-  </div>
 
-  <!-- NAVBAR PRINCIPAL -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-black shadow-sm py-2 px-3 fixed-top" style="backdrop-filter: blur(6px); background: rgba(0,0,0,0.85);">
-    <div class="container-fluid d-flex align-items-center">
+  <!-- Navbar Golden Gym -->
+  <nav class="navbar">
+    <a href="#" class="navbar-brand">GOLDEN GYM</a>
+    <ul class="navbar-menu" id="navbarMenu">
+      <li><a href="#entrenadores">Entrenadores</a></li>
+      <li><a href="#localizacion">Localización</a></li>
+      <li><a href="#productos">Productos</a></li>
+      <li>
+        <a href="{{ route('usuario.login') }}" class="navbar-login">
+          <i class="fas fa-user"></i>
+        </a>
+      </li>
 
-      <!-- Logo + Nombre -->
-      <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url('/') }}">
-        <img src="{{ asset('img/icons/golden_gym.png') }}" alt="Golden Gym" style="width:40px; height:40px;">
-        <span class="fw-bold text-warning fs-5">Golden Gym</span>
-      </a>
-
-      <!-- Botón Hamburguesa -->
-      <button class="navbar-toggler bg-dark border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarGG">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <!-- Enlaces -->
-      <div class="collapse navbar-collapse" id="navbarGG">
-        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-4">
-
-          <li class="nav-item">
-            <a class="nav-link text-light fw-semibold hover-yellow" href="#entrenadores">
-              Entrenadores
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="nav-link text-light fw-semibold hover-yellow" href="#localizacion">
-              Localización
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a class="nav-link text-light fw-semibold hover-yellow" href="#productos">
-              Productos
-            </a>
-          </li>
-
-          <!-- Botón Login -->
-          <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
-            <a href="{{ route('login') }}" class="btn btn-warning text-dark fw-bold px-3 py-2">
-              Iniciar Sesión
-            </a>
-          </li>
-
-        </ul>
-      </div>
+    </ul>
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
   </nav>
 
 
-  <!-- Video de fondo -->
-  <div class="video-bg">
-    <video autoplay muted loop id="bgVideo">
-      <source src="{{ asset('img/photos/video-index.mp4') }}" type="video/mp4" />
-      Tu navegador no soporta video HTML5.
-    </video>
-    <div class="overlay"></div>
+  <div id="preloader">
+    <div class="spinner"></div>
   </div>
 
+  <section class="hero">
+    <video class="hero-video" autoplay muted loop playsinline>
+      <source src="{{ asset('img/photos/video-index.mp4') }}" type="video/mp4">
+    </video>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <a href="#entrenadores" class="cta-button">Comienza Hoy</a>
+    </div>
+  </section>
+
+  <!-- Trainers Section -->
+  <section id="entrenadores" class="section">
+    <h2 class="section-title">Nuestros Entrenadores</h2>
+    <div class="trainers-grid">
+      @forelse ($entrenadores as $trainer)
+      <div class="trainer-card fade-in">
+        <img src="{{ asset('storage/' . $trainer->imagen) }}"
+          alt="{{ $trainer->nombre }}"
+          class="trainer-image">
+        <h3 class="trainer-name">{{ strtoupper($trainer->nombre) }}</h3>
+        <p class="trainer-specialty">{{ $trainer->descripcion }}</p>
+      </div>
+      @empty
+      <p class="text-muted">No hay entrenadores disponibles por el momento.</p>
+      @endforelse
+    </div>
+  </section>
+
+
+  <!-- Location Section -->
+  <section id="localizacion" class="location-section">
+    <div class="location-container">
+      <h2 class="section-title">Nuestra Ubicación</h2>
+      <div class="location-content">
+        <div class="location-text fade-in">
+          <div class="location-animated-text" id="animated-text"></div>
+          <div class="location-details">
+            <p><strong>📍 Dirección:</strong> Av. Principal 123, Ciudad</p>
+            <p><strong>📞 Teléfono:</strong> +1 (555) 123-4567</p>
+            <p><strong>🕐 Horario:</strong> Lunes a Viernes: 6:00 AM - 11:00 PM<br>Sábado y Domingo: 8:00 AM - 8:00 PM</p>
+          </div>
+        </div>
+        <div class="map-container fade-in">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d992.5464173885115!2d-76.64183989422426!3d5.686287154267455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e488f628796fb3b%3A0xdc72e49194fbdcdc!2zQ2wuIDI0ICMgMjUtMTQzLCBRdWliZMOzLCBDaG9jw7M!5e0!3m2!1ses!2sco!4v1763145672569!5m2!1ses!2sco" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Motivational Quote Section -->
+  <section class="quote-section">
+    <p class="quote-text fade-in">
+      Tu cuerpo puede resistir casi cualquier cosa. Es tu mente la que debes convencer. Ven a Golden Gym y descubre tu verdadero potencial.
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+
+      <div class="footer-social flex gap-4 justify-center items-center">
+        <a href="{{ $links?->facebook ?? '#' }}" class="social-link">
+          <i class="fa-brands fa-facebook-f fa-lg"></i>
+        </a>
+        <a href="{{ $links?->instagram ?? '#' }}" target="_blank" class="social-link">
+          <i class="fa-brands fa-instagram fa-lg"></i>
+        </a>
+        <a href="{{ $links?->x ?? '#' }}" target="_blank" class="social-link">
+          <i class="fa-brands fa-x-twitter fa-lg"></i>
+        </a>
+        <a href="{{ $links?->youtube ?? '#' }}" target="_blank" class="social-link">
+          <i class="fa-brands fa-youtube fa-lg"></i>
+        </a>
+      </div>
+
+
+
+      <p>&copy; 2025 Golden Gym. Todos los derechos reservados. | Diseñado para inspirar grandeza</p>
+
+    </div>
+  </footer>
+
+
+  <!-- JavaScript -->
   <script src="{{ asset('js/inicio_public.js') }}"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      feather.replace();
+    });
+  </script>
+
 </body>
 
 </html>

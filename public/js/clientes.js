@@ -192,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // === Cargar clientes ===
     let currentPage = 1;
+
     async function loadClients(page = 1) {
         try {
             const res = await fetch(
@@ -199,15 +200,31 @@ document.addEventListener("DOMContentLoaded", () => {
             );
             if (!res.ok) throw new Error("Error al cargar clientes");
             const data = await res.json();
+
             allClients = data.data || [];
-            clientsCountSpan.textContent = allClients.length;
-            applyCurrentFilter();
+            clientsCountSpan.textContent = data.pagination.total;
+
+            // Usamos la página actual del backend
+            currentPage = data.pagination.current_page;
+
+            // Aplicamos el filtro pero sin perder la numeración global
+            let filtered = allClients;
+            if (currentFilter === "activa") {
+                filtered = allClients.filter((c) => c.estado === "activa");
+            } else if (currentFilter === "proxima") {
+                filtered = allClients.filter((c) => c.estado === "proxima");
+            } else if (currentFilter === "vencida") {
+                filtered = allClients.filter((c) => c.estado === "vencida");
+            }
+
+            renderClients(filtered, currentPage, data.pagination.per_page);
             renderClientPagination(data.pagination);
         } catch (err) {
             console.error("Error cargando clientes:", err);
             tableBody.innerHTML = `<tr> <td colspan="9" class="text-center text-danger">Error al cargar clientes</td> </tr>`;
         }
     }
+
 
     function renderClientPagination(pagination) {
         const totalPaginas = pagination.total_pages || 1;
@@ -249,11 +266,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    function renderClients(clients) {
+    function renderClients(clients, current_page = 1, per_page = 10) {
         if (!clients.length) {
             tableBody.innerHTML = `<tr> <td colspan="9" class="text-center text-muted">No hay clientes registrados</td> </tr>`;
             return;
         }
+
         tableBody.innerHTML = clients
             .map((cliente, index) => {
                 const fotoUrl =
@@ -261,56 +279,59 @@ document.addEventListener("DOMContentLoaded", () => {
                         ? `${window.app.baseUrl}/storage/${cliente.foto}`
                         : apiUrl("/img/avatars/user.png");
 
-                    return `
-                    <tr>
+                const globalIndex = (current_page - 1) * per_page + index + 1;
 
-                    <td>${index + 1}</td>
-                    <td>
-                        <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
-                    </td>
-                    <td class="fw-semibold text-white">${
-                        cliente.nombre_completo
-                    }</td>
-                    <td class="text-muted">${cliente.cedula || "N/A"}</td>
-                    <td>
-                        <span class="badge bg-primary bg-opacity-75">${
-                            cliente.membresia_nombre || "Sin membresía"
-                        }</span>
-                    </td>
-                    <td class="text-muted small">${formatDateDisplay(
-                        cliente.fecha_inicio
-                    )}</td>
-                    <td class="text-muted small">${formatDateDisplay(
-                        cliente.fecha_fin
-                    )}</td>
-                    <td>${getEstadoBadge(cliente.estado)}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${
-                            cliente.id
-                        }" title="Ver cliente">
-                            <i data-feather="eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${
-                            cliente.id
-                        }" title="Editar">
-                            <i data-feather="edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${
-                            cliente.id
-                        }" title="Renovar membresía">
-                            <i data-feather="refresh-cw"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${
-                            cliente.id
-                        }" title="Eliminar">
-                            <i data-feather="trash-2"></i>
-                        </button>
-                    </td>
-                </tr>`;
+                return `
+            <tr>
+                <td>${globalIndex}</td>
+                <td>
+                    <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
+                </td>
+                <td class="fw-semibold text-white">${
+                    cliente.nombre_completo
+                }</td>
+                <td class="text-muted">${cliente.cedula || "N/A"}</td>
+                <td>
+                    <span class="badge bg-primary bg-opacity-75">${
+                        cliente.membresia_nombre || "Sin membresía"
+                    }</span>
+                </td>
+                <td class="text-muted small">${formatDateDisplay(
+                    cliente.fecha_inicio
+                )}</td>
+                <td class="text-muted small">${formatDateDisplay(
+                    cliente.fecha_fin
+                )}</td>
+                <td>${getEstadoBadge(cliente.estado)}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${
+                        cliente.id
+                    }" title="Ver cliente">
+                        <i data-feather="eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${
+                        cliente.id
+                    }" title="Editar">
+                        <i data-feather="edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${
+                        cliente.id
+                    }" title="Renovar membresía">
+                        <i data-feather="refresh-cw"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${
+                        cliente.id
+                    }" title="Eliminar">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </td>
+            </tr>`;
             })
             .join("");
+
         feather.replace();
     }
+
 
     // === Filtros ===
     function applyCurrentFilter() {
@@ -322,49 +343,37 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (currentFilter === "vencida") {
             filtered = allClients.filter((c) => c.estado === "vencida");
         }
-        renderClients(filtered);
+        renderClients(filtered, currentPage, 10); // 10 = per_page (o variable real)
     }
 
+
     document.querySelectorAll(".filter-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            const filterValue = e.currentTarget.dataset.filter;
+    btn.addEventListener("click", (e) => {
+        const filterValue = e.currentTarget.dataset.filter;
 
-            document.querySelectorAll(".filter-btn").forEach((b) => {
-                b.classList.remove("btn-warning");
-                b.classList.add("btn-dark");
-
-                const span = b.querySelector("span");
-                if (span) {
-                    span.classList.remove("text-dark");
-                    span.classList.add("text-light"); // texto claro para btn-dark
-                }
-            });
-
-            e.currentTarget.classList.remove("btn-dark");
-            e.currentTarget.classList.add("btn-warning");
-
-            const span = e.currentTarget.querySelector("span");
-            if (span) {
-                span.classList.remove("text-light");
-                span.classList.add(""); // texto negro para btn-warning
-            }
-
-            currentFilter = filterValue;
-
-            const filterLabels = {
-                activa: "Activas",
-                proxima: "Próximas a vencer",
-                vencida: "Vencidas",
-                todas: "Todas",
-            };
-
-            clientsFilteredLabel.textContent =
-                filterLabels[filterValue] || "Todas";
-
-            applyCurrentFilter();
+        document.querySelectorAll(".filter-btn").forEach((b) => {
+            b.classList.remove("btn-warning", "text-black");
+            b.classList.add("btn-dark", "text-light"); // texto claro para btn-dark
         });
-    });
 
+        e.currentTarget.classList.remove("btn-dark", "text-light");
+        e.currentTarget.classList.add("btn-warning", "text-black"); // texto negro para btn-warning
+
+        currentFilter = filterValue;
+
+        const filterLabels = {
+            activa: "Activas",
+            proxima: "Próximas a vencer",
+            vencida: "Vencidas",
+            todas: "Todas",
+        };
+
+        clientsFilteredLabel.textContent =
+            filterLabels[filterValue] || "Todas";
+
+        applyCurrentFilter();
+    });
+});
 
 
     // === Búsqueda ===

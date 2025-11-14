@@ -9,13 +9,19 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use App\Models\Membresia;
+use App\Models\Entrenador;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        return view('users/index');
+        $entrenadores = Entrenador::orderBy('id')->get();
+        $links = \App\Models\EnlaceSocial::first(); // Obtener los enlaces de redes sociales
+
+        return view('users.index', compact('entrenadores', 'links'));
     }
+
+
 
     public function clientes()
     {

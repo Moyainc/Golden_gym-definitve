@@ -23,10 +23,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const cargarPagos = async () => {
         const res = await fetch(apiUrl("admin/pagos/pendientes/json"));
         pagosPendientes = await res.json();
-        currentPage = 1;
+
+        pagosPendientes = pagosPendientes.map((p) => {
+            delete p.fecha_completa;
+            return p;
+        });
+
         renderTable();
         renderPagination();
     };
+
 
     const renderTable = () => {
         paymentsTable.innerHTML = "";

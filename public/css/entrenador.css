@@ -1,0 +1,24 @@
+.trainer-img {
+  height: 200px;
+  object-fit: cover;
+  filter: brightness(0.9);
+}
+
+.trainer-img:hover {
+  filter: brightness(1);
+}
+
+.trainer-card {
+  border-radius: 10px;
+}
+
+.input-dark {
+  background: #111;
+  border: 1px solid #333;
+  color: #eee;
+}
+
+.input-dark:focus {
+  border-color: #fcd52b;
+  box-shadow: 0 0 5px rgba(252, 213, 43, 0.4);
+}

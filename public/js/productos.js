@@ -356,10 +356,11 @@ const initializePage = () => {
                 ${prod.stock}
                 ${
                     Number(prod.stock) === 0
-                    ? '<span class="badge bg-danger ms-2">Agotado</span>'
-                    : Number(prod.stock) <= 10
+                        ? '<span class="badge bg-danger ms-2">Agotado</span>'
+                        : Number(prod.stock) <= 10
                         ? '<span class="badge bg-warning text-dark">Bajo</span>'
-                        : ""}
+                        : ""
+                }
             </td>
 
             <td>${prod.precio_formatted}</td>
@@ -393,23 +394,60 @@ const initializePage = () => {
         attachProductEvents();
     };
 
-    const loadProducts = async () => {
-        await loadCategoriasForProducts();
+    // LazyLoading Pagination
+    let currentPage = 1;
+    const perPage = 20;
+    let loadingProducts = false;
+    let lastPage = false;
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting && !loadingProducts && !lastPage) {
+                    loadProducts();
+                }
+            });
+        },
+        { root: null, rootMargin: "0px", threshold: 1.0 }
+    );
+
+    observer.observe(document.getElementById("scrollSentinel"));
+
+    const loadProducts = async (reset = false) => {
+        if (loadingProducts || lastPage) return;
+        loadingProducts = true;
+
+        if (reset) {
+            currentPage = 1;
+            lastPage = false;
+            allProducts = [];
+            productTable.innerHTML = "";
+        }
+
         try {
-            const res = await fetch(apiUrl("/admin/productos/list"));
+            const res = await fetch(
+                apiUrl(
+                    `/admin/productos/list?page=${currentPage}&per_page=${perPage}`
+                )
+            );
             const data = await res.json();
-            allProducts = data;
-            renderProducts(allProducts);
+
+            if (data.data.length === 0 || currentPage > data.last_page) {
+                lastPage = true;
+            } else {
+                allProducts = [...allProducts, ...data.data];
+                renderProducts(allProducts);
+                currentPage++;
+            }
         } catch (err) {
             console.error(err);
-            Swal.fire({
-                ...swalConfig,
-                icon: "error",
-                title: "Error",
-                text: "No se pudieron cargar los productos",
-            });
+        } finally {
+            loadingProducts = false;
         }
     };
+
+
+
 
     // -----------------------------
     // ELIMINAR PRODUCTOS

@@ -106,24 +106,29 @@ document.addEventListener("DOMContentLoaded", () => {
             ).map((v) => Math.round(v));
 
             // --- Pie Chart Categoría ---
+            // Limitar a las 5 categorías más vendidas
+            let categorias = Object.entries(data.ventasPorCategoria)
+                .map(([key, value]) => ({ key, value: Math.round(value) }))
+                .sort((a, b) => b.value - a.value) // descendente
+                .slice(0, 5); // solo las top 5
+
+            const categoriasLabels = categorias.map((c) => c.key);
+            const categoriasData = categorias.map((c) => c.value);
+
             if (chartCategoria) chartCategoria.destroy();
             chartCategoria = new Chart(ctxCategoria, {
                 type: "pie",
                 data: {
-                    labels: Object.keys(data.ventasPorCategoria),
+                    labels: categoriasLabels,
                     datasets: [
                         {
-                            data: ventasPorCategoriaValores,
+                            data: categoriasData,
                             backgroundColor: [
-                                "#FFD700", // Amarillo dorado (armoniza con botones)
-                                "#FFB347", // Amarillo-naranja suave
-                                "#4D96FF", // Azul brillante
-                                "#9B5DE5", // Morado vibrante
-                                "#FF69B4", // Rosa fuerte
-                                "#6BCB77", // Verde fresco
-                                "#00CED1", // Turquesa
-                                "#F4A261", // Amarillo-anaranjado pastel
-                                "#8AC926", // Verde lima vivo
+                                "#FFD700",
+                                "#FFB347",
+                                "#4D96FF",
+                                "#9B5DE5",
+                                "#FF69B4",
                             ],
                         },
                     ],
@@ -159,22 +164,27 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             // --- Bar Chart Productos ---
+            // Limitar a los 10 productos más vendidos
+            let productos = Object.entries(data.ventasPorProducto)
+                .map(([key, value]) => ({ key, value: Math.round(value) }))
+                .sort((a, b) => b.value - a.value) // descendente
+                .slice(0, 15);
+
+            const productosLabels = productos.map((p) => p.key);
+            const productosData = productos.map((p) => p.value);
+
             if (chartProducto) chartProducto.destroy();
-            // Limitar altura según cantidad de productos
-            const chartHeight = Math.min(
-                ventasPorProductoValores.length * 40,
-                600
-            );
+            const chartHeight = Math.min(productosData.length * 40, 600);
             ctxProducto.canvas.parentNode.style.height = chartHeight + "px";
 
             chartProducto = new Chart(ctxProducto, {
                 type: "bar",
                 data: {
-                    labels: Object.keys(data.ventasPorProducto),
+                    labels: productosLabels,
                     datasets: [
                         {
                             label: "Ventas por Producto",
-                            data: ventasPorProductoValores,
+                            data: productosData,
                             backgroundColor: "#ffd52b",
                             hoverBackgroundColor: "#fab300",
                         },

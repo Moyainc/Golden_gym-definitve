@@ -123,7 +123,7 @@
                 <div
                   class="card-header border-bottom border-secondary d-flex justify-content-between align-items-center">
                   <h6 class="mb-0 tittle-color">
-                    <i data-feather="user-check" class="me-1"></i>Últimos 15 Clientes
+                    <i data-feather="user-check" class="me-1"></i>Últimos 10 Clientes
                   </h6>
                 </div>
 

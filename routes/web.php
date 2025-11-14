@@ -15,6 +15,7 @@ use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResumenGeneralController;
 use App\Http\Controllers\PagoPendienteController;
+use App\Http\Controllers\EntrenadorController;
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
 // =========================
@@ -45,8 +46,27 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['checkrole:Administrador'])->group(function () {
 
+        Route::controller(EntrenadorController::class)->group(function () {
+            Route::get('/admin/entrenadores', 'index')->name('entrenadores.index');
+            Route::post('/admin/entrenadores', 'store')->name('entrenadores.store');
+            Route::put('/admin/entrenadores/{entrenador}', 'update')->name('entrenadores.update');
+            Route::delete('/admin/entrenadores/{entrenador}', 'destroy')->name('entrenadores.destroy');
+            Route::patch('/admin/entrenadores/{entrenador}/toggle', 'toggleVisibility')
+                ->name('entrenadores.toggle');
+        });
+
+
+        // Guardar o actualizar enlaces de redes sociales
+        Route::post('/admin/social-links', [EntrenadorController::class, 'storeSocialLinks'])
+            ->name('social-links.store');
+        Route::get('/admin/get-links', [EntrenadorController::class, 'getSocialLinks'])
+            ->name('social-links.get');
+
+
+
         Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
         Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
+
 
         // ADMIN → CONTABILIDAD / MEMBRESÍAS
         Route::get('admin/contabilidad/resumen-membresias', [ResumenMembresiasController::class, 'index'])->name('admin.resumen.membresias');
@@ -54,6 +74,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('admin/exportar/contabilidad-pdf', [ResumenMembresiasController::class, 'exportContabilidadPdf']);
         Route::get('admin/exportar/contabilidad-excel', [ResumenMembresiasController::class, 'exportContabilidadExcel']);
         Route::get('/admin/api/anios-disponibles', [ResumenMembresiasController::class, 'getAniosDisponibles']);
+
+
 
         // REPORTES RESIUMEN GENERAL
         Route::prefix('admin/resumen-general')->group(function () {
@@ -172,6 +194,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/ventas/ultimas', [VentaController::class, 'ultimasVentas'])->name('ventas.ultimas');
         Route::get('/admin/ventas/{id}', [VentaController::class, 'showVentaDetalle'])->name('ventas.detalle');
         Route::patch('/admin/ventas/{venta}/anular', [VentaController::class, 'anularVenta']);
+        Route::get('/admin/productos/venta', [ProductoController::class, 'listParaVenta']);
+
 
 
         Route::get('/admin/pagos/confirmados', [PagoPendienteController::class, 'indexList'])->name('admin.pagos.confirmados');

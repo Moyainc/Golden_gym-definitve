@@ -383,7 +383,7 @@ class VentaController extends Controller
     $fechaDesde = $request->query('fecha_desde');
     $fechaHasta = $request->query('fecha_hasta');
     $estado = $request->query('estado'); // Nuevo: permite filtrar por estado
-    $perPage = 3;
+    $perPage = 15;
 
     // Base query
     $query = Venta::with(['detalles.producto.categoria', 'usuario'])
