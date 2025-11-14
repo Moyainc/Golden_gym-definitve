@@ -16,10 +16,15 @@ class PagoDiario extends Model
         'monto',
         'fecha',
         'metodo_pago',
+        'usuario_id',
     ];
 
     protected $casts = [
         'fecha' => 'date:Y-m-d',
         'monto' => 'decimal:2',
     ];
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class);
+    }
 }

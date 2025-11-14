@@ -151,6 +151,12 @@
                 <h5 class="text-warning mb-0">
                   <i data-feather="list" class="me-1"></i> Últimos Movimientos Contables
                 </h5>
+                <input
+                  type="text"
+                  id="filtroMovimientos"
+                  class="form-control form-control-sm w-auto bg-dark text-white border-secondary"
+                  placeholder="Buscar..."
+                  style="min-width: 200px;" />
               </div>
 
               <div class="table-responsive">
@@ -158,6 +164,8 @@
                   <thead class="text-warning border-secondary">
                     <tr>
                       <th>Tipo</th>
+                      <th>Cliente / Miembro</th>
+                      <th>Registrado por</th>
                       <th>Método de Pago</th>
                       <th>Valor</th>
                       <th>Fecha</th>
@@ -181,11 +189,11 @@
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-dark border-0 text-white shadow-lg">
               <div class="modal-header border-secondary">
-                <h5 class="modal-title text-success"> <i data-feather="file-text" class="me-1"></i> Generar Reporte de Clientes </h5> <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title text-success"> <i data-feather="file-text" class="me-1"></i> Generar Reporte de Membresías </h5> <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
               </div>
               <form id="reportsForm" class="modal-body">
                 <div class="alert alert-info bg-opacity-10 border-info text-info">
-                  <i data-feather="info" class="me-1"></i> Selecciona un rango de fechas para filtrar los clientes por fecha de registro
+                  <i data-feather="info" class="me-1"></i> Selecciona un rango de fechas para filtrar por fecha de registro
                 </div>
                 <div class="mb-3">
                   <label class="form-label">Fecha inicio</label>

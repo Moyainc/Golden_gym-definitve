@@ -27,39 +27,53 @@ class ResumenMembresiasController extends Controller
         $anio = $request->input('anio', date('Y'));
 
         try {
-            $pagosMembresias = PagoMembresia::whereMonth('fecha_inicio', $mes)
-                ->whereYear('fecha_inicio', $anio)
-                ->with('cliente')
+            $pagosMembresias = PagoMembresia::where(function ($q) use ($mes, $anio) {
+                $q->whereMonth('fecha_inicio', $mes)
+                    ->whereYear('fecha_inicio', $anio);
+            })
+                ->orWhere('estado', 'anulado')
+                ->with(['cliente', 'usuario'])
                 ->get();
+
 
             $pagosDiarios = PagoDiario::whereMonth('fecha', $mes)
                 ->whereYear('fecha', $anio)
+                ->with('usuario')
                 ->get();
 
-            $totalMembresias = $pagosMembresias->sum('monto');
+            // Totales (sin incluir anuladas)
+            $totalMembresias = $pagosMembresias->where('estado', '!=', 'anulado')->sum('monto');
             $totalDiarios = $pagosDiarios->sum('monto');
             $totalGeneral = $totalMembresias + $totalDiarios;
-            $cantidadMembresias = $pagosMembresias->count();
+            $cantidadMembresias = $pagosMembresias->where('estado', '!=', 'anulado')->count();
 
             $movimientos = [];
 
+            // === MOVIMIENTOS DE MEMBRESÍAS (INCLUYE ANULADAS) ===
             foreach ($pagosMembresias as $pago) {
+                $estado = $pago->estado === 'anulado'
+                    ? 'Anulado'
+                    : $this->determinarEstado($pago->fecha_fin);
+
                 $movimientos[] = [
                     'id' => $pago->id,
                     'tipo' => 'Membresía',
-                    'detalle' => $pago->cliente->nombre_completo ?? 'Sin cliente',
+                    'nombre_completo' => $pago->cliente->nombre_completo ?? 'Sin cliente',
+                    'nombre_usuario' => $pago->usuario->nombre_completo ?? 'Desconocido',
                     'metodo_pago' => $pago->metodo_pago ?? 'No especificado',
                     'valor' => $pago->monto,
-                    'fecha' => $pago->fecha_inicio,
-                    'estado' => $this->determinarEstado($pago->fecha_fin),
+                    'fecha' => $pago->fecha_inicio ?? $pago->created_at,
+                    'estado' => ucfirst($estado),
                 ];
             }
 
+            // === MOVIMIENTOS DE PAGOS DIARIOS ===
             foreach ($pagosDiarios as $pago) {
                 $movimientos[] = [
                     'id' => $pago->id,
                     'tipo' => 'Pago Diario',
-                    'detalle' => $pago->nombre_cliente ?? 'Sin nombre',
+                    'nombre_completo' => $pago->nombre_cliente ?? 'Sin nombre',
+                    'nombre_usuario' => $pago->usuario->nombre_completo ?? 'Desconocido',
                     'metodo_pago' => $pago->metodo_pago ?? 'No especificado',
                     'valor' => $pago->monto ?? 0,
                     'fecha' => $pago->fecha ?? now(),
@@ -94,6 +108,7 @@ class ResumenMembresiasController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
 
     private function determinarEstado($fechaFin)
     {
@@ -142,7 +157,7 @@ class ResumenMembresiasController extends Controller
         $fecha_fin = $request->input('fecha_fin', date('Y-m-d'));
         $incluirPagosDiarios = $request->input('incluir_pagos_diarios', 0);
 
-        $pagosMembresias = PagoMembresia::with('cliente')
+        $pagosMembresias = PagoMembresia::with(['cliente', 'usuario'])
             ->whereBetween('fecha_inicio', [$fecha_inicio, $fecha_fin])
             ->get();
 
@@ -152,7 +167,9 @@ class ResumenMembresiasController extends Controller
 
         $pagosDiarios = collect();
         if ($incluirPagosDiarios) {
-            $pagosDiarios = PagoDiario::whereBetween('fecha', [$fecha_inicio, $fecha_fin])->get();
+            $pagosDiarios = PagoDiario::with('usuario')
+                ->whereBetween('fecha', [$fecha_inicio, $fecha_fin])
+                ->get();
         }
 
         $totalMembresias = $pagosMembresias->sum('monto');
@@ -184,13 +201,14 @@ class ResumenMembresiasController extends Controller
 
         $pagosMembresias = PagoMembresia::whereMonth('fecha_inicio', $mes)
             ->whereYear('fecha_inicio', $anio)
-            ->with('cliente')
+            ->with(['cliente', 'usuario'])
             ->get();
 
         $pagosDiarios = collect();
         if ($incluirPagosDiarios) {
             $pagosDiarios = PagoDiario::whereMonth('fecha', $mes)
                 ->whereYear('fecha', $anio)
+                ->with('usuario')
                 ->get();
         }
 
@@ -204,20 +222,25 @@ class ResumenMembresiasController extends Controller
         $spreadsheet = new Spreadsheet();
 
         /*
-    |--------------------------------------------------------------------------
-    | Hoja 1 - Membresías
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
+    | Hoja 1 - Membresías 
+    |-------------------------------------------------------------------------- 
     */
         $sheet1 = $spreadsheet->getActiveSheet();
         $sheet1->setTitle('Membresías');
 
-        $sheet1->fromArray(['ID', 'Cliente', 'Monto', 'Método de Pago', 'Fecha Inicio', 'Fecha Fin', 'Estado'], null, 'A1');
+        $sheet1->fromArray(
+            ['ID', 'Cliente', 'Registrado por', 'Monto', 'Método de Pago', 'Fecha Inicio', 'Fecha Fin', 'Estado'],
+            null,
+            'A1'
+        );
 
         $row = 2;
         foreach ($pagosMembresias as $pago) {
             $sheet1->fromArray([
                 $pago->id,
                 $pago->cliente->nombre_completo ?? 'Sin cliente',
+                $pago->usuario->nombre_completo ?? 'Desconocido',
                 $pago->monto,
                 $pago->metodo_pago,
                 Carbon::parse($pago->fecha_inicio)->format('d/m/Y'),
@@ -228,32 +251,39 @@ class ResumenMembresiasController extends Controller
         }
 
         $sheet1->setCellValue("A{$row}", 'TOTAL');
-        $sheet1->setCellValue("C{$row}", $totalMembresias);
-        $sheet1->getStyle("A{$row}:G{$row}")->getFont()->setBold(true);
+        $sheet1->setCellValue("D{$row}", $totalMembresias);
+        $sheet1->getStyle("A{$row}:H{$row}")->getFont()->setBold(true);
 
-        // Estilos generales hoja 1
-        $sheet1->getStyle('A1:G1')->getFont()->setBold(true);
-        $sheet1->getStyle('A1:G1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFD9E1F2');
-        $sheet1->getStyle("A1:G{$row}")
-            ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-        $sheet1->getStyle("A1:G{$row}")
-            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        foreach (range('A', 'G') as $col) $sheet1->getColumnDimension($col)->setAutoSize(true);
+        // Estilos hoja 1
+        $sheet1->getStyle('A1:H1')->getFont()->setBold(true);
+        $sheet1->getStyle('A1:H1')->getFill()->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFD9E1F2');
+        $sheet1->getStyle("A1:H{$row}")->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+        $sheet1->getStyle("A1:H{$row}")->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        foreach (range('A', 'H') as $col) $sheet1->getColumnDimension($col)->setAutoSize(true);
 
         /*
-    |--------------------------------------------------------------------------
-    | Hoja 2 - Pagos Diarios
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
+    | Hoja 2 - Pagos Diarios 
+    |-------------------------------------------------------------------------- 
     */
         $sheet2 = $spreadsheet->createSheet();
         $sheet2->setTitle('Pagos Diarios');
-        $sheet2->fromArray(['ID', 'Cliente', 'Monto', 'Método de Pago', 'Fecha', 'Estado'], null, 'A1');
+
+        $sheet2->fromArray(
+            ['ID', 'Cliente', 'Registrado por', 'Monto', 'Método de Pago', 'Fecha', 'Estado'],
+            null,
+            'A1'
+        );
 
         $row = 2;
         foreach ($pagosDiarios as $pago) {
             $sheet2->fromArray([
                 $pago->id,
                 $pago->nombre_cliente ?? 'Sin nombre',
+                $pago->usuario->nombre_completo ?? 'Desconocido',
                 $pago->monto,
                 $pago->metodo_pago ?? 'No especificado',
                 Carbon::parse($pago->fecha)->format('d/m/Y'),
@@ -263,21 +293,23 @@ class ResumenMembresiasController extends Controller
         }
 
         $sheet2->setCellValue("A{$row}", 'TOTAL');
-        $sheet2->setCellValue("C{$row}", $totalDiarios);
-        $sheet2->getStyle("A{$row}:F{$row}")->getFont()->setBold(true);
+        $sheet2->setCellValue("D{$row}", $totalDiarios);
+        $sheet2->getStyle("A{$row}:G{$row}")->getFont()->setBold(true);
 
-        $sheet2->getStyle('A1:F1')->getFont()->setBold(true);
-        $sheet2->getStyle('A1:F1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFD9E1F2');
-        $sheet2->getStyle("A1:F{$row}")
-            ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-        $sheet2->getStyle("A1:F{$row}")
-            ->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        foreach (range('A', 'F') as $col) $sheet2->getColumnDimension($col)->setAutoSize(true);
+        // Estilos hoja 2
+        $sheet2->getStyle('A1:G1')->getFont()->setBold(true);
+        $sheet2->getStyle('A1:G1')->getFill()->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFD9E1F2');
+        $sheet2->getStyle("A1:G{$row}")->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN);
+        $sheet2->getStyle("A1:G{$row}")->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        foreach (range('A', 'G') as $col) $sheet2->getColumnDimension($col)->setAutoSize(true);
 
         /*
-    |--------------------------------------------------------------------------
-    | Hoja 3 - Resumen General
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
+    | Hoja 3 - Resumen General 
+    |-------------------------------------------------------------------------- 
     */
         $sheet3 = $spreadsheet->createSheet();
         $sheet3->setTitle('Resumen General');
@@ -291,12 +323,19 @@ class ResumenMembresiasController extends Controller
         ], null, 'A1');
 
         $sheet3->getStyle('A1:B1')->getFont()->setBold(true);
-        $sheet3->getStyle('A1:B1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFCD52B');
-        $sheet3->getStyle('A1:B5')->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_MEDIUM);
-        $sheet3->getStyle('A1:B5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet3->getStyle('A1:B1')->getFill()->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setARGB('FFFCD52B');
+        $sheet3->getStyle('A1:B5')->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_MEDIUM);
+        $sheet3->getStyle('A1:B5')->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER);
         foreach (range('A', 'B') as $col) $sheet3->getColumnDimension($col)->setAutoSize(true);
 
-        // === Exportar archivo ===
+        /*
+    |-------------------------------------------------------------------------- 
+    | Exportar archivo 
+    |-------------------------------------------------------------------------- 
+    */
         $writer = new Xlsx($spreadsheet);
         $filename = "contabilidad_membresias_{$mes}_{$anio}.xlsx";
 

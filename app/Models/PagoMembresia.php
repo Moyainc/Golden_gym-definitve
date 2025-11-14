@@ -19,6 +19,10 @@ class PagoMembresia extends Model
         'monto',
         'estado',
         'metodo_pago',
+        'usuario_id',
+        'estado_notificado',
+        'ultimo_aviso_proxima',
+        'ultimo_aviso_vencida',
     ];
 
     protected $casts = [
@@ -37,5 +41,9 @@ class PagoMembresia extends Model
     {
         return $this->belongsTo(Membresia::class);
     }
-}
 
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'usuario_id');
+    }
+}

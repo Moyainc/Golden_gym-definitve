@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use App\Models\Cliente;
 use App\Models\Venta;
@@ -11,6 +11,7 @@ use App\Models\Producto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\Ventas;
 use App\Traits\HasPrecioFormatted;
 
 class VentaController extends Controller
@@ -81,16 +82,17 @@ class VentaController extends Controller
    */
   public function store(Request $request)
   {
-    $request->validate([
-      'cliente_id' => 'required|exists:clientes,id',
-      'usuario_id' => 'required|exists:usuarios,id',
-      'productos' => 'required|array|min:1',
-      'productos.*.producto_id' => 'required|exists:productos,id',
-      'productos.*.cantidad' => 'required|integer|min:1',
-      'productos.*.subtotal' => 'required|numeric|min:0',
-      'total' => 'required|numeric|min:0',
-      'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
-    ],
+    $request->validate(
+      [
+        'cliente_id' => 'required|exists:clientes,id',
+        'usuario_id' => 'required|exists:usuarios,id',
+        'productos' => 'required|array|min:1',
+        'productos.*.producto_id' => 'required|exists:productos,id',
+        'productos.*.cantidad' => 'required|integer|min:1',
+        'productos.*.subtotal' => 'required|numeric|min:0',
+        'total' => 'required|numeric|min:0',
+        'metodo_pago' => 'required|string|in:Efectivo,Transferencia',
+      ],
       [
         'productos.required' => 'Debe agregar al menos un producto.',
         'productos.*.producto_id.exists' => 'El producto seleccionado no existe.',
@@ -98,7 +100,8 @@ class VentaController extends Controller
         'estado.in' => 'El estado no valido.',
         'metodo_pago.in' => 'El método de pago debe ser Efectivo o Transferencia.',
 
-      ]);
+      ]
+    );
 
     DB::beginTransaction();
 
@@ -138,6 +141,7 @@ class VentaController extends Controller
         'descripcion' => 'Venta detallada de productos',
         'fecha_venta' => now(),
       ]);
+
 
       // ✅ Registrar detalles y actualizar stock
       foreach ($request->productos as $producto) {
@@ -182,6 +186,12 @@ class VentaController extends Controller
         'fecha_pago'  => now(),
         'estado'      => $venta->estado, // ← Se envía el estado directamente
       ]);
+
+      // ✅ Enviar correo si la venta es mayor a 100.000 COP
+      if ($venta->total > 100000) {
+        Mail::to($venta->cliente->correo)
+          ->send(new \App\Mail\Ventas($venta));
+      }
 
       DB::commit();
 

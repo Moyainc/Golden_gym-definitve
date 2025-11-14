@@ -98,6 +98,7 @@
             border-collapse: collapse;
             margin-top: 10px;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            table-layout: fixed;
         }
 
         thead {
@@ -105,11 +106,26 @@
             color: #fff;
         }
 
+        thead th,
+        tbody td {
+            word-wrap: break-word;
+            /* Evita que el texto largo desborde */
+            padding: 6px;
+        }
+
+        thead th:first-child,
+        tbody td:first-child {
+            width: 30px;
+            /* o 30px si quieres más compacto */
+            text-align: center;
+            /* centra los números */
+        }
+
         thead th {
             padding: 10px 8px;
             text-align: left;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 8px;
             text-transform: uppercase;
             border-bottom: 3px solid #fcd52b;
         }
@@ -128,7 +144,7 @@
 
         tbody td {
             padding: 8px;
-            font-size: 10px;
+            font-size: 8px;
             border-bottom: 1px solid #ddd;
             vertical-align: middle;
         }
@@ -165,6 +181,10 @@
         .badge-sin {
             background-color: #6c757d;
             color: #fff;
+        }
+
+        .badge-anulado {
+            background-color: #6c757d;
         }
 
         /* ===== SECCIÓN TOTAL ===== */
@@ -262,10 +282,11 @@
                 <th>Correo</th>
                 <th>Teléfono</th>
                 <th>Membresía</th>
-                <th>Fecha Inicio</th>
-                <th>Fecha Fin</th>
+                <th>Inicio Membresía</th>
+                <th>Fin Membresía</th>
                 <th>Método Pago</th>
                 <th>Estado</th>
+                <th>Fecha Registro</th>
             </tr>
         </thead>
         <tbody>
@@ -276,10 +297,20 @@
                 <td>{{ $cliente->cedula ?? 'N/A' }}</td>
                 <td>{{ $cliente->correo ?? 'N/A' }}</td>
                 <td>{{ $cliente->telefono ?? 'N/A' }}</td>
-                <td>{{ $cliente->membresia_nombre }}</td>
-                <td>{{ $cliente->fecha_inicio }}</td>
-                <td>{{ $cliente->fecha_fin }}</td>
+
+                {{-- Si el estado es anulado, mostrar “Sin membresía” --}}
+                <td>
+                    @if($cliente->estado === 'anulado')
+                    Sin membresía
+                    @else
+                    {{ $cliente->membresia_nombre ?? 'Sin membresía' }}
+                    @endif
+                </td>
+
+                <td>{{ $cliente->fecha_inicio ?? 'N/A' }}</td>
+                <td>{{ $cliente->fecha_fin ?? 'N/A' }}</td>
                 <td>{{ ucfirst($cliente->metodo_pago ?? 'N/A') }}</td>
+
                 <td>
                     @if($cliente->estado === 'activa')
                     <span class="badge badge-activa">Activa</span>
@@ -287,18 +318,23 @@
                     <span class="badge badge-proxima">Próxima</span>
                     @elseif($cliente->estado === 'vencida')
                     <span class="badge badge-vencida">Vencida</span>
+                    @elseif($cliente->estado === 'anulado')
+                    <span class="badge badge-anulado">Anulado</span>
                     @else
                     <span class="badge badge-sin">Sin Membresía</span>
                     @endif
                 </td>
+                <td>{{ $cliente->fecha_registro }}</td>
             </tr>
             @endforeach
+
             <tr style="background-color: #fcd52b22; font-weight: bold;">
-                <td colspan="9" style="text-align:right;">Total Clientes:</td>
+                <td colspan="10" style="text-align:right;">Total Clientes:</td>
                 <td>{{ $total_clientes }}</td>
             </tr>
         </tbody>
     </table>
+
     @endif
 
     {{-- ========================================================= --}}

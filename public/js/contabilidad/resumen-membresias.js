@@ -230,7 +230,8 @@ function actualizarTabla(movimientos) {
     if (!tbody) return;
 
     if (!movimientos || movimientos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No hay datos para este período</td></tr>';
+        tbody.innerHTML =
+            '<tr><td colspan="7" class="text-center text-muted">No hay datos para este período</td></tr>';
         return;
     }
 
@@ -238,15 +239,37 @@ function actualizarTabla(movimientos) {
         .map(
             (mov) => `
         <tr>
-            <td><span class="badge ${mov.tipo === "Membresía" ? "bg-warning text-dark border border-dark" : "bg-info text-dark"}">${mov.tipo}</span></td>
-            <td>${mov.metodo_pago}</td>
-            <td class="fw-bold">${formatearCOP(mov.valor)}</td>
-            <td>${new Date(mov.fecha).toLocaleDateString("es-CO")}</td>
-            <td><span class="badge ${getEstadoBadgeClass(mov.estado)}">${mov.estado}</span></td>
+          <td>
+            <span class="badge ${mov.tipo === "Membresía"
+                    ? "bg-warning text-dark border border-dark"
+                    : "bg-info text-dark"
+                }">${mov.tipo}</span>
+          </td>
+          <td>${mov.nombre_completo}</td>
+          <td>${mov.nombre_usuario}</td>
+          <td>${mov.metodo_pago}</td>
+          <td class="fw-bold">${formatearCOP(mov.valor)}</td>
+          <td>${new Date(mov.fecha).toLocaleDateString("es-CO")}</td>
+          <td><span class="badge ${getEstadoBadgeClass(
+                    mov.estado
+                )}">${mov.estado}</span></td>
         </tr>`
         )
         .join("");
 }
+// Filtro dinámico de búsqueda
+document.addEventListener("input", (e) => {
+    if (e.target.id === "filtroMovimientos") {
+        const filtro = e.target.value.toLowerCase();
+        const filas = document.querySelectorAll("#contabilidadTable tr");
+
+        filas.forEach((fila) => {
+            const textoFila = fila.textContent.toLowerCase();
+            fila.style.display = textoFila.includes(filtro) ? "" : "none";
+        });
+    }
+});
+
 
 // ---------------------------------------------------
 // PAGINACIÓN
@@ -283,6 +306,8 @@ function getEstadoBadgeClass(estado) {
             return "bg-danger";
         case "Completado":
             return "bg-primary";
+        case "Anulado":
+            return "bg-secondary text-light border border-light";
         default:
             return "bg-secondary";
     }
