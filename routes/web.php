@@ -21,18 +21,15 @@ use App\Http\Controllers\PagoPendienteController;
 
 
 
+Route::get('/', [HomeController::class, 'index'])->name('inicio');
 
-
-Route::middleware(['guest'])->group(function () {
-    Route::get('/', [HomeController::class, 'index'])->name('inicio');
+Route::middleware(['custom_guest'])->group(function () {
     Route::get('sign-in', [HomeController::class, 'login'])->name('login');
     Route::post('sign-in', [LoginController::class, 'loginUsuario'])->name('usuario.login');
 });
 
-
 //RUTAS PROTEGIDAS (auth)
 Route::middleware(['auth'])->group(function () {
-
 
     //Dashboard y perfil (acceso general a todos los roles)
 

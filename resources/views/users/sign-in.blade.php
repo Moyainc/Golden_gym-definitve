@@ -18,14 +18,13 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <link rel="preconnect" href="https://fonts.gstatic.com" />
-  <link rel="shortcut icon" href="../img/icons/golden_gym.png" />
+  <link rel="shortcut icon" href="{{ asset('img/icons/golden_gym.png') }}" />
 
   <title>@yield('title', 'Golden Gym')</title>
 
   <link href="{{ asset('css/app.css') }}" rel="stylesheet" />
   <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </head>
 
@@ -45,7 +44,8 @@
               <img src="{{ asset('img/icons/golden_gym.png') }}" class="sidebar-logo" />
             </a>
             <div class="text-center mt-4">
-              <h1 class="text-light fw-bolder h2">Bienvenido de nuevo!</h1>
+              <h1 class="text-light fw-bolder h2">
+                ¡Bienvenido de nuevo!</h1>
               <p class="medium">Inicie sesion con su cuenta para continuar</p>
             </div>
 
@@ -85,7 +85,7 @@
             </div>
             <div class="text-center mb-3">
               Volver a
-              <a class="tittle-color" href="">Inicio</a>
+              <a class="tittle-color" href="{{ route('inicio') }}">Inicio</a>
             </div>
             <div class="text-center mt-4 text-secondary small">
               Golden Gym © 2025. Todos los derechos reservados.
