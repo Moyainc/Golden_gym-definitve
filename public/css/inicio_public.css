@@ -92,7 +92,7 @@ body {
 
 .navbar-brand {
   font-family: 'Bebas Neue', cursive;
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--color-yellow);
   text-decoration: none;
@@ -141,11 +141,11 @@ body {
 }
 
 .navbar-login {
-  padding: 8px 26px;
+  padding: 4px 14px;
   background-color: var(--color-yellow);
   color: var(--color-black) !important;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: 30px;
   transition: all 0.3s ease;
   font-size: 0.9rem;
@@ -270,7 +270,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.5) 100%);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.404) 0%, rgba(0, 0, 0, 0.404) 100%);
   z-index: 1;
 }
 
@@ -290,7 +290,7 @@ body {
 /* Updated typography to use bold Bebas Neue for impact */
 .hero-title {
   font-family: 'Bebas Neue', cursive;
-  font-size: clamp(3rem, 10vw, 8rem);
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--color-yellow);
   text-transform: uppercase;
@@ -340,7 +340,7 @@ body {
 
 .section-title {
   font-family: 'Bebas Neue', cursive;
-  font-size: clamp(3rem, 6vw, 5rem);
+  font-size: 3rem;
   font-weight: 700;
   color: var(--color-yellow);
   text-align: center;
@@ -410,7 +410,7 @@ body {
   border-radius: 50%;
   object-fit: cover;
   margin: 0 auto 30px;
-  border: 6px solid var(--color-yellow);
+  border: 3px solid var(--color-yellow);
   transition: all 0.2s ease;
   position: relative;
   z-index: 1;
@@ -419,12 +419,12 @@ body {
 .trainer-card:hover .trainer-image {
   transform: scale(1.1);
   box-shadow: 0 4px 10px rgba(252, 213, 43, 0.6);
-  border-width: 8px;
+  border-width: 4px;
 }
 
 .trainer-name {
   font-family: 'Bebas Neue', cursive;
-  font-size: 2.2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-yellow);
   margin-bottom: 12px;
@@ -682,12 +682,14 @@ body {
   align-items: center;
   justify-content: center;
   transition: all 0.25s ease-in-out;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 /* Tamaño de los iconos */
 .social-link i {
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
 }
 
 /* Hover amarillo */

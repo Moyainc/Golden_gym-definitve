@@ -122,7 +122,7 @@
                   <label class="form-label text-muted">Instagram</label>
                   <input type="text" name="instagram" id="instagram" class="form-control input-dark mb-3" value="">
 
-                  <label class="form-label text-muted">Twitter</label>
+                  <label class="form-label text-muted">X</label>
                   <input type="text" name="twitter" id="twitter" class="form-control input-dark mb-3" value="">
 
                   <label class="form-label text-muted">YouTube</label>

@@ -9,6 +9,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link href="{{ asset('css/inicio_public.css') }}" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
 
 </head>
 
@@ -21,7 +23,12 @@
       <li><a href="#entrenadores">Entrenadores</a></li>
       <li><a href="#localizacion">Localización</a></li>
       <li><a href="#productos">Productos</a></li>
-      <li><a href="#login" class="navbar-login">Iniciar Sesión</a></li>
+      <li>
+        <a href="{{ route('usuario.login') }}" class="navbar-login">
+          <i class="fas fa-user"></i>
+        </a>
+      </li>
+
     </ul>
     <div class="hamburger" id="hamburger">
       <span></span>
@@ -75,43 +82,11 @@
             <p><strong>📍 Dirección:</strong> Av. Principal 123, Ciudad</p>
             <p><strong>📞 Teléfono:</strong> +1 (555) 123-4567</p>
             <p><strong>🕐 Horario:</strong> Lunes a Viernes: 6:00 AM - 11:00 PM<br>Sábado y Domingo: 8:00 AM - 8:00 PM</p>
-            <p><strong>💪 Instalaciones:</strong> Más de 2,000 m² de espacio equipado con la última tecnología en entrenamiento</p>
           </div>
         </div>
         <div class="map-container fade-in">
-          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9476519598093!2d-73.99185368459395!3d40.74117097932881!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus" allowfullscreen="" loading="lazy"></iframe>
+          <iframe src="https://www.google.com/maps/embed?pb=!1m12!1m8!1m3!1d1985.0928203377246!2d-76.64194168785639!3d5.686291339816675!3m2!1i1024!2i768!4f13.1!2m1!1smaps%20google%20golden%20gym%20quibdo%20choco!5e0!3m2!1ses!2sco!4v1763114658858!5m2!1ses!2sco" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Products Section -->
-  <section id="productos" class="section">
-    <h2 class="section-title">Nuestros Productos</h2>
-    <div class="products-grid">
-      <div class="product-card fade-in">
-        <img src="/placeholder.svg?height=220&width=220" alt="Proteína Premium" class="product-image">
-        <h3 class="product-name">PROTEÍNA PREMIUM</h3>
-        <p class="product-price">$49.99</p>
-        <p class="product-description">Proteína de suero de alta calidad para maximizar tus ganancias musculares</p>
-      </div>
-      <div class="product-card fade-in">
-        <img src="/placeholder.svg?height=220&width=220" alt="Guantes Pro" class="product-image">
-        <h3 class="product-name">GUANTES PRO</h3>
-        <p class="product-price">$29.99</p>
-        <p class="product-description">Guantes profesionales con agarre superior y máxima comodidad</p>
-      </div>
-      <div class="product-card fade-in">
-        <img src="/placeholder.svg?height=220&width=220" alt="Shaker Golden" class="product-image">
-        <h3 class="product-name">SHAKER GOLDEN</h3>
-        <p class="product-price">$19.99</p>
-        <p class="product-description">Shaker exclusivo de Golden Gym con sistema de mezcla perfecto</p>
-      </div>
-      <div class="product-card fade-in">
-        <img src="/placeholder.svg?height=220&width=220" alt="Membresía Anual" class="product-image">
-        <h3 class="product-name">MEMBRESÍA ANUAL</h3>
-        <p class="product-price">$599.99</p>
-        <p class="product-description">Acceso ilimitado por 12 meses + 1 mes gratis de entrenamiento personal</p>
       </div>
     </div>
   </section>
@@ -127,20 +102,21 @@
   <footer class="footer">
     <div class="footer-content">
 
-      <div class="footer-social">
-        <a href="{{ $links?->facebook ?? '#' }}" target="_blank" class="social-link">
-          <i data-feather="facebook"></i>
+      <div class="footer-social flex gap-4 justify-center items-center">
+        <a href="{{ $links?->facebook ?? '#' }}" class="social-link">
+          <i class="fa-brands fa-facebook-f fa-lg"></i>
         </a>
         <a href="{{ $links?->instagram ?? '#' }}" target="_blank" class="social-link">
-          <i data-feather="instagram"></i>
+          <i class="fa-brands fa-instagram fa-lg"></i>
         </a>
-        <a href="{{ $links?->twitter ?? '#' }}" target="_blank" class="social-link">
-          <i data-feather="twitter"></i>
+        <a href="{{ $links?->x ?? '#' }}" target="_blank" class="social-link">
+          <i class="fa-brands fa-x-twitter fa-lg"></i>
         </a>
         <a href="{{ $links?->youtube ?? '#' }}" target="_blank" class="social-link">
-          <i data-feather="youtube"></i>
+          <i class="fa-brands fa-youtube fa-lg"></i>
         </a>
       </div>
+
 
 
       <p>&copy; 2025 Golden Gym. Todos los derechos reservados. | Diseñado para inspirar grandeza</p>

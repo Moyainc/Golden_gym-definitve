@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Página No Encontrada | Golden Gym</title>
-  <link rel="shortcut icon" href="../img/icons/golden_gym.png" />
+  <link rel="shortcut icon" href="{{ asset('img/icons/golden_gym.png') }}" />
+
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -79,14 +80,25 @@
         <i data-feather="alert-triangle" class="text-yellow-400 mx-auto" style="width: 80px; height: 80px;"></i>
       </div>
 
-      <h1 class="text-5xl font-bold text-yellow-400 mb-4">404</h1>
+      <h1 class="text-5xl font-bold text-yellow-400 mb-4">{{ $code }}</h1>
+
+      <h2 class="text-2xl font-semibold text-white mb-3">
+        @if($code == 404)
+        Página no encontrada
+        @elseif($code == 403)
+        Acceso no autorizado
+        @else
+        Ocurrió un error
+        @endif
+      </h2>
+
       <h2 class="text-2xl font-semibold text-white mb-3">Página no encontrada</h2>
       <p class="text-gray-400 mb-6">
         Lo sentimos, parece que esta sección aún no está disponible o fue movida. Estamos trabajando para mejorar tu experiencia 🚀
       </p>
 
       <div class="flex flex-wrap justify-center gap-4 mb-6">
-        <a href="dashboard.html" class="btn-glow bg-yellow-400 text-gray-900 px-6 py-3 rounded-full font-semibold flex items-center gap-2">
+        <a href="{{ url('/') }}" class="btn-glow bg-yellow-400 text-gray-900 px-6 py-3 rounded-full font-semibold flex items-center gap-2">
           <i data-feather="home"></i> Ir al inicio
         </a>
         <a href="javascript:history.back()" class="btn-glow border border-gray-400 text-gray-200 px-6 py-3 rounded-full font-semibold flex items-center gap-2">
