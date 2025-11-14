@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'checkrole' => \App\Http\Middleware\CheckRole::class,
+            'custom_guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         ]);
     })
 
