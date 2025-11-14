@@ -49,28 +49,20 @@
   <section id="entrenadores" class="section">
     <h2 class="section-title">Nuestros Entrenadores</h2>
     <div class="trainers-grid">
+      @forelse ($entrenadores as $trainer)
       <div class="trainer-card fade-in">
-        <img src="/placeholder.svg?height=200&width=200" alt="Carlos Mendoza" class="trainer-image">
-        <h3 class="trainer-name">CARLOS MENDOZA</h3>
-        <p class="trainer-specialty">Especialista en Fuerza y Acondicionamiento</p>
+        <img src="{{ asset('storage/' . $trainer->imagen) }}"
+          alt="{{ $trainer->nombre }}"
+          class="trainer-image">
+        <h3 class="trainer-name">{{ strtoupper($trainer->nombre) }}</h3>
+        <p class="trainer-specialty">{{ $trainer->descripcion }}</p>
       </div>
-      <div class="trainer-card fade-in">
-        <img src="/placeholder.svg?height=200&width=200" alt="Ana Rodríguez" class="trainer-image">
-        <h3 class="trainer-name">ANA RODRÍGUEZ</h3>
-        <p class="trainer-specialty">Entrenadora de Yoga y Pilates</p>
-      </div>
-      <div class="trainer-card fade-in">
-        <img src="/placeholder.svg?height=200&width=200" alt="Miguel Torres" class="trainer-image">
-        <h3 class="trainer-name">MIGUEL TORRES</h3>
-        <p class="trainer-specialty">Experto en CrossFit y HIIT</p>
-      </div>
-      <div class="trainer-card fade-in">
-        <img src="/placeholder.svg?height=200&width=200" alt="Laura Fernández" class="trainer-image">
-        <h3 class="trainer-name">LAURA FERNÁNDEZ</h3>
-        <p class="trainer-specialty">Nutricionista y Entrenadora Personal</p>
-      </div>
+      @empty
+      <p class="text-muted">No hay entrenadores disponibles por el momento.</p>
+      @endforelse
     </div>
   </section>
+
 
   <!-- Location Section -->
   <section id="localizacion" class="location-section">

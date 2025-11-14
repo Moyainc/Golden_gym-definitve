@@ -12,7 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('nombre', 150);
             $table->string('imagen')->nullable();
-            $table->text('descripcion')->nullable();
+            $table->string('descripcion')->nullable();
+            $table->boolean('visible')->default(true);
             $table->timestamps();
         });
     }

@@ -10,7 +10,12 @@ class Entrenador extends Model
 
     protected $fillable = [
         'nombre',
-        'imagen',
         'descripcion',
+        'imagen',
+        'visible',
+    ];
+
+    protected $casts = [
+        'visible' => 'boolean',
     ];
 }

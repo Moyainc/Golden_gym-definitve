@@ -15,6 +15,7 @@ use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResumenGeneralController;
 use App\Http\Controllers\PagoPendienteController;
+use App\Http\Controllers\EntrenadorController;
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
 // =========================
@@ -44,6 +45,15 @@ Route::middleware(['auth'])->group(function () {
     // _------------------------------------- ADMINISTRADOR ==================================
 
     Route::middleware(['checkrole:Administrador'])->group(function () {
+
+        Route::controller(EntrenadorController::class)->group(function () {
+            Route::get('/admin/entrenadores', 'index')->name('entrenadores.index');
+            Route::post('/admin/entrenadores', 'store')->name('entrenadores.store');
+            Route::put('/admin/entrenadores/{entrenador}', 'update')->name('entrenadores.update');
+            Route::delete('/admin/entrenadores/{entrenador}', 'destroy')->name('entrenadores.destroy');
+            Route::patch('/admin/entrenadores/{entrenador}/toggle', 'toggleVisibility')
+                ->name('entrenadores.toggle');
+        });
 
         Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
         Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
