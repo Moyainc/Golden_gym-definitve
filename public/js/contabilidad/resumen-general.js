@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ruta = "/admin/resumen-general/datos";
     const monthSelect = document.getElementById("filterMonth");
     const yearSelect = document.getElementById("filterYear");
+    const applyFilterBtn = document.getElementById("applyFilter");
 
     const cards = {
         membresias: document.getElementById("membresiasTotal"),
@@ -140,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 switch (estado.toLowerCase()) {
                     case "activa":
                     case "completada":
-                        statusEl.classList.add("bg-success", "text-white");
+                        statusEl.classList.add("bg-success", "text-black");
                         break;
                     case "proxima":
                     case "pendiente":
@@ -303,6 +304,13 @@ document.addEventListener("DOMContentLoaded", () => {
     monthSelect.addEventListener("change", cargarDatos);
     yearSelect.addEventListener("change", cargarDatos);
 
+    applyFilterBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        monthSelect.value = "";
+        yearSelect.value = "todos";
+        cargarDatos();
+    });
+
     // Toggle de ojo para mostrar valores completos
     eyeButtons.forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -427,4 +435,5 @@ exportExcelBtn.addEventListener("click", () => {
         "?" +
         new URLSearchParams(formData).toString();
     window.open(url, "_blank");
+
 });

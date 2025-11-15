@@ -282,6 +282,22 @@ function mostrarPagina(numPagina) {
     actualizarPaginacion();
 }
 
+
+// Normaliza y mapea estados a etiquetas canónicas
+function normalizarEstado(raw) {
+    if (!raw && raw !== '') return 'Desconocido';
+    const s = String(raw).trim().toLowerCase();
+
+    if (['activa', 'activo', 'active'].includes(s)) return 'Activa';
+    if (['próxima a vencer', 'proxima a vencer', 'próxima', 'proxima', 'por vencer'].includes(s)) return 'Próxima a vencer';
+    if (['vencida', 'vencido', 'vencimiento'].includes(s)) return 'Vencida';
+    if (['completada', 'completado', 'complet', 'pagado'].includes(s)) return 'Completada';
+    if (['anulada', 'anulado', 'cancelada', 'cancelado'].includes(s)) return 'Anulada';
+
+    return s.charAt(0).toUpperCase() + s.slice(1); // fallback capitalizado
+}
+
+const estadoMostrar = normalizarEstado(mov.estado);
 function actualizarTabla(movimientos) {
     const tbody = document.getElementById("contabilidadTable");
     if (!tbody) return;
@@ -297,10 +313,11 @@ function actualizarTabla(movimientos) {
             (mov) => `
         <tr>
           <td>
-            <span class="badge ${mov.tipo === "Membresía"
+            <span class="badge ${
+                mov.tipo === "Membresía"
                     ? "bg-warning text-dark border border-dark"
                     : "bg-info text-dark"
-                }">${mov.tipo}</span>
+            }">${mov.tipo}</span>
           </td>
           <td>${mov.nombre_completo}</td>
           <td>${mov.nombre_usuario}</td>
@@ -308,8 +325,8 @@ function actualizarTabla(movimientos) {
           <td class="fw-bold">${formatearCOP(mov.valor)}</td>
           <td>${new Date(mov.fecha).toLocaleDateString("es-CO")}</td>
           <td><span class="badge ${getEstadoBadgeClass(
-                    mov.estado
-                )}">${mov.estado}</span></td>
+              estadoMostrar
+          )}">${estadoMostrar}</span></td>
         </tr>`
         )
         .join("");
@@ -361,7 +378,8 @@ function cambiarPagina(pagina) {
 // ---------------------------------------------------
 // BADGES DE ESTADO
 // ---------------------------------------------------
-function getEstadoBadgeClass(estado) {
+function getEstadoBadgeClass(estadoRaw) {
+    const estado = normalizarEstado(estadoRaw);
     switch (estado) {
         case "Activa":
             return "bg-success";
@@ -369,14 +387,15 @@ function getEstadoBadgeClass(estado) {
             return "bg-warning text-dark";
         case "Vencida":
             return "bg-danger";
-        case "Completado":
+        case "Completada":
             return "bg-primary";
-        case "Anulado":
+        case "Anulada":
             return "bg-secondary text-light border border-light";
         default:
             return "bg-secondary";
     }
 }
+
 
 // ---------------------------------------------------
 // GRÁFICAS

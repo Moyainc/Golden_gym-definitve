@@ -150,7 +150,7 @@ class ClienteController extends Controller
 
             return response()->json(['success' => true, 'cliente' => $cliente]);
         } catch (\Exception $e) {
-            Log::error('Error al registrar cliente: ' . $e->getMessage());
+            Log::error('Error al registrar cliente: ');
             return response()->json(['success' => false, 'message' => 'Error interno al registrar el cliente.'], 500);
         }
     }
@@ -215,7 +215,7 @@ class ClienteController extends Controller
 
             return response()->json(['success' => true, 'cliente' => $cliente]);
         } catch (\Exception $e) {
-            Log::error('Error al actualizar cliente: ' . $e->getMessage());
+            Log::error('Error al actualizar cliente: ');
             return response()->json(['success' => false, 'message' => 'Error al actualizar el cliente.'], 500);
         }
     }
@@ -238,7 +238,8 @@ class ClienteController extends Controller
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
-            $pagoMembresia =  PagoMembresia::create([
+            // Crear pago de membresía
+            $pagoMembresia = PagoMembresia::create([
                 'cliente_id' => $cliente->id,
                 'membresia_id' => $membresia->id,
                 'fecha_inicio' => $fechaInicio,
@@ -247,6 +248,18 @@ class ClienteController extends Controller
                 'estado' => $estado,
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
                 'usuario_id' => Auth::user()?->id,
+            ]);
+
+            // Registrar también en pagos generales
+            PagoGeneral::create([
+                'origen_id' => $pagoMembresia->id,
+                'origen_type' => PagoMembresia::class,
+                'tipo_pago' => 'pagos_membresias',
+                'monto' => $membresia->precio,
+                'metodo_pago' => $request->metodo_pago ?? 'efectivo',
+                'usuario_id' => Auth::user()?->id,
+                'fecha_pago' => Carbon::now(),
+                'estado' => 'Completada',
             ]);
 
             Mail::to($cliente->correo)->send(new \App\Mail\RenovacionMembresia($cliente, $pagoMembresia));
@@ -260,6 +273,7 @@ class ClienteController extends Controller
             ], 500);
         }
     }
+
 
     /**
      * Eliminar cliente sin borrar pagos (problema 3: prevenir eliminación de registros relacionados)
@@ -613,15 +627,12 @@ class ClienteController extends Controller
 
     public function anularMembresia(Request $request, $id)
     {
-        // Puedes validar permisos aquí si usas política / middleware
-
         try {
             $cliente = Cliente::findOrFail($id);
 
-            // Obtener el último pago de membresía (por id o created_at)
             $ultimoPago = $cliente->pagosMembresias()->latest('id')->first();
 
-            if (! $ultimoPago) {
+            if (!$ultimoPago) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No se encontró una membresía para anular.'
@@ -630,25 +641,39 @@ class ClienteController extends Controller
 
             DB::beginTransaction();
 
-            // Actualizar a "anulado" y limpiar fechas
+            // Actualizar pago de membresía
             $ultimoPago->update([
                 'estado' => 'anulado',
                 'fecha_inicio' => null,
                 'fecha_fin' => null,
-                // opcional: 'metodo_pago' => null,
-                // opcional: 'membresia_id' => null,
             ]);
 
-            // Si quieres registrar acción en PagoGeneral para auditoría:
-            // PagoGeneral::create([
-            //    'origen_id' => $ultimoPago->id,
-            //    'origen_type' => PagoMembresia::class,
-            //    'tipo_pago' => 'anulacion_membresia',
-            //    'monto' => 0,
-            //    'metodo_pago' => $request->metodo_pago ?? null,
-            //    'usuario_id' => $request->usuario_id ?? null,
-            //    'fecha_pago' => now(),
-            // ]);
+            // Actualizar el pago general asociado
+            $pagoGeneral = PagoGeneral::where('origen_type', PagoMembresia::class)
+                ->where('origen_id', $ultimoPago->id)
+                ->first();
+
+            if ($pagoGeneral) {
+                $pagoGeneral->update([
+                    'estado' => 'Anulada',
+                    'monto' => 0,
+                    'metodo_pago' => 'Anulación',
+                    'fecha_pago' => now(),
+                    'tipo_pago' => 'anulacion_membresia',
+                ]);
+            } else {
+                // fallback: crear si no existe
+                PagoGeneral::create([
+                    'origen_id' => $ultimoPago->id,
+                    'origen_type' => PagoMembresia::class,
+                    'tipo_pago' => 'anulacion_membresia',
+                    'monto' => 0,
+                    'metodo_pago' => 'Anulación',
+                    'usuario_id' => Auth::user()?->id,
+                    'fecha_pago' => now(),
+                    'estado' => 'Anulada',
+                ]);
+            }
 
             DB::commit();
 
@@ -659,9 +684,10 @@ class ClienteController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al anular membresía: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al anular la membresía: ' . $e->getMessage()
+                'message' => 'Error al anular la membresía.'
             ], 500);
         }
     }
