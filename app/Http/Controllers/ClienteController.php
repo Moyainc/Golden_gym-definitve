@@ -238,7 +238,8 @@ class ClienteController extends Controller
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
-            $pagoMembresia =  PagoMembresia::create([
+            // Crear pago de membresía
+            $pagoMembresia = PagoMembresia::create([
                 'cliente_id' => $cliente->id,
                 'membresia_id' => $membresia->id,
                 'fecha_inicio' => $fechaInicio,
@@ -247,6 +248,18 @@ class ClienteController extends Controller
                 'estado' => $estado,
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
                 'usuario_id' => Auth::user()?->id,
+            ]);
+
+            // Registrar también en pagos generales
+            PagoGeneral::create([
+                'origen_id' => $pagoMembresia->id,
+                'origen_type' => PagoMembresia::class,
+                'tipo_pago' => 'pagos_membresias',
+                'monto' => $membresia->precio,
+                'metodo_pago' => $request->metodo_pago ?? 'efectivo',
+                'usuario_id' => Auth::user()?->id,
+                'fecha_pago' => Carbon::now(),
+                'estado' => 'Completada',
             ]);
 
             Mail::to($cliente->correo)->send(new \App\Mail\RenovacionMembresia($cliente, $pagoMembresia));
@@ -260,6 +273,7 @@ class ClienteController extends Controller
             ], 500);
         }
     }
+
 
     /**
      * Eliminar cliente sin borrar pagos (problema 3: prevenir eliminación de registros relacionados)
@@ -639,16 +653,17 @@ class ClienteController extends Controller
                 // opcional: 'membresia_id' => null,
             ]);
 
-            // Si quieres registrar acción en PagoGeneral para auditoría:
-            // PagoGeneral::create([
-            //    'origen_id' => $ultimoPago->id,
-            //    'origen_type' => PagoMembresia::class,
-            //    'tipo_pago' => 'anulacion_membresia',
-            //    'monto' => 0,
-            //    'metodo_pago' => $request->metodo_pago ?? null,
-            //    'usuario_id' => $request->usuario_id ?? null,
-            //    'fecha_pago' => now(),
-            // ]);
+
+            PagoGeneral::create([
+                'origen_id' => $ultimoPago->id,
+                'origen_type' => PagoMembresia::class,
+                'tipo_pago' => 'anulacion_membresia',
+                'monto' => 0,
+                'metodo_pago' => 'Anulacion',
+                'usuario_id' => Auth::user()?->id,
+                'fecha_pago' => now(),
+                'estado' => 'Anulada',
+            ]);
 
             DB::commit();
 
