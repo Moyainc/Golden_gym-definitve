@@ -203,25 +203,26 @@ class VentaController extends Controller
         'total_formatted' => $this->precioFormatted($venta->total),
       ]);
     } catch (\Exception $e) {
-      DB::rollBack();
-      Log::error('Error al registrar venta: ' . $e->getMessage());
+    DB::rollBack();
+    Log::error('Error al registrar venta: ' . $e->getMessage());
 
-      return response()->json([
+    return response()->json([
         'success' => false,
         'alert' => [
-          'icon' => 'error',
-          'title' => 'Error',
-          'text' => $e->getMessage(),
-          'background' => '#1a1a1a',
-          'color' => '#fff',
-          'confirmButtonColor' => '#fcd52b',
-          'confirmButtonText' => 'Aceptar',
-          'customClass' => [
-            'confirmButton' => 'text-black font-bold',
-          ],
+            'icon' => 'error',
+            'title' => 'Error',
+            'text' => 'Ocurrió un error al registrar la venta. Intente de nuevo.',
+            'background' => '#1a1a1a',
+            'color' => '#fff',
+            'confirmButtonColor' => '#fcd52b',
+            'confirmButtonText' => 'Aceptar',
+            'customClass' => [
+                'confirmButton' => 'text-black font-bold',
+            ],
         ]
-      ], 500);
-    }
+    ], 500);
+}
+
   }
 
 
@@ -330,10 +331,11 @@ class VentaController extends Controller
       ], 422);
     } catch (\Exception $e) {
       DB::rollBack();
+      Log::error('Error al registrar venta rápida: ' . $e->getMessage());
 
       return response()->json([
         'success' => false,
-        'message' => 'Error al registrar la venta rápida: ' . $e->getMessage(),
+        'message' => 'Ocurrió un error al registrar la venta rápida. Intente nuevamente.',
       ], 500);
     }
   }

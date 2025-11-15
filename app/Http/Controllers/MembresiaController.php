@@ -33,7 +33,10 @@ class MembresiaController extends Controller
       $membresias = Membresia::orderByDesc('id')->get();
       return response()->json($membresias);
     } catch (\Exception $e) {
-      return response()->json(['error' => $e->getMessage()], 500);
+      return response()->json([
+        'success' => false,
+        'message' => 'Ocurrió un error al procesar la solicitud.'
+      ], 500);
     }
   }
 
@@ -43,7 +46,10 @@ class MembresiaController extends Controller
       $membresia = Membresia::findOrFail($id);
       return response()->json($membresia);
     } catch (\Exception $e) {
-      return response()->json(['error' => $e->getMessage()], 500);
+      return response()->json([
+        'success' => false,
+        'message' => 'Ocurrió un error al procesar la solicitud.'
+      ], 500);
     }
   }
 
@@ -93,7 +99,10 @@ class MembresiaController extends Controller
         'membresia' => $membresia,
       ]);
     } catch (\Exception $e) {
-      return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+      return response()->json([
+        'success' => false,
+        'message' => 'Ocurrió un error al procesar la solicitud.'
+      ], 500);
     }
   }
 
@@ -105,7 +114,10 @@ class MembresiaController extends Controller
 
       return response()->json(['success' => true]);
     } catch (\Exception $e) {
-      return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+      return response()->json([
+        'success' => false,
+        'message' => 'Ocurrió un error al procesar la solicitud.'
+      ], 500);
     }
   }
 

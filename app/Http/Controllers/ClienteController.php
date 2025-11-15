@@ -150,7 +150,7 @@ class ClienteController extends Controller
 
             return response()->json(['success' => true, 'cliente' => $cliente]);
         } catch (\Exception $e) {
-            Log::error('Error al registrar cliente: ' . $e->getMessage());
+            Log::error('Error al registrar cliente: ');
             return response()->json(['success' => false, 'message' => 'Error interno al registrar el cliente.'], 500);
         }
     }
@@ -215,7 +215,7 @@ class ClienteController extends Controller
 
             return response()->json(['success' => true, 'cliente' => $cliente]);
         } catch (\Exception $e) {
-            Log::error('Error al actualizar cliente: ' . $e->getMessage());
+            Log::error('Error al actualizar cliente: ');
             return response()->json(['success' => false, 'message' => 'Error al actualizar el cliente.'], 500);
         }
     }
