@@ -672,4 +672,9 @@
   <script src="{{ asset('js/clientes.js') }}"></script>
   <script src="{{ asset('js/pagosdiarios.js') }}"></script>
 </body>
+
+<script>
+  window.userRole = "{{ Auth::user()->rol }}"; 
+</script>
+
 @endsection

@@ -91,8 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const badges = {
             activa: '<span class="badge bg-success bg-opacity-75">Activa</span>',
             proxima: '<span class="badge bg-warning bg-opacity-75 text-dark">Próxima a vencer</span>',
-            vencida: '<span class="badge bg-danger bg-opacity-75">Vencida</span>',
-            anulado: '<span class="badge bg-dark bg-opacity-50">Anulado</span>',
+            vencida: '<span class="badge bg-dark bg-opacity-75">Vencida</span>',
+            anulado: '<span class="badge bg-danger bg-opacity-50">Anulado</span>',
             sin_membresia: '<span class="badge bg-secondary bg-opacity-75">Sin membresía</span>',
         }
         return badges[estado] || badges["sin_membresia"]
@@ -278,38 +278,62 @@ document.addEventListener("DOMContentLoaded", () => {
                         : apiUrl("/img/avatars/user.png");
 
                 const globalIndex = (current_page - 1) * per_page + index + 1;
+
+                const deleteButton =
+                    window.userRole === "Administrador"
+                        ? `<button class="btn btn-sm btn-outline-danger btn-delete" data-id="${cliente.id}" title="Eliminar">
+                       <i data-feather="trash-2"></i>
+                   </button>`
+                        : "";
+
                 return `<tr>
                     <td>${index + 1}</td>
                     <td>
                         <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
                     </td>
-                    <td class="fw-semibold text-white">${cliente.nombre_completo}</td>
+                    <td class="fw-semibold text-white">${
+                        cliente.nombre_completo
+                    }</td>
                     <td class="text-muted">${cliente.cedula || "N/A"}</td>
                     <td>
-                        <span class="badge bg-primary bg-opacity-75">${cliente.estado === "anulado" ? "Anulada" : (cliente.membresia_nombre || "Sin membresía")}</span>
+                        <span class="badge bg-primary bg-opacity-75">${
+                            cliente.estado === "anulado"
+                                ? "Anulada"
+                                : cliente.membresia_nombre || "Sin membresía"
+                        }</span>
 
                     </td>
-                    <td class="text-muted small">${formatDateDisplay(cliente.fecha_inicio)}</td>
-                    <td class="text-muted small">${formatDateDisplay(cliente.fecha_fin)}</td>
+                    <td class="text-muted small">${formatDateDisplay(
+                        cliente.fecha_inicio
+                    )}</td>
+                    <td class="text-muted small">${formatDateDisplay(
+                        cliente.fecha_fin
+                    )}</td>
                     <td>${getEstadoBadge(cliente.estado)}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${cliente.id}" title="Ver cliente">
+                        <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${
+                            cliente.id
+                        }" title="Ver cliente">
                             <i data-feather="eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${cliente.id}" title="Editar">
+                        <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${
+                            cliente.id
+                        }" title="Editar">
                             <i data-feather="edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${cliente.id}" title="Renovar membresía">
+                        <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${
+                            cliente.id
+                        }" title="Renovar membresía">
                             <i data-feather="refresh-cw"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-secondary me-1 btn-cancel-membership" data-id="${cliente.id}" title="Anular membresía actual">
+                        <button class="btn btn-sm btn-outline-secondary me-1 btn-cancel-membership" data-id="${
+                            cliente.id
+                        }" title="Anular membresía actual">
                             <i data-feather="x-circle"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${cliente.id}" title="Eliminar">
-                            <i data-feather="trash-2"></i>
-                        </button>
+                        ${deleteButton}
                     </td>
-                </tr>`
+                </tr>`;
             })
             .join("");
 
