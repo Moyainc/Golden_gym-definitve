@@ -44,7 +44,7 @@ class ProductoController extends Controller
 
   // Listar todos los productos
   public function list(Request $request)
-{
+  {
     $perPage = $request->input('per_page', 20); // productos por "página"
     $page = $request->input('page', 1);
 
@@ -54,20 +54,20 @@ class ProductoController extends Controller
 
     // Agregar precio formateado y otros campos
     $productos->getCollection()->transform(function ($producto) {
-        return [
-            'id' => $producto->id,
-            'nombre' => $producto->nombre,
-            'categoria' => $producto->categoria,
-            'categoria_id' => $producto->categoria_id,
-            'stock' => $producto->stock,
-            'precio' => $producto->precio,
-            'precio_formatted' => $producto->precioFormatted($producto->precio),
-            'estado' => $producto->estado,
-        ];
+      return [
+        'id' => $producto->id,
+        'nombre' => $producto->nombre,
+        'categoria' => $producto->categoria,
+        'categoria_id' => $producto->categoria_id,
+        'stock' => $producto->stock,
+        'precio' => $producto->precio,
+        'precio_formatted' => $producto->precioFormatted($producto->precio),
+        'estado' => $producto->estado,
+      ];
     });
 
     return response()->json($productos);
-}
+  }
 
 
 
@@ -189,13 +189,6 @@ class ProductoController extends Controller
         ->orderBy('nombre')
         ->get();
 
-      if ($productos->isEmpty()) {
-        return response()->json([
-          'success' => false,
-          'message' => 'No se encontraron productos en el rango de fechas indicado.'
-        ]);
-      }
-
       // Totales globales
       $totalProductos = $productos->count();
       $totalCategorias = $productos->pluck('categoria_id')->unique()->count();
@@ -219,8 +212,10 @@ class ProductoController extends Controller
         'fecha_generacion' => now()->format('d/m/Y H:i'),
       ];
 
-      // Cargar vista PDF
-      $pdf = Pdf::loadView('reports.inventario-pdf', $data)->setPaper('a4', 'portrait');
+      // Cargar vista PDF (la vista debe manejar cuando no hay productos)
+      $pdf = Pdf::loadView('reports.inventario-pdf', $data)
+        ->setPaper('a4', 'portrait');
+
       $filename = 'reporte_inventario-' . now()->format('d-m-y') . '.pdf';
       return $pdf->download($filename);
     } catch (\Throwable $e) {
@@ -231,6 +226,7 @@ class ProductoController extends Controller
       ]);
     }
   }
+
 
   public function exportInventarioExcel(Request $request)
   {
@@ -252,13 +248,6 @@ class ProductoController extends Controller
         ->orderBy('categoria_id')
         ->orderBy('nombre')
         ->get();
-
-      if ($productos->isEmpty()) {
-        return response()->json([
-          'success' => false,
-          'message' => 'No se encontraron productos en el rango de fechas indicado.'
-        ]);
-      }
 
       // === CALCULOS GLOBALES ===
       $totalProductos = $productos->count();
@@ -296,17 +285,27 @@ class ProductoController extends Controller
       $row = 2;
       $num = 1;
 
-      foreach ($productos as $p) {
-        $sheet1->fromArray([[
-          $num++,
-          $p->nombre,
-          $p->categoria->nombre ?? 'Sin categoría',
-          $p->stock,
-          number_format($p->precio, 2),
-          Carbon::parse($p->created_at)->format('d/m/Y H:i'),
-          Carbon::parse($p->updated_at)->format('d/m/Y H:i'),
-        ]], null, "A{$row}");
-        $row++;
+      if (!$productos->isEmpty()) {
+        foreach ($productos as $p) {
+          $sheet1->fromArray([[
+            $num++,
+            $p->nombre,
+            $p->categoria->nombre ?? 'Sin categoría',
+            $p->stock,
+            $p->precio, // valor numérico
+            Carbon::parse($p->created_at)->format('d/m/Y H:i'),
+            Carbon::parse($p->updated_at)->format('d/m/Y H:i'),
+          ]], null, "A{$row}");
+
+          // Formato monetario para columna Precio
+          $sheet1->getStyle("E{$row}")
+            ->getNumberFormat()
+            ->setFormatCode('#,##0');
+
+          $row++;
+        }
+      } else {
+        $sheet1->fromArray([['No hay productos en el rango de fechas seleccionado.']], null, "A{$row}");
       }
 
       $lastRow = $row - 1;
@@ -343,15 +342,25 @@ class ProductoController extends Controller
       $row = 2;
       $num = 1;
 
-      foreach ($porCategoria as $categoria => $info) {
-        $sheet2->fromArray([[
-          $num++,
-          $categoria,
-          $info['cantidad'],
-          $info['stock_total'],
-          number_format($info['precio_promedio'], 2),
-        ]], null, "A{$row}");
-        $row++;
+      if (!$porCategoria->isEmpty()) {
+        foreach ($porCategoria as $categoria => $info) {
+          $sheet2->fromArray([[
+            $num++,
+            $categoria,
+            $info['cantidad'],
+            $info['stock_total'],
+            $info['precio_promedio'], // valor numérico
+          ]], null, "A{$row}");
+
+          // Formato monetario para columna Precio promedio
+          $sheet2->getStyle("E{$row}")
+            ->getNumberFormat()
+            ->setFormatCode('#,##0');
+
+          $row++;
+        }
+      } else {
+        $sheet2->fromArray([['No hay categorías en el rango de fechas seleccionado.']], null, "A{$row}");
       }
 
       $lastRow2 = $row - 1;

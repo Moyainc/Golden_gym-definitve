@@ -162,9 +162,9 @@
 <body>
   <div class="header">
     @if(file_exists(public_path('img/icons/golden_gym.png')))
-    <img src="{{ asset('img/icons/golden_gym.png') }}" alt="Logo Golden Gym" class="logo">
+    <img src="{{ public_path('img/icons/golden_gym.png') }}" alt="Logo Golden Gym" class="logo">
     @elseif(file_exists(public_path('images/logo-gym.png')))
-    <img src="{{ public_path('images/logo-gym.png') }}" alt="Logo Golden Gym" class="logo">
+    <img src="{{ public_path('img/icons/golden_gym.png') }}" alt="Logo Golden Gym" class="logo">
     @else
     <div class="logo-placeholder">GYM</div>
     @endif

@@ -354,10 +354,9 @@ const initializePage = () => {
             <td>${prod.categoria?.nombre || "Sin categoría"}</td>
             <td>
                 ${prod.stock}
-                ${
-                    Number(prod.stock) === 0
-                        ? '<span class="badge bg-danger ms-2">Agotado</span>'
-                        : Number(prod.stock) <= 10
+                ${Number(prod.stock) === 0
+                    ? '<span class="badge bg-danger ms-2">Agotado</span>'
+                    : Number(prod.stock) <= 10
                         ? '<span class="badge bg-warning text-dark">Bajo</span>'
                         : ""
                 }
@@ -404,7 +403,7 @@ const initializePage = () => {
         (entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting && !loadingProducts && !lastPage) {
-                    loadProducts();
+                    loadProducts(true);
                 }
             });
         },
@@ -493,7 +492,7 @@ const initializePage = () => {
                                 timerProgressBar: true,
                                 showConfirmButton: false,
                             });
-                            loadProducts();
+                            loadProducts(true);
                         } else {
                             Swal.fire({
                                 ...swalConfig,
@@ -597,7 +596,7 @@ const initializePage = () => {
                 document
                     .querySelector('#productModal [data-bs-dismiss="modal"]')
                     .click();
-                loadProducts();
+                loadProducts(true);
             } else {
                 // -----------------------------
                 // Manejo robusto de errores
@@ -645,7 +644,6 @@ const initializePage = () => {
 // ==============================
 
 document.addEventListener("DOMContentLoaded", () => {
-    const apiUrl = `${window.location.origin}/golden-gym/public/admin`;
 
     const form = document.getElementById("reportsInventarioForm");
     const exportPdfBtn = document.getElementById("exportPdfInventarioBtn");
@@ -681,12 +679,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+
+
         // Construir URL
         let url = "";
         if (tipo === "pdf") {
-            url = `${apiUrl}/resumen-inventario/pdf?inicio=${inicio}&fin=${fin}`;
+            url = apiUrl(
+                `/admin/resumen-inventario/pdf?inicio=${inicio}&fin=${fin}`
+            );
         } else {
-            url = `${apiUrl}/resumen-inventario/excel?inicio=${inicio}&fin=${fin}`;
+            url = apiUrl(
+                `/admin/resumen-inventario/excel?inicio=${inicio}&fin=${fin}`
+            );
         }
 
         // Abrir reporte

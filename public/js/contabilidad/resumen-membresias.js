@@ -68,8 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const url =
             tipo === "pdf"
-                ? `/golden-gym/public/admin/exportar/contabilidad-pdf?${params.toString()}`
-                : `/golden-gym/public/admin/exportar/contabilidad-excel?${params.toString()}`;
+                ? apiUrl(`admin/exportar/contabilidad-pdf?${params.toString()}`)
+                : apiUrl(`admin/exportar/contabilidad-excel?${params.toString()}`);
 
         window.open(url, "_blank");
         reportModal.hide();
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const mes = document.getElementById("filterMes")?.value;
             const anio = document.getElementById("filterAnio")?.value;
             if (!mes || !anio) return;
-            window.location.href = `/golden-gym/public/admin/exportar/contabilidad-pdf?mes=${mes}&anio=${anio}`;
+            window.location.href = apiUrl(`admin/exportar/contabilidad-pdf?mes=${mes}&anio=${anio}`);
         });
     }
 
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const mes = document.getElementById("filterMes")?.value;
             const anio = document.getElementById("filterAnio")?.value;
             if (!mes || !anio) return;
-            window.location.href = `/golden-gym/public/admin/exportar/contabilidad-excel?mes=${mes}&anio=${anio}`;
+            window.location.href = apiUrl(`admin/exportar/contabilidad-excel?mes=${mes}&anio=${anio}`);
         });
     }
 });

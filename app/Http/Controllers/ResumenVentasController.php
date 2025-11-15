@@ -247,7 +247,6 @@ class ResumenVentasController extends Controller
         'Fecha',
         'Estado'
       ];
-
       $sheet->fromArray([$headers], null, 'A1');
 
       // 🔹 Estilos del encabezado
@@ -269,20 +268,27 @@ class ResumenVentasController extends Controller
           $usuario = $venta->usuario->nombre_completo ?? 'N/A';
           $fecha = Carbon::parse($venta->fecha_venta)->format('d/m/Y');
 
-          $sheet->fromArray([[
-            $numero++,
-            $venta->id,
-            $producto,
-            $categoria,
-            $cliente,
-            $usuario,
-            ucfirst($venta->metodo_pago ?? 'No especificado'),
-            $detalle->cantidad,
-            number_format($detalle->precio_unitario, 0, ',', '.'),
-            number_format($detalle->subtotal, 0, ',', '.'),
-            $fecha,
-            $venta->estado,
-          ]], null, "A{$row}");
+          $sheet->fromArray([
+            [
+              $numero++,
+              $venta->id,
+              $producto,
+              $categoria,
+              $cliente,
+              $usuario,
+              ucfirst($venta->metodo_pago ?? 'No especificado'),
+              $detalle->cantidad,
+              $detalle->precio_unitario, // valor numérico
+              $detalle->subtotal,        // valor numérico
+              $fecha,
+              $venta->estado,
+            ]
+          ], null, "A{$row}");
+
+          // 🔹 Aplicar formato monetario a columnas Precio Unitario y Subtotal
+          $sheet->getStyle("I{$row}:J{$row}")
+            ->getNumberFormat()
+            ->setFormatCode('#,##0');
 
           $row++;
         }
@@ -295,9 +301,14 @@ class ResumenVentasController extends Controller
       $numProductos = $ventas->sum(fn($v) => $v->detalles->sum('cantidad'));
 
       $sheet->fromArray([
-        ['', '', '', '', '', '', '', '', 'TOTAL VENTAS:', number_format($totalVentas, 0, ',', '.'), '', ''],
+        ['', '', '', '', '', '', '', '', 'TOTAL VENTAS:', $totalVentas, '', ''],
         ['', '', '', '', '', '', '', '', 'TOTAL PRODUCTOS:', $numProductos, '', ''],
       ], null, "A" . ($lastRow + 2));
+
+      // 🔹 Formato monetario para total de ventas
+      $sheet->getStyle("J" . ($lastRow + 2))
+        ->getNumberFormat()
+        ->setFormatCode('#,##0');
 
       // 🔹 Estilo general
       $sheet->getStyle("A1:L{$lastRow}")
