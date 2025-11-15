@@ -205,6 +205,7 @@
             <div class="modal-body p-3">
               <form id="clientForm" class="row g-3 p-3" enctype="multipart/form-data">
                 <input type="hidden" id="clientId" name="id" />
+                <input type="hidden" id="usuarioId" name="usuario_id" value="{{ auth()->user()->id }}">
 
                 <!-- Foto del cliente -->
                 <div class="col-12 text-center">
@@ -242,12 +243,13 @@
                     required />
                 </div>
 
+
                 <div class="col-md-6">
                   <label class="form-label">Identificación *</label>
                   <input
                     id="clientIdNumber"
                     name="cedula"
-                    type="text"
+                    type="number"
                     class="form-control text-white border-0"
                     required />
                 </div>
@@ -538,6 +540,7 @@
             </div>
 
             <form id="dailyPaymentForm" class="modal-body">
+              <input type="hidden" name="usuario_id" value="{{ auth()->id() }}">
               <div class="mb-3">
                 <label class="form-label">Nombre del cliente *</label>
                 <input

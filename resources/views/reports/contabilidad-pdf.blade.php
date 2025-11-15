@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Contabilidad - Golden Gym</title>
+    <title>Reporte de Membresías - Golden Gym</title>
     <style>
         * {
             margin: 0;
@@ -222,9 +222,9 @@
 <body>
     <div class="header">
         @if(file_exists(public_path('img/icons/golden_gym.png')))
-        <img src="{{ public_path('img/icons/golden_gym.png') }}" alt="Logo Golden Gym" class="logo">
+        <img src="{{ asset('img/icons/golden_gym.png') }}" alt="Logo Golden Gym" class="logo">
         @elseif(file_exists(public_path('images/logo-gym.png')))
-        <img src="{{ public_path('images/logo-gym.png') }}" alt="Logo Golden Gym" class="logo">
+        <img src="{{ asset('img/icons/golden_gym.png') }}" alt="Logo Golden Gym" class="logo">
         @else
         <div class="logo-placeholder">GYM</div>
         @endif
@@ -253,6 +253,7 @@
                 <th>Membresía</th>
                 <th>Monto</th>
                 <th>Método Pago</th>
+                <th>Registrado por</th>
                 <th>Fecha Inicio</th>
                 <th>Fecha Fin</th>
                 <th>Estado</th>
@@ -266,6 +267,7 @@
                 <td>{{ $pago->membresia->nombre ?? 'N/A' }}</td>
                 <td>${{ number_format($pago->monto,2) }}</td>
                 <td>{{ ucfirst($pago->metodo_pago ?? 'N/A') }}</td>
+                <td>{{ $pago->usuario->nombre_completo ?? 'Desconocido' }}</td>
                 <td>{{ \Carbon\Carbon::parse($pago->fecha_inicio)->format('d/m/Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($pago->fecha_fin)->format('d/m/Y') }}</td>
                 <td>
@@ -301,6 +303,7 @@
                 <th>Cliente</th>
                 <th>Monto</th>
                 <th>Método Pago</th>
+                <th>Registrado por</th>
                 <th>Fecha</th>
             </tr>
         </thead>
@@ -311,6 +314,7 @@
                 <td><strong>{{ $pago->nombre_cliente ?? 'Sin nombre' }}</strong></td>
                 <td>${{ number_format($pago->monto,2) }}</td>
                 <td>{{ ucfirst($pago->metodo_pago ?? 'N/A') }}</td>
+                <td>{{ $pago->usuario->nombre_completo ?? 'Desconocido' }}</td>
                 <td>{{ \Carbon\Carbon::parse($pago->fecha)->format('d/m/Y') }}</td>
             </tr>
             @endforeach

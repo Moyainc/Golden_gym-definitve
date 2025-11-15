@@ -2,52 +2,43 @@
 
 namespace App\Mail;
 
+use App\Models\Venta;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class Ventas extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public $venta;
 
     /**
-     * Get the message envelope.
-     */
-    public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: 'Ventas',
-        );
-    }
-
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'view.name',
-        );
-    }
-
-    /**
-     * Get the attachments for the message.
+     * Crear una nueva instancia del Mailable.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @param \App\Models\Venta $venta
      */
-    public function attachments(): array
+    public function __construct(Venta $venta)
     {
-        return [];
+        $this->venta = $venta;
+    }
+
+    /**
+     * Construir el mensaje.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->subject('Detalle de tu compra en Golden Gym')
+                    ->view('emails.ventas')
+                    ->with([
+                        'cliente' => $this->venta->cliente,
+                        'usuario' => $this->venta->usuario, // Quién vendió
+                        'venta' => $this->venta,
+                        'productos' => $this->venta->detalles, // Detalles de la venta
+                        'total' => $this->venta->total,
+                        'metodoPago' => $this->venta->metodo_pago,
+                    ]);
     }
 }

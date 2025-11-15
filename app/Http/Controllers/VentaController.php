@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use App\Models\Cliente;
 use App\Models\Venta;
@@ -11,6 +11,7 @@ use App\Models\Producto;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\Ventas;
 use App\Traits\HasPrecioFormatted;
 
 class VentaController extends Controller
@@ -141,6 +142,7 @@ class VentaController extends Controller
         'fecha_venta' => now(),
       ]);
 
+
       // ✅ Registrar detalles y actualizar stock
       foreach ($request->productos as $producto) {
         $productoDB = Producto::findOrFail($producto['producto_id']);
@@ -184,6 +186,12 @@ class VentaController extends Controller
         'fecha_pago'  => now(),
         'estado'      => $venta->estado, // ← Se envía el estado directamente
       ]);
+
+      // ✅ Enviar correo si la venta es mayor a 100.000 COP
+      if ($venta->total > 100000) {
+        Mail::to($venta->cliente->correo)
+          ->send(new \App\Mail\Ventas($venta));
+      }
 
       DB::commit();
 
