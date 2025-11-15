@@ -270,7 +270,7 @@
                   <input
                     id="clientPhone"
                     name="telefono"
-                    type="tel"
+                    type="number"
                     class="form-control text-white border-0" />
                 </div>
 
@@ -288,7 +288,7 @@
                   <input
                     id="clientEmergency"
                     name="numero_emergencia"
-                    type="tel"
+                    type="number"
                     class="form-control text-white border-0" />
                 </div>
 
@@ -492,7 +492,7 @@
 
               <div class="col-md-6">
                 <label class="form-label">Cédula *</label>
-                <input type="text" class="form-control text-white border-0" id="editClientIdNumber" name="cedula" required>
+                <input type="number" class="form-control text-white border-0" id="editClientIdNumber" name="cedula" required>
               </div>
 
               <div class="col-md-6">
@@ -502,7 +502,7 @@
 
               <div class="col-md-6">
                 <label class="form-label">Teléfono</label>
-                <input type="tel" class="form-control text-white border-0" id="editClientPhone" name="telefono">
+                <input type="number" class="form-control text-white border-0" id="editClientPhone" name="telefono">
               </div>
 
               <div class="col-md-6">
@@ -512,7 +512,7 @@
 
               <div class="col-md-6">
                 <label class="form-label">Número de emergencia</label>
-                <input type="tel" class="form-control text-white border-0" id="editClientEmergency" name="numero_emergencia">
+                <input type="number" class="form-control text-white border-0" id="editClientEmergency" name="numero_emergencia">
               </div>
 
               <hr class="border-secondary" />

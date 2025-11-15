@@ -16,6 +16,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ResumenGeneralController;
 use App\Http\Controllers\PagoPendienteController;
 use App\Http\Controllers\EntrenadorController;
+use App\Http\Controllers\MailMasivoController;
 // =========================
 // 🟢 RUTAS PÚBLICAS (guest)
 // =========================
@@ -132,6 +133,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('admin/contabilidad/resumen-ventas', [HomeController::class, 'resumen_ventas'])->name('admin.resumen.ventas');
         Route::get('admin/contabilidad/resumen-membresias', [HomeController::class, 'resumen_membresias'])->name('admin.resumen.membresias');
         Route::get('admin/contabilidad/resumen-general', [HomeController::class, 'resumen_general'])->name('admin.resumen.general');
+
+
+        // Rutas para correo masivo
+        Route::get('admin/mail-masivo', [MailMasivoController::class, 'create'])
+            ->name('admin.mail_masivo.create');
+        Route::post('admin/mail/enviar', [MailMasivoController::class, 'send'])
+            ->name('admin.mail_masivo.send');
+        Route::post('/admin/mail-masivo/count', [MailMasivoController::class, 'contarSegmento'])
+            ->name('admin.mail_masivo.count');
     });
 
 

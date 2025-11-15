@@ -72,17 +72,6 @@
                     información básica y registrar datos en el sistema.
                   </p>
                 </div>
-
-                <!-- Rol: Contador -->
-                <div class="p-3 border rounded border-secondary">
-                  <h6 class="tittle-color mb-2">
-                    <i data-feather="file-text" class="me-1"></i> Contador
-                  </h6>
-                  <p class="mb-0 text-light small">
-                    Gestiona la parte contable y financiera. Puede acceder a reportes económicos, registrar transacciones
-                    y consultar estadísticas financieras.
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -209,7 +198,7 @@
                 <div class="col-md-6">
                   <label for="userCedula" class="form-label text-white">Cédula</label>
                   <input
-                    type="text"
+                    type="number"
                     class="form-control text-white border-0"
                     id="userCedula"
                     name="cedula"
@@ -256,7 +245,7 @@
                 <div class="col-md-6">
                   <label for="userPhone" class="form-label text-white">Teléfono</label>
                   <input
-                    type="text"
+                    type="number"
                     class="form-control text-white border-0"
                     id="userPhone"
                     name="telefono"
@@ -274,7 +263,6 @@
                   required>
                   <option value="" selected disabled>Seleccione un rol</option>
                   <option value="Administrador">Administrador</option>
-                  <option value="Contador">Contador</option>
                   <option value="Recepcionista">Recepcionista</option>
                 </select>
               </div>
