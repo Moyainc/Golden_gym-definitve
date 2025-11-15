@@ -90,12 +90,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function getEstadoBadge(estado) {
         const badges = {
             activa: '<span class="badge bg-success bg-opacity-75">Activa</span>',
-            proxima: '<span class="badge bg-warning bg-opacity-75 text-dark">Próxima a vencer</span>',
-            vencida: '<span class="badge bg-danger bg-opacity-75">Vencida</span>',
-            anulado: '<span class="badge bg-dark bg-opacity-50">Anulado</span>',
-            sin_membresia: '<span class="badge bg-secondary bg-opacity-75">Sin membresía</span>',
-        }
-        return badges[estado] || badges["sin_membresia"]
+            proxima:
+                '<span class="badge bg-warning bg-opacity-75 text-dark">Próxima a vencer</span>',
+            vencida:
+                '<span class="badge bg-danger bg-opacity-75">Vencida</span>',
+            sin_membresia:
+                '<span class="badge bg-secondary bg-opacity-75">Sin membresía</span>',
+        };
+        return badges[estado] || badges["sin_membresia"];
     }
 
     function getDefaultPhoto() {
@@ -278,107 +280,58 @@ document.addEventListener("DOMContentLoaded", () => {
                         : apiUrl("/img/avatars/user.png");
 
                 const globalIndex = (current_page - 1) * per_page + index + 1;
-                return `<tr>
-                    <td>${index + 1}</td>
-                    <td>
-                        <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
-                    </td>
-                    <td class="fw-semibold text-white">${cliente.nombre_completo}</td>
-                    <td class="text-muted">${cliente.cedula || "N/A"}</td>
-                    <td>
-                        <span class="badge bg-primary bg-opacity-75">${cliente.estado === "anulado" ? "Anulada" : (cliente.membresia_nombre || "Sin membresía")}</span>
 
-                    </td>
-                    <td class="text-muted small">${formatDateDisplay(cliente.fecha_inicio)}</td>
-                    <td class="text-muted small">${formatDateDisplay(cliente.fecha_fin)}</td>
-                    <td>${getEstadoBadge(cliente.estado)}</td>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${cliente.id}" title="Ver cliente">
-                            <i data-feather="eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${cliente.id}" title="Editar">
-                            <i data-feather="edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${cliente.id}" title="Renovar membresía">
-                            <i data-feather="refresh-cw"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary me-1 btn-cancel-membership" data-id="${cliente.id}" title="Anular membresía actual">
-                            <i data-feather="x-circle"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${cliente.id}" title="Eliminar">
-                            <i data-feather="trash-2"></i>
-                        </button>
-                    </td>
-                </tr>`
+                return `
+            <tr>
+                <td>${globalIndex}</td>
+                <td>
+                    <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
+                </td>
+                <td class="fw-semibold text-white">${
+                    cliente.nombre_completo
+                }</td>
+                <td class="text-muted">${cliente.cedula || "N/A"}</td>
+                <td>
+                    <span class="badge bg-primary bg-opacity-75">${
+                        cliente.membresia_nombre || "Sin membresía"
+                    }</span>
+                </td>
+                <td class="text-muted small">${formatDateDisplay(
+                    cliente.fecha_inicio
+                )}</td>
+                <td class="text-muted small">${formatDateDisplay(
+                    cliente.fecha_fin
+                )}</td>
+                <td>${getEstadoBadge(cliente.estado)}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-success me-1 btn-view" data-id="${
+                        cliente.id
+                    }" title="Ver cliente">
+                        <i data-feather="eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning me-1 btn-edit" data-id="${
+                        cliente.id
+                    }" title="Editar">
+                        <i data-feather="edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info me-1 btn-renew" data-id="${
+                        cliente.id
+                    }" title="Renovar membresía">
+                        <i data-feather="refresh-cw"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" data-id="${
+                        cliente.id
+                    }" title="Eliminar">
+                        <i data-feather="trash-2"></i>
+                    </button>
+                </td>
+            </tr>`;
             })
             .join("");
 
         feather.replace();
     }
 
-    document.addEventListener("click", async (e) => {
-        if (e.target.closest(".btn-cancel-membership")) {
-            const id = e.target.closest(".btn-cancel-membership").dataset.id;
-
-            const confirmCancel = await Swal.fire({
-                title: "¿Anular membresía?",
-                text: "Esta acción anulará el último pago de membresía de este cliente. ¿Deseas continuar?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Sí, anular",
-                cancelButtonText: "Cancelar",
-                background: "#1a1a1a",
-                color: "#fff",
-                confirmButtonColor: "#ffc107", // amarillo principal del sitio
-                cancelButtonColor: "#6c757d",   // gris suave para cancelar
-            });
-
-            if (confirmCancel.isConfirmed) {
-                try {
-                    const response = await fetch(apiUrl(`admin/clientes/json/${id}/anular`), {
-                        method: "POST", // ✅ correcto según tus rutas
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
-                        },
-                    });
-
-                    // Intenta convertir la respuesta a JSON
-                    const data = await response.json();
-
-                    if (data.success) {
-                        Swal.fire({
-                            icon: "success",
-                            title: "Membresía anulada correctamente",
-                            text: data.message,
-                            timer: 1500,
-                            showConfirmButton: false,
-                            background: "#1a1a1a",
-                            color: "#fff",
-                        });
-                        loadClients(currentPage); // ✅ refresca la tabla
-                    } else {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error al anular",
-                            text: data.message,
-                            background: "#1a1a1a",
-                            color: "#fff",
-                        });
-                    }
-                } catch (error) {
-                    console.error(error);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "No se pudo procesar la solicitud. Verifica la conexión o el servidor.",
-                        background: "#1a1a1a",
-                        color: "#fff",
-                    });
-                }
-            }
-        }
-    });
 
     // === Filtros ===
     function applyCurrentFilter() {
@@ -673,22 +626,36 @@ document.addEventListener("DOMContentLoaded", () => {
             // VER CLIENTE
             if (btn.classList.contains("btn-view")) {
                 try {
-                    const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`))
-                    const cliente = await res.json()
-                    const viewModal = new bootstrap.Modal(document.getElementById("viewClientModal"))
-                    document.getElementById("viewClientName").textContent = cliente.nombre_completo
-                    document.getElementById("viewClientIdNumber").textContent = cliente.cedula || "N/A"
-                    document.getElementById("viewClientEmail").textContent = cliente.correo || "N/A"
-                    document.getElementById("viewClientPhone").textContent = cliente.telefono || "N/A"
-                    document.getElementById("viewClientEps").textContent = cliente.eps || "N/A"
-                    document.getElementById("viewClientEmergency").textContent = cliente.numero_emergencia || "N/A"
-                    document.getElementById("viewClientMembership").textContent =
-                        cliente.estado === "anulado"
-                            ? "Anulada"
-                            : (cliente.membresia_actual?.membresia?.nombre || "Sin membresía");
-                    document.getElementById("viewClientStart").textContent = cliente.fecha_inicio || "N/A"
-                    document.getElementById("viewClientEnd").textContent = cliente.fecha_fin || "N/A"
-                    document.getElementById("viewClientEstado").innerHTML = getEstadoBadge(cliente.estado)
+                    const res = await fetch(
+                        apiUrl(`admin/clientes/json/${clientId}`)
+                    );
+                    const cliente = await res.json();
+                    const viewModal = new bootstrap.Modal(
+                        document.getElementById("viewClientModal")
+                    );
+                    document.getElementById("viewClientName").textContent =
+                        cliente.nombre_completo;
+                    document.getElementById("viewClientIdNumber").textContent =
+                        cliente.cedula || "N/A";
+                    document.getElementById("viewClientEmail").textContent =
+                        cliente.correo || "N/A";
+                    document.getElementById("viewClientPhone").textContent =
+                        cliente.telefono || "N/A";
+                    document.getElementById("viewClientEps").textContent =
+                        cliente.eps || "N/A";
+                    document.getElementById("viewClientEmergency").textContent =
+                        cliente.numero_emergencia || "N/A";
+                    document.getElementById(
+                        "viewClientMembership"
+                    ).textContent =
+                        cliente.membresia_actual?.membresia?.nombre ||
+                        "Sin membresía";
+                    document.getElementById("viewClientStart").textContent =
+                        cliente.fecha_inicio || "N/A";
+                    document.getElementById("viewClientEnd").textContent =
+                        cliente.fecha_fin || "N/A";
+                    document.getElementById("viewClientEstado").innerHTML =
+                        getEstadoBadge(cliente.estado);
                     document.getElementById("viewClientPhoto").src =
                         cliente.foto
                             ? `${window.app.baseUrl}/storage/${cliente.foto}`
@@ -784,15 +751,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     const formData = new FormData();
                     formData.append("membresia_id", membresia_id);
                     formData.append("metodo_pago", metodo_pago);
-                    formData.append("usuario_id", "{{ auth()->user()->id }}");
-                    const res = await fetch(apiUrl(`admin/clientes/json/${clientId}/renovar`), {
-                        method: "POST",
-                        headers: {
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            Accept: "application/json",
-                        },
-                        body: formData,
-                    });
+                    const res = await fetch(
+                        apiUrl(`admin/clientes/json/${clientId}/renovar`),
+                        {
+                            method: "POST",
+                            headers: {
+                                "X-CSRF-TOKEN": document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    .getAttribute("content"),
+                                Accept: "application/json",
+                            },
+                            body: formData,
+                        }
+                    );
                     const data = await res.json();
                     if (data.success) {
                         Swal.fire({
@@ -894,7 +865,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (exportPdfBtn) {
-        exportPdfBtn.addEventListener("click", async () => {
+        exportPdfBtn.addEventListener("click", () => {
             const fechaInicio = reportStartDate.value;
             const fechaFin = reportEndDate.value;
             const estado = reportEstado.value;
@@ -909,7 +880,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 return;
             }
-
             if (new Date(fechaInicio) > new Date(fechaFin)) {
                 Swal.fire({
                     icon: "warning",
@@ -921,56 +891,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 return;
             }
-
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
                 incluir_pagos_diarios: incluirPagosDiarios,
             });
             if (estado) params.append("estado", estado);
-
-            try {
-                const response = await fetch(apiUrl(`admin/clientes/export/pdf?${params.toString()}`));
-
-                // Verificar si la respuesta es JSON (error 404)
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    const data = await response.json();
-                    if (!data.success) {
-                        Swal.fire({
-                            icon: "info",
-                            title: "Sin resultados",
-                            text: data.message,
-                            background: "#1a1a1a",
-                            color: "#fff",
-                        });
-                        return;
-                    }
-                }
-
-                // Si todo está bien, descarga el PDF
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `reporte-clientes-${fechaInicio}_a_${fechaFin}.pdf`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-
-                bootstrap.Modal.getInstance(document.getElementById("reportsModal")).hide();
-            } catch (error) {
-                console.error("Error al generar el PDF:", error);
-                Swal.fire({
-                    icon: "error",
-                    title: "Error",
-                    text: "Ocurrió un error al generar el reporte.",
-                    background: "#1a1a1a",
-                    color: "#fff",
-                });
-            }
+            window.open(
+                apiUrl(`admin/clientes/export/pdf?${params.toString()}`),
+                "_blank"
+            );
+            bootstrap.Modal.getInstance(
+                document.getElementById("reportsModal")
+            ).hide();
         });
     }
-
 
     if (exportExcelBtn) {
         exportExcelBtn.addEventListener("click", () => {
@@ -988,7 +923,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 return;
             }
-
             if (new Date(fechaInicio) > new Date(fechaFin)) {
                 Swal.fire({
                     icon: "warning",
@@ -1000,56 +934,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 return;
             }
-
             const params = new URLSearchParams({
                 fecha_inicio: fechaInicio,
                 fecha_fin: fechaFin,
                 incluir_pagos_diarios: incluirPagosDiarios,
             });
             if (estado) params.append("estado", estado);
-
-            // 👇 Hacemos fetch para validar antes de descargar
-            fetch(apiUrl(`admin/clientes/export/excel?${params.toString()}`))
-                .then(async (response) => {
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        Swal.fire({
-                            icon: "info",
-                            title: "Sin resultados",
-                            text: errorData.message || "No se encontraron clientes en ese rango de fechas.",
-                            background: "#1a1a1a",
-                            color: "#fff",
-                        });
-                        throw new Error("Sin clientes");
-                    }
-
-                    // Si hay datos, descargamos el archivo
-                    return response.blob();
-                })
-                .then((blob) => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `reporte-clientes_${fechaInicio}_al_${fechaFin}.xlsx`;
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    bootstrap.Modal.getInstance(document.getElementById("reportsModal")).hide();
-                })
-                .catch((error) => {
-                    if (error.message !== "Sin clientes") {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "Ocurrió un problema al generar el Excel.",
-                            background: "#1a1a1a",
-                            color: "#fff",
-                        });
-                    }
-                });
+            window.open(
+                apiUrl(`admin/clientes/export/excel?${params.toString()}`),
+                "_blank"
+            );
+            bootstrap.Modal.getInstance(
+                document.getElementById("reportsModal")
+            ).hide();
         });
     }
-
-
 
     // === Inicializar ===
     loadMemberships();

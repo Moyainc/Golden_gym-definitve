@@ -62,7 +62,6 @@ class PagoDiarioController extends Controller
                 'monto' => $request->monto,
                 'fecha' => $request->fecha,
                 'metodo_pago' => $request->metodo_pago,
-                'usuario_id' => $request->usuario_id,
             ]);
 
             // 2️⃣ Crear el registro en pagos generales usando morphs

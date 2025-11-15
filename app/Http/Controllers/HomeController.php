@@ -4,14 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use App\Models\Membresia;
 use App\Models\Entrenador;
-use App\Mail\BienvenidaUsuario;
 
 class HomeController extends Controller
 {
@@ -125,8 +123,6 @@ class HomeController extends Controller
                 'password' => Hash::make($request->password),
                 'foto' => $fotoPath,
             ]);
-
-            Mail::to($usuario->correo)->send(new BienvenidaUsuario($usuario));
 
             return response()->json([
                 'success' => true,

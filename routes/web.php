@@ -94,7 +94,6 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/json/{id}', [ClienteController::class, 'destroy']);
             Route::get('/membresias/json', [ClienteController::class, 'getMembresias']);
             Route::post('/json/{id}/renovar', [ClienteController::class, 'renovarMembresia']);
-            Route::post('/json/{id}/anular', [ClienteController::class, 'anularMembresia']);
             Route::get('/export/pdf', [ClienteController::class, 'exportPdf'])->name('clientes.export.pdf');
             Route::get('/export/excel', [ClienteController::class, 'exportExcel'])->name('clientes.export.excel');
         });
