@@ -79,6 +79,12 @@ class PagoPendienteController extends Controller
       $comprobanteExistente->update([
         'foto_comprobante' => $filePath,
       ]);
+
+      if ($request->tipo === 'venta') {
+        $pago->estado = 'Completada';
+        $pago->save();
+      }
+
       return response()->json(['message' => 'Comprobante actualizado correctamente.']);
     }
 
@@ -89,6 +95,12 @@ class PagoPendienteController extends Controller
       'fecha_subida' => now(),
       $campo => $request->pago_id,
     ]);
+
+    if ($request->tipo === 'venta') {
+      $pago->estado = 'Completada';
+      $pago->save();
+    }
+
 
     return response()->json(['message' => 'Comprobante subido correctamente.']);
   }
@@ -320,9 +332,19 @@ class PagoPendienteController extends Controller
         Storage::delete('public/' . $comprobante->foto_comprobante);
       }
 
-      // Actualizar campo en la base de datos
+      $idVenta = $comprobante->id_ventas;
+
+      // Limpiar campo en BD
       $comprobante->foto_comprobante = null;
       $comprobante->save();
+
+      if ($idVenta) {
+        $venta = Venta::find($idVenta);
+        if ($venta) {
+          $venta->estado = 'Pendiente';
+          $venta->save();
+        }
+      }
 
       return response()->json([
         'message' => 'Comprobante eliminado correctamente.',
