@@ -103,7 +103,7 @@ class ResumenGeneralController extends Controller
     $ultimos = $pagos->reject(fn($pago) => strtolower($pago->estado) === 'anulada')
       ->take(6)
       ->map(function ($pago) {
-        $estado = ucfirst($pago->estado ?? 'Completado');
+        $estado = ucfirst($pago->estado ?? 'Completada');
 
       if ($pago->tipo_pago === 'pagos_membresias' && $pago->origen_id) {
         $membresia = PagoMembresia::find($pago->origen_id);
@@ -114,7 +114,7 @@ class ResumenGeneralController extends Controller
           // Verificar si faltan fechas
           if (!$membresia->fecha_inicio || !$membresia->fecha_fin) {
             $estado = 'Sin fechas';
-          } elseif ($membresia->estado === 'anulada') {
+          } elseif (strtolower($membresia->estado) === 'anulada') {
             $estado = 'Anulada';
           } elseif ($hoy->gt(Carbon::parse($membresia->fecha_fin))) {
             $estado = 'Vencida';

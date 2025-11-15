@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\PagoDiario;
 use App\Models\PagoMembresia;
+use App\Models\PagoGeneral;
 use App\Models\Venta;
 use App\Models\Comprobante;
 use App\Models\Usuario;
@@ -73,37 +74,47 @@ class PagoPendienteController extends Controller
     $comprobanteExistente = Comprobante::where($campo, $request->pago_id)->first();
 
     if ($comprobanteExistente) {
+
+      // Eliminar imagen previa
       if ($comprobanteExistente->foto_comprobante && Storage::disk('public')->exists($comprobanteExistente->foto_comprobante)) {
         Storage::disk('public')->delete($comprobanteExistente->foto_comprobante);
       }
+
       $comprobanteExistente->update([
         'foto_comprobante' => $filePath,
       ]);
-
-      if ($request->tipo === 'venta') {
-        $pago->estado = 'Completada';
-        $pago->save();
-      }
-
-      return response()->json(['message' => 'Comprobante actualizado correctamente.']);
+    } else {
+      // Crear nuevo comprobante
+      Comprobante::create([
+        'foto_comprobante' => $filePath,
+        'id_usuario' => $user->id,
+        'fecha_subida' => now(),
+        $campo => $request->pago_id,
+      ]);
     }
 
-    // Crear nuevo comprobante
-    Comprobante::create([
-      'foto_comprobante' => $filePath,
-      'id_usuario' => $user->id,
-      'fecha_subida' => now(),
-      $campo => $request->pago_id,
-    ]);
-
+    // ACTUALIZAR ESTADOS (siempre)
     if ($request->tipo === 'venta') {
+
+      // 1. Actualizar venta
       $pago->estado = 'Completada';
       $pago->save();
-    }
 
+      // 2. Actualizar PagoGeneral
+      $pagoGeneral = PagoGeneral::where('tipo_pago', 'venta_producto')
+        ->where('origen_id', $pago->id)
+        ->first();
+
+      if ($pagoGeneral) {
+        $pagoGeneral->estado = 'Completada';
+        $pagoGeneral->fecha_pago = now();
+        $pagoGeneral->save();
+      }
+    }
 
     return response()->json(['message' => 'Comprobante subido correctamente.']);
   }
+
 
 
 
@@ -317,10 +328,9 @@ class PagoPendienteController extends Controller
         ], 404);
       }
 
-
       $usuario = Auth::user();
 
-      // Validar que sea el mismo usuario que subió o sea Administrador
+      // Validar permisos
       if ($comprobante->id_usuario !== $usuario->id && $usuario->rol !== 'Administrador') {
         return response()->json([
           'error' => 'No tienes permisos suficientes para eliminar este comprobante.'
@@ -328,8 +338,8 @@ class PagoPendienteController extends Controller
       }
 
       // Eliminar archivo físico si existe
-      if ($comprobante->foto_comprobante && Storage::exists('public/' . $comprobante->foto_comprobante)) {
-        Storage::delete('public/' . $comprobante->foto_comprobante);
+      if ($comprobante->foto_comprobante && Storage::disk('public')->exists($comprobante->foto_comprobante)) {
+        Storage::disk('public')->delete($comprobante->foto_comprobante);
       }
 
       $idVenta = $comprobante->id_ventas;
@@ -338,11 +348,22 @@ class PagoPendienteController extends Controller
       $comprobante->foto_comprobante = null;
       $comprobante->save();
 
+      // Si es una venta, actualizar estados
       if ($idVenta) {
+
         $venta = Venta::find($idVenta);
         if ($venta) {
           $venta->estado = 'Pendiente';
           $venta->save();
+        }
+
+        $pagoGeneral = PagoGeneral::where('tipo_pago', 'venta_producto')
+          ->where('origen_id', $idVenta)
+          ->first();
+
+        if ($pagoGeneral) {
+          $pagoGeneral->estado = 'Pendiente';
+          $pagoGeneral->save();
         }
       }
 

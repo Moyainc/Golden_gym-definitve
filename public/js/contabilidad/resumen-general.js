@@ -140,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 switch (estado.toLowerCase()) {
                     case "activa":
                     case "completada":
-                        statusEl.classList.add("bg-success", "text-white");
+                        statusEl.classList.add("bg-success", "text-black");
                         break;
                     case "proxima":
                     case "pendiente":

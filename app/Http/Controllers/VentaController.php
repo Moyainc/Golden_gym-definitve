@@ -131,7 +131,7 @@ class VentaController extends Controller
         ], 422);
       }
 
-      // ✅ Crear venta principal
+      //  Crear venta principal
       $venta = Venta::create([
         'usuario_id' => $request->usuario_id,
         'cliente_id' => $request->cliente_id,
@@ -143,7 +143,7 @@ class VentaController extends Controller
       ]);
 
 
-      // ✅ Registrar detalles y actualizar stock
+      // Registrar detalles y actualizar stock
       foreach ($request->productos as $producto) {
         $productoDB = Producto::findOrFail($producto['producto_id']);
 
