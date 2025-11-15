@@ -16,6 +16,7 @@ class PagoDiario extends Model
         'monto',
         'fecha',
         'metodo_pago',
+        'usuario_id',
     ];
 
     protected $casts = [
@@ -26,5 +27,10 @@ class PagoDiario extends Model
     public function comprobante()
     {
         return $this->hasOne(Comprobante::class, 'id_pagos_diarios');
+
+    }
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class);
     }
 }
