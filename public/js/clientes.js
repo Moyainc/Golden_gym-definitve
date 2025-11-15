@@ -90,12 +90,15 @@ document.addEventListener("DOMContentLoaded", () => {
     function getEstadoBadge(estado) {
         const badges = {
             activa: '<span class="badge bg-success bg-opacity-75">Activa</span>',
-            proxima: '<span class="badge bg-warning bg-opacity-75 text-dark">Próxima a vencer</span>',
+            proxima:
+                '<span class="badge bg-warning bg-opacity-75 text-dark">Próxima a vencer</span>',
             vencida: '<span class="badge bg-dark bg-opacity-75">Vencida</span>',
-            anulado: '<span class="badge bg-danger bg-opacity-50">Anulado</span>',
-            sin_membresia: '<span class="badge bg-secondary bg-opacity-75">Sin membresía</span>',
-        }
-        return badges[estado] || badges["sin_membresia"]
+            anulado:
+                '<span class="badge bg-danger bg-opacity-50">Anulado</span>',
+            sin_membresia:
+                '<span class="badge bg-secondary bg-opacity-75">Sin membresía</span>',
+        };
+        return badges[estado] || badges["sin_membresia"];
     }
 
     function getDefaultPhoto() {
@@ -222,7 +225,6 @@ document.addEventListener("DOMContentLoaded", () => {
             tableBody.innerHTML = `<tr> <td colspan="9" class="text-center text-danger">Error al cargar clientes</td> </tr>`;
         }
     }
-
 
     function renderClientPagination(pagination) {
         const totalPaginas = pagination.total_pages || 1;
@@ -354,18 +356,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 background: "#1a1a1a",
                 color: "#fff",
                 confirmButtonColor: "#ffc107", // amarillo principal del sitio
-                cancelButtonColor: "#6c757d",   // gris suave para cancelar
+                cancelButtonColor: "#6c757d", // gris suave para cancelar
             });
 
             if (confirmCancel.isConfirmed) {
                 try {
-                    const response = await fetch(apiUrl(`admin/clientes/json/${id}/anular`), {
-                        method: "POST", // ✅ correcto según tus rutas
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
-                        },
-                    });
+                    const response = await fetch(
+                        apiUrl(`admin/clientes/json/${id}/anular`),
+                        {
+                            method: "POST", // ✅ correcto según tus rutas
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": document.querySelector(
+                                    'meta[name="csrf-token"]'
+                                ).content,
+                            },
+                        }
+                    );
 
                     // Intenta convertir la respuesta a JSON
                     const data = await response.json();
@@ -417,35 +424,43 @@ document.addEventListener("DOMContentLoaded", () => {
         renderClients(filtered, currentPage, 10); // 10 = per_page (o variable real)
     }
 
-
     document.querySelectorAll(".filter-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-        const filterValue = e.currentTarget.dataset.filter;
+        btn.addEventListener("click", (e) => {
+            const filterValue = e.currentTarget.dataset.filter;
 
-        document.querySelectorAll(".filter-btn").forEach((b) => {
-            b.classList.remove("btn-warning", "text-black");
-            b.classList.add("btn-dark", "text-light"); // texto claro para btn-dark
+            // Reset todos los botones
+            document.querySelectorAll(".filter-btn").forEach((b) => {
+                b.classList.remove("btn-warning");
+                b.classList.add("btn-dark");
+                const span = b.querySelector("span");
+                if (span) span.classList.remove("text-black");
+                if (span) span.classList.add("text-light");
+            });
+
+            // Activar el botón seleccionado
+            e.currentTarget.classList.remove("btn-dark");
+            e.currentTarget.classList.add("btn-warning");
+            const spanActive = e.currentTarget.querySelector("span");
+            if (spanActive) {
+                spanActive.classList.remove("text-light");
+                spanActive.classList.add("text-black");
+            }
+
+            currentFilter = filterValue;
+
+            const filterLabels = {
+                activa: "Activas",
+                proxima: "Próximas a vencer",
+                vencida: "Vencidas",
+                todas: "Todas",
+            };
+
+            clientsFilteredLabel.textContent =
+                filterLabels[filterValue] || "Todas";
+
+            applyCurrentFilter();
         });
-
-        e.currentTarget.classList.remove("btn-dark", "text-light");
-        e.currentTarget.classList.add("btn-warning", "text-black"); // texto negro para btn-warning
-
-        currentFilter = filterValue;
-
-        const filterLabels = {
-            activa: "Activas",
-            proxima: "Próximas a vencer",
-            vencida: "Vencidas",
-            todas: "Todas",
-        };
-
-        clientsFilteredLabel.textContent =
-            filterLabels[filterValue] || "Todas";
-
-        applyCurrentFilter();
     });
-});
-
 
     // === Búsqueda ===
     if (searchInput) {
@@ -697,22 +712,38 @@ document.addEventListener("DOMContentLoaded", () => {
             // VER CLIENTE
             if (btn.classList.contains("btn-view")) {
                 try {
-                    const res = await fetch(apiUrl(`admin/clientes/json/${clientId}`))
-                    const cliente = await res.json()
-                    const viewModal = new bootstrap.Modal(document.getElementById("viewClientModal"))
-                    document.getElementById("viewClientName").textContent = cliente.nombre_completo
-                    document.getElementById("viewClientIdNumber").textContent = cliente.cedula || "N/A"
-                    document.getElementById("viewClientEmail").textContent = cliente.correo || "N/A"
-                    document.getElementById("viewClientPhone").textContent = cliente.telefono || "N/A"
-                    document.getElementById("viewClientEps").textContent = cliente.eps || "N/A"
-                    document.getElementById("viewClientEmergency").textContent = cliente.numero_emergencia || "N/A"
-                    document.getElementById("viewClientMembership").textContent =
+                    const res = await fetch(
+                        apiUrl(`admin/clientes/json/${clientId}`)
+                    );
+                    const cliente = await res.json();
+                    const viewModal = new bootstrap.Modal(
+                        document.getElementById("viewClientModal")
+                    );
+                    document.getElementById("viewClientName").textContent =
+                        cliente.nombre_completo;
+                    document.getElementById("viewClientIdNumber").textContent =
+                        cliente.cedula || "N/A";
+                    document.getElementById("viewClientEmail").textContent =
+                        cliente.correo || "N/A";
+                    document.getElementById("viewClientPhone").textContent =
+                        cliente.telefono || "N/A";
+                    document.getElementById("viewClientEps").textContent =
+                        cliente.eps || "N/A";
+                    document.getElementById("viewClientEmergency").textContent =
+                        cliente.numero_emergencia || "N/A";
+                    document.getElementById(
+                        "viewClientMembership"
+                    ).textContent =
                         cliente.estado === "anulado"
                             ? "Anulada"
-                            : (cliente.membresia_actual?.membresia?.nombre || "Sin membresía");
-                    document.getElementById("viewClientStart").textContent = cliente.fecha_inicio || "N/A"
-                    document.getElementById("viewClientEnd").textContent = cliente.fecha_fin || "N/A"
-                    document.getElementById("viewClientEstado").innerHTML = getEstadoBadge(cliente.estado)
+                            : cliente.membresia_actual?.membresia?.nombre ||
+                              "Sin membresía";
+                    document.getElementById("viewClientStart").textContent =
+                        cliente.fecha_inicio || "N/A";
+                    document.getElementById("viewClientEnd").textContent =
+                        cliente.fecha_fin || "N/A";
+                    document.getElementById("viewClientEstado").innerHTML =
+                        getEstadoBadge(cliente.estado);
                     document.getElementById("viewClientPhoto").src =
                         cliente.foto
                             ? `${window.app.baseUrl}/storage/${cliente.foto}`
@@ -809,14 +840,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     formData.append("membresia_id", membresia_id);
                     formData.append("metodo_pago", metodo_pago);
                     formData.append("usuario_id", "{{ auth()->user()->id }}");
-                    const res = await fetch(apiUrl(`admin/clientes/json/${clientId}/renovar`), {
-                        method: "POST",
-                        headers: {
-                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                            Accept: "application/json",
-                        },
-                        body: formData,
-                    });
+                    const res = await fetch(
+                        apiUrl(`admin/clientes/json/${clientId}/renovar`),
+                        {
+                            method: "POST",
+                            headers: {
+                                "X-CSRF-TOKEN": document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    .getAttribute("content"),
+                                Accept: "application/json",
+                            },
+                            body: formData,
+                        }
+                    );
                     const data = await res.json();
                     if (data.success) {
                         Swal.fire({
@@ -954,7 +990,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (estado) params.append("estado", estado);
 
             try {
-                const response = await fetch(apiUrl(`admin/clientes/export/pdf?${params.toString()}`));
+                const response = await fetch(
+                    apiUrl(`admin/clientes/export/pdf?${params.toString()}`)
+                );
 
                 // Verificar si la respuesta es JSON (error 404)
                 const contentType = response.headers.get("content-type");
@@ -981,7 +1019,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 a.click();
                 window.URL.revokeObjectURL(url);
 
-                bootstrap.Modal.getInstance(document.getElementById("reportsModal")).hide();
+                bootstrap.Modal.getInstance(
+                    document.getElementById("reportsModal")
+                ).hide();
             } catch (error) {
                 console.error("Error al generar el PDF:", error);
                 Swal.fire({
@@ -994,7 +1034,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
 
     if (exportExcelBtn) {
         exportExcelBtn.addEventListener("click", () => {
@@ -1040,7 +1079,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         Swal.fire({
                             icon: "info",
                             title: "Sin resultados",
-                            text: errorData.message || "No se encontraron clientes en ese rango de fechas.",
+                            text:
+                                errorData.message ||
+                                "No se encontraron clientes en ese rango de fechas.",
                             background: "#1a1a1a",
                             color: "#fff",
                         });
@@ -1057,7 +1098,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     a.download = `reporte-clientes_${fechaInicio}_al_${fechaFin}.xlsx`;
                     a.click();
                     window.URL.revokeObjectURL(url);
-                    bootstrap.Modal.getInstance(document.getElementById("reportsModal")).hide();
+                    bootstrap.Modal.getInstance(
+                        document.getElementById("reportsModal")
+                    ).hide();
                 })
                 .catch((error) => {
                     if (error.message !== "Sin clientes") {
@@ -1072,8 +1115,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         });
     }
-
-
 
     // === Inicializar ===
     loadMemberships();
