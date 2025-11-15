@@ -50,9 +50,11 @@ class ResumenGeneralController extends Controller
     $pagos = (clone $baseQuery)
       ->select('id', 'tipo_pago', 'origen_id', 'monto', 'metodo_pago', 'fecha_pago', 'estado')
       ->where(function ($q) {
-        $q->where('estado', '!=', 'Anulada')
+        $q->whereNotIn(DB::raw('LOWER(estado)'), ['anulada', 'anulado'])
           ->orWhereNull('estado');
       })
+
+
       ->latest('fecha_pago')
       ->get();
 
@@ -64,11 +66,11 @@ class ResumenGeneralController extends Controller
       if ($pago->tipo_pago !== 'pagos_membresias') return false;
       if (!$pago->origen_id) return true;
       $membresia = PagoMembresia::find($pago->origen_id);
-      return $membresia && $membresia->estado !== 'Anulada';
+      return $membresia && !in_array(strtolower($membresia->estado), ['anulada', 'anulado']);
     })->sum('monto');
 
     $totalProductos = $pagos->where('tipo_pago', 'venta_producto')
-      ->where('estado', '!=', 'Anulada')
+      ->filter(fn($p) => !in_array(strtolower($p->estado), ['anulada', 'anulado']))
       ->sum('monto');
 
     $totalPagosDiarios = $pagos->where('tipo_pago', 'pagos_diarios')
@@ -103,23 +105,29 @@ class ResumenGeneralController extends Controller
       ->map(function ($pago) {
         $estado = ucfirst($pago->estado ?? 'Completado');
 
-        if ($pago->tipo_pago === 'pagos_membresias' && $pago->origen_id) {
-          $membresia = PagoMembresia::find($pago->origen_id);
-          if ($membresia) {
-            $hoy = Carbon::now();
-            if ($membresia->estado === 'anulada') {
-              $estado = 'Anulada';
-            } elseif ($hoy->gt($membresia->fecha_fin)) {
-              $estado = 'Vencida';
-            } elseif ($hoy->lt($membresia->fecha_inicio)) {
-              $estado = 'Próxima';
-            } else {
-              $estado = 'Activa';
-            }
+      if ($pago->tipo_pago === 'pagos_membresias' && $pago->origen_id) {
+        $membresia = PagoMembresia::find($pago->origen_id);
+
+        if ($membresia) {
+          $hoy = Carbon::now();
+
+          // Verificar si faltan fechas
+          if (!$membresia->fecha_inicio || !$membresia->fecha_fin) {
+            $estado = 'Sin fechas';
+          } elseif ($membresia->estado === 'anulada') {
+            $estado = 'Anulada';
+          } elseif ($hoy->gt(Carbon::parse($membresia->fecha_fin))) {
+            $estado = 'Vencida';
+          } elseif ($hoy->lt(Carbon::parse($membresia->fecha_inicio))) {
+            $estado = 'Próxima';
+          } else {
+            $estado = 'Activa';
           }
         }
+      }
 
-        return [
+
+      return [
           'id' => $pago->id,
           'fecha' => $pago->fecha_pago ? $pago->fecha_pago->format('d/m/Y') : 'N/D',
           'concepto' => ucfirst(str_replace('_', ' ', $pago->tipo_pago)),
@@ -133,12 +141,16 @@ class ResumenGeneralController extends Controller
 
 
     // === Datos de Clientes para gráfico "Activos vs Nuevos" (últimos 12 meses) ===
-    $primerPago = PagoMembresia::orderBy('fecha_inicio')->first();
-    if ($primerPago) {
-      $inicioGrafico = $primerPago->fecha_inicio->copy()->startOfMonth();
+    $primerPago = PagoMembresia::whereNotNull('fecha_inicio')
+      ->orderBy('fecha_inicio')
+      ->first();
+
+    if ($primerPago && $primerPago->fecha_inicio) {
+      $inicioGrafico = Carbon::parse($primerPago->fecha_inicio)->copy()->startOfMonth();
     } else {
       $inicioGrafico = Carbon::now()->startOfMonth();
     }
+
 
     // Construir 12 meses consecutivos desde el primer mes con datos
     $mesesGrafico = collect();
