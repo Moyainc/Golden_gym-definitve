@@ -156,7 +156,7 @@
 
                 <li class="sidebar-header">Componentes</li>
 
-                {{-- Membresías: Administrador + Recepcionista --}}
+                {{-- Membresías: Administrador --}}
                 @if(in_array(auth()->user()->rol, ['Administrador']))
                 <li class="sidebar-item {{ Route::is('admin.membresias') ? 'active' : '' }}">
                     <a class="sidebar-link" href="{{ route('admin.membresias') }}">
@@ -182,6 +182,15 @@
                     <a class="sidebar-link" href="{{ route('admin.productos') }}">
                         <i class="align-middle" data-feather="grid"></i>
                         <span class="align-middle">Inventario</span>
+                    </a>
+                </li>
+                @endif
+
+                @if(in_array(auth()->user()->rol, ['Administrador']))
+                <li class="sidebar-item {{ Route::is('entrenadores.index') ? 'active' : '' }}">
+                    <a class="sidebar-link" href="{{ route('entrenadores.index') }}">
+                        <i class="align-middle" data-feather="settings"></i>
+                        <span class="align-middle">Personalizar</span>
                     </a>
                 </li>
                 @endif
