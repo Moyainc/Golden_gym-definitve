@@ -28,10 +28,16 @@
               <p class="text-muted small">Desarrollo Frontend (Bootstrap, Js) y Backend (Laravel).</p>
               <hr class="border-secondary">
               <p class="text-white small mb-1">
-                <i data-feather="mail" class="me-2 text-warning"></i> contacto.luislemus@example.com
+                <i data-feather="mail" class="me-2 text-warning"></i> luisdlperea@gmail.com
               </p>
               <p class="text-white small">
-                <i data-feather="github" class="me-2 text-warning"></i> github.com/luislemus
+                <i data-feather="github" class="me-2 text-warning"></i>
+                <a href="https://github.com/DaLeedev" target="_blank" class="text-white text-decoration-none">
+                  https://github.com/DaLeedev
+                </a>
+              </p>
+              <p class="text-white small">
+                <i data-feather="phone" class="me-2 text-warning"></i> +57 310 5142267
               </p>
             </div>
           </div>
@@ -47,10 +53,16 @@
               <p class="text-muted small">Desarrollo Backend (Laravel) y mantenimiento de base de datos.</p>
               <hr class="border-secondary">
               <p class="text-white small mb-1">
-                <i data-feather="mail" class="me-2 text-warning"></i> contacto.desarrolladora@example.com
+                <i data-feather="mail" class="me-2 text-warning"></i> af4k07t@gmail.com
               </p>
               <p class="text-white small">
-                <i data-feather="github" class="me-2 text-warning"></i> github.com/desarrollador
+                <i data-feather="github" class="me-2 text-warning"></i>
+                <a href="https://github.com/Moyainc" target="_blank" class="text-white text-decoration-none">
+                  https://github.com/Moyainc
+                </a>
+              </p>
+              <p class="text-white small">
+                <i data-feather="phone" class="me-2 text-warning"></i> +57 314 3268118
               </p>
             </div>
           </div>

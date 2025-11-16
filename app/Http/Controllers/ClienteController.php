@@ -136,7 +136,7 @@ class ClienteController extends Controller
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
                 'usuario_id' => $request->usuario_id ?? null,
             ]);
-            Mail::to($cliente->correo)->send(new BienvenidaCliente($cliente, $pagoMembresia));
+            // Mail::to($cliente->correo)->send(new BienvenidaCliente($cliente, $pagoMembresia));
             // Registrar en pagos generales usando morph
             PagoGeneral::create([
                 'origen_id' => $pagoMembresia->id,            // apunta al pago de membresía
@@ -262,7 +262,7 @@ class ClienteController extends Controller
                 'estado' => 'Completada',
             ]);
 
-            Mail::to($cliente->correo)->send(new \App\Mail\RenovacionMembresia($cliente, $pagoMembresia));
+            // Mail::to($cliente->correo)->send(new \App\Mail\RenovacionMembresia($cliente, $pagoMembresia));
 
             return response()->json(['success' => true, 'message' => 'Membresía renovada correctamente']);
         } catch (\Exception $e) {
