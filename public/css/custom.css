@@ -19,6 +19,16 @@
 }
 
 
+#emailGroup:disabled,
+#specificClientEmail:disabled {
+    background-color: #2e2e2e !important;
+    color: #fff !important;
+    opacity: 10 !important;
+    cursor: not-allowed;
+}
+
+
+
 .chart-container-sm {
     max-width: 320px;
     /* tamaño más pequeño del canvas */

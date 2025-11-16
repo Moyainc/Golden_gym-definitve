@@ -40,7 +40,7 @@
                           <option value="month">Mes</option>
                         </select>
                       </div>
-                      <a href="ventas.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
+                      <a href="{{ route('admin.resumen.ventas') }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
                     </div>
                   </div>
                 </div>
@@ -70,7 +70,7 @@
                           <option value="month">Mes</option>
                         </select>
                       </div>
-                      <a href="membresia.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
+                      <a href="{{ route('admin.resumen.membresias') }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
                     </div>
                   </div>
                 </div>
@@ -100,7 +100,7 @@
                           <option value="month">Mes</option>
                         </select>
                       </div>
-                      <a href="contabilidad.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
+                      <a href="{{ route('admin.resumen.general') }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
                     </div>
                   </div>
                 </div>
@@ -130,7 +130,7 @@
                           <option value="month">Mes</option>
                         </select>
                       </div>
-                      <a href="clientes.html" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
+                      <a href="{{ route('admin.clientes') }}" class="btn btn-sm btn-outline-warning rounded-pill px-3">Ver más</a>
                     </div>
                   </div>
                 </div>

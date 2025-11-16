@@ -297,38 +297,45 @@ function normalizarEstado(raw) {
     return s.charAt(0).toUpperCase() + s.slice(1); // fallback capitalizado
 }
 
-const estadoMostrar = normalizarEstado(mov.estado);
+
 function actualizarTabla(movimientos) {
     const tbody = document.getElementById("contabilidadTable");
     if (!tbody) return;
 
     if (!movimientos || movimientos.length === 0) {
         tbody.innerHTML =
-            '<tr><td colspan="5" class="text-center text-muted">No hay datos para este período</td></tr>';
+            '<tr><td colspan="7" class="text-center text-muted">No hay datos para este período</td></tr>';
         return;
     }
 
     tbody.innerHTML = movimientos
-        .map(
-            (mov) => `
-        <tr>
-          <td>
-            <span class="badge ${
-                mov.tipo === "Membresía"
-                    ? "bg-warning text-dark border border-dark"
-                    : "bg-info text-dark"
-            }">${mov.tipo}</span>
-          </td>
-          <td>${mov.nombre_completo}</td>
-          <td>${mov.nombre_usuario}</td>
-          <td>${mov.metodo_pago}</td>
-          <td class="fw-bold">${formatearCOP(mov.valor)}</td>
-          <td>${new Date(mov.fecha).toLocaleDateString("es-CO")}</td>
-          <td><span class="badge ${getEstadoBadgeClass(
-              estadoMostrar
-          )}">${estadoMostrar}</span></td>
-        </tr>`
-        )
+        .map((mov) => {
+            const estadoMostrar = normalizarEstado(mov.estado);
+
+            return `
+                <tr>
+                    <td>
+                        <span class="badge ${
+                            mov.tipo === "Membresía"
+                                ? "bg-warning text-dark border border-dark"
+                                : "bg-info text-dark"
+                        }">${mov.tipo}</span>
+                    </td>
+                    <td>${mov.nombre_completo}</td>
+                    <td>${mov.nombre_usuario}</td>
+                    <td>${mov.metodo_pago}</td>
+                    <td class="fw-bold">${formatearCOP(mov.valor)}</td>
+                    <td>${new Date(mov.fecha).toLocaleDateString("es-CO")}</td>
+                    <td>
+                        <span class="badge ${getEstadoBadgeClass(
+                            estadoMostrar
+                        )}">
+                            ${estadoMostrar}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        })
         .join("");
 }
 // Filtro dinámico de búsqueda

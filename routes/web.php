@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\MailMasivoController;
 use App\Http\Controllers\PagoDiarioController;
 use App\Http\Controllers\ResumenMembresiasController;
 use App\Http\Controllers\ResumenVentasController;
@@ -45,6 +46,15 @@ Route::middleware(['auth'])->group(function () {
     // _------------------------------------- ADMINISTRADOR ==================================
 
     Route::middleware(['checkrole:Administrador'])->group(function () {
+
+
+        Route::get('admin/mail-masivo', [MailMasivoController::class, 'create'])
+            ->name('admin.mail_masivo');
+
+        Route::post('admin/mail-masivo/send', [MailMasivoController::class, 'send'])
+            ->name('admin.mail_masivo.send');
+
+
 
         Route::controller(EntrenadorController::class)->group(function () {
             Route::get('/admin/entrenadores', 'index')->name('entrenadores.index');

@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Resumen de ventas - Golden Gym')
+@section('title', 'Contabilidad - Golden Gym')
 @section('content')
 
 <div class="wrapper">
@@ -30,7 +30,7 @@
               @endforeach
             </select>
 
-            <button id="applyFilter" class="btn btn-info py-1 ms-md-2 mt-2 mt-md-0 text-nowrap">Aplicar Filtro</button>
+            <button id="applyFilter" class="btn btn-info py-1 ms-md-2 mt-2 mt-md-0 text-nowrap">Limpiar</button>
             <div class="d-flex flex-wrap align-items-center">
               <button
                 type="button"

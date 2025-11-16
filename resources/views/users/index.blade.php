@@ -23,7 +23,6 @@
     <ul class="navbar-menu" id="navbarMenu">
       <li><a href="#entrenadores">Entrenadores</a></li>
       <li><a href="#localizacion">Localización</a></li>
-      <li><a href="#productos">Productos</a></li>
       <li>
         <a href="{{ route('usuario.login') }}" class="navbar-login">
           <i class="fas fa-user"></i>
@@ -80,9 +79,9 @@
         <div class="location-text fade-in">
           <div class="location-animated-text" id="animated-text"></div>
           <div class="location-details">
-            <p><strong>📍 Dirección:</strong> Av. Principal 123, Ciudad</p>
-            <p><strong>📞 Teléfono:</strong> +1 (555) 123-4567</p>
-            <p><strong>🕐 Horario:</strong> Lunes a Viernes: 6:00 AM - 11:00 PM<br>Sábado y Domingo: 8:00 AM - 8:00 PM</p>
+            <p><strong>📍 Dirección:</strong> Cl. 24 # 25-143, Quibdó, Chocó</p>
+            <p><strong>📞 Teléfono:</strong> +57 310 4115783</p>
+            <p><strong>🕐 Horario:</strong> Lunes a Viernes: 5:00 AM - 8:00 PM<br>Sábado: 5:00 AM - 12:00 PM</p>
           </div>
         </div>
         <div class="map-container fade-in">

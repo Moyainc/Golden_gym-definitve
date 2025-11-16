@@ -6,14 +6,18 @@
   <div class="navbar-collapse collapse">
     <ul class="navbar-nav navbar-align">
 
-      <li class="nav-item">
+      @if(Auth::check() && Auth::user()->rol === 'Administrador')
+      <li class="nav-item mb-4">
         <a
-          class="nav-icon"
-          href=""
+          class="nav-icon text-decoration-none"
+          href="{{ route('admin.mail_masivo') }}"
           title="Redactar correo">
           <i class="align-middle" data-feather="mail"></i>
+          <span class="" style="font-size: 14px;">Redactar un correo</span>
         </a>
       </li>
+      @endif
+
 
       <li class="nav-item dropdown">
         <a
