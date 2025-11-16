@@ -9,6 +9,7 @@ use App\Models\Cliente;
 use App\Models\Usuario;
 use App\Models\PagoMembresia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class MailMasivoController extends Controller
 {
@@ -35,27 +36,53 @@ class MailMasivoController extends Controller
         return 'activa';
     }
 
+    private function obtenerUltimosPagos()
+    {
+        // Obtiene SOLO el último pago de cada cliente (por created_at)
+        $sub = PagoMembresia::select(
+            'id',
+            'cliente_id',
+            'fecha_inicio',
+            'fecha_fin',
+            'monto',
+            'estado',
+            DB::raw("ROW_NUMBER() OVER (PARTITION BY cliente_id ORDER BY created_at DESC) as fila")
+        );
+
+        return DB::table(DB::raw("({$sub->toSql()}) as t"))
+            ->mergeBindings($sub->getQuery()) // Importante para heredar parámetros
+            ->where('fila', 1) // Solo el último registro por cliente
+            ->join('clientes', 't.cliente_id', '=', 'clientes.id')
+            ->select('t.*')
+            ->get()
+            ->map(function ($row) {
+                // Convertir a modelo para usar calcularEstado()
+                return PagoMembresia::find($row->id);
+            });
+    }
+
     private function obtenerClientesPorEstado($estadoDeseado)
     {
-        $pagos = PagoMembresia::with('cliente')
-            ->whereNotNull('fecha_fin')
-            ->get();
+        $pagos = $this->obtenerUltimosPagos();
 
         $clientesFiltrados = collect();
 
         foreach ($pagos as $pago) {
 
-            if (!$pago->cliente || !$pago->cliente->correo) continue;
+            if (!$pago || !$pago->cliente || !$pago->cliente->correo) continue;
 
-            $estado = $this->calcularEstado($pago);
+            $estadoCalculado = $this->calcularEstado($pago);
 
-            if ($estado === $estadoDeseado) {
+            if ($estadoCalculado === $estadoDeseado) {
                 $clientesFiltrados->push($pago->cliente);
             }
         }
 
         return $clientesFiltrados->unique('id');
     }
+
+
+
 
     /**
      * ENVIAR CORREO MASIVO
@@ -137,28 +164,29 @@ class MailMasivoController extends Controller
         $segmento = $request->segmento;
 
         switch ($segmento) {
-            case 'todos':
-                $cantidad = Usuario::count();
-                break;
 
             case 'clientes':
-                $cantidad = Cliente::count();
+                $cantidad = Cliente::whereNotNull('correo')->count();
                 break;
 
             case 'usuarios':
-                $cantidad = Usuario::count();
+                $cantidad = Usuario::whereNotNull('correo')->count();
                 break;
 
             case 'membresias_activas':
-                $cantidad = PagoMembresia::where('estado', 'activa')->count();
+                $cantidad = $this->obtenerClientesPorEstado('activa')->count();
                 break;
 
             case 'membresias_proximas':
-                $cantidad = PagoMembresia::where('estado', 'proxima')->count();
+                $cantidad = $this->obtenerClientesPorEstado('proxima')->count();
                 break;
 
             case 'membresias_vencidas':
-                $cantidad = PagoMembresia::where('estado', 'vencida')->count();
+                $cantidad = $this->obtenerClientesPorEstado('vencida')->count();
+                break;
+
+            case 'todos':
+                $cantidad = Cliente::count() + Usuario::count();
                 break;
 
             default:
