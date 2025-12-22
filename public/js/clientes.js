@@ -193,11 +193,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // === Cargar clientes ===
     let currentPage = 1;
+    let currentSearch = "";
 
     async function loadClients(page = 1) {
         try {
             const res = await fetch(
-                apiUrl(`admin/clientes/list/json?page=${page}`)
+                apiUrl(
+                    `admin/clientes/list/json?page=${page}&estado=${currentFilter}&search=${encodeURIComponent(currentSearch)}`
+                )
             );
             if (!res.ok) throw new Error("Error al cargar clientes");
             const data = await res.json();
@@ -208,17 +211,9 @@ document.addEventListener("DOMContentLoaded", () => {
             // Usamos la página actual del backend
             currentPage = data.pagination.current_page;
 
-            // Aplicamos el filtro pero sin perder la numeración global
-            let filtered = allClients;
-            if (currentFilter === "activa") {
-                filtered = allClients.filter((c) => c.estado === "activa");
-            } else if (currentFilter === "proxima") {
-                filtered = allClients.filter((c) => c.estado === "proxima");
-            } else if (currentFilter === "vencida") {
-                filtered = allClients.filter((c) => c.estado === "vencida");
-            }
+           
 
-            renderClients(filtered, currentPage, data.pagination.per_page);
+            renderClients(allClients, currentPage, data.pagination.per_page);
             renderClientPagination(data.pagination);
         } catch (err) {
             console.error("Error cargando clientes:", err);
@@ -289,10 +284,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         : "";
 
                 return `<tr>
-                    <td>${index + 1}</td>
-                    <td>
-                        <img src="${fotoUrl}" alt="Foto" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;" onerror="this.src='${getDefaultPhoto()}'" />
-                    </td>
+                    <td>${globalIndex}</td>
+                   <td>
+  <div class="photo-popup-container">
+    <img src="${fotoUrl}" alt="Foto" class="rounded-circle"
+         style="width:45px;height:45px;object-fit:cover;" />
+
+    <img src="${fotoUrl}" class="photo-popup" alt="Foto ampliada"
+         onerror="this.src='${getDefaultPhoto()}'" />
+  </div>
+</td>
                     <td class="fw-semibold text-white">${
                         cliente.nombre_completo
                     }</td>
@@ -411,18 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // === Filtros ===
-    function applyCurrentFilter() {
-        let filtered = allClients;
-        if (currentFilter === "activa") {
-            filtered = allClients.filter((c) => c.estado === "activa");
-        } else if (currentFilter === "proxima") {
-            filtered = allClients.filter((c) => c.estado === "proxima");
-        } else if (currentFilter === "vencida") {
-            filtered = allClients.filter((c) => c.estado === "vencida");
-        }
-        renderClients(filtered, currentPage, 10); // 10 = per_page (o variable real)
-    }
+    
 
     document.querySelectorAll(".filter-btn").forEach((btn) => {
         btn.addEventListener("click", (e) => {
@@ -447,34 +437,20 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             currentFilter = filterValue;
+            currentPage = 1;
+            loadClients(1);
 
-            const filterLabels = {
-                activa: "Activas",
-                proxima: "Próximas a vencer",
-                vencida: "Vencidas",
-                todas: "Todas",
-            };
-
-            clientsFilteredLabel.textContent =
-                filterLabels[filterValue] || "Todas";
-
-            applyCurrentFilter();
         });
     });
 
     // === Búsqueda ===
     if (searchInput) {
-        searchInput.addEventListener("input", (e) => {
-            const query = e.target.value.toLowerCase();
-            const filtered = allClients.filter(
-                (c) =>
-                    c.nombre_completo.toLowerCase().includes(query) ||
-                    (c.correo && c.correo.toLowerCase().includes(query)) ||
-                    (c.cedula && c.cedula.toLowerCase().includes(query))
-            );
-            renderClients(filtered);
-        });
-    }
+    searchInput.addEventListener("input", (e) => {
+        currentSearch = e.target.value.trim();
+        currentPage = 1;
+        loadClients(1);
+    });
+}   
 
     // === Calcular fechas y precio al elegir membresía ===
     if (membershipSelect) {
@@ -525,16 +501,30 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // === Modal CREAR ===
-    document
-        .getElementById("clientFormModal")
-        ?.addEventListener("show.bs.modal", (e) => {
-            modalTitle.textContent = "Registrar Cliente";
-            form.reset();
-            photoPreview.src = getDefaultPhoto();
-            photoPreview.style.display = "none";
-            document.getElementById("clientId").value = "";
-            editingClientId = null;
-        });
+    document.getElementById("clientFormModal")
+    ?.addEventListener("show.bs.modal", (e) => {
+
+    modalTitle.textContent = "Registrar Cliente";
+
+    const clientId = document.getElementById("clientId").value;
+
+    if (!clientId) {
+        // Cargar borrador si existe
+        const saved = localStorage.getItem("newClientDraft");
+        if (saved) {
+            const draft = JSON.parse(saved);
+            for (let key in draft) {
+                if (form.elements[key]) {
+                    form.elements[key].value = draft[key];
+                }
+            }
+        }
+    }
+
+    editingClientId = null;
+    });
+
+
 
     // === Modal EDITAR ===
     document
@@ -572,6 +562,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         background: "#1a1a1a",
                         color: "#fff",
                     });
+                    localStorage.removeItem("newClientDraft");
                     createClientFormModal.hide();
                     form.reset();
                     photoPreview.src = getDefaultPhoto();
@@ -682,6 +673,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         cliente.eps || "";
                     document.getElementById("editClientEmergency").value =
                         cliente.numero_emergencia || "";
+                        function formatDate(dateString) {
+                            if (!dateString) return "";
+                            return dateString.split("T")[0].split(" ")[0]; // soporte para ambos formatos
+                        }
+                    document.getElementById("editStartDate").value =
+                        formatDate(cliente.membresia_actual.fecha_inicio);
+                    document.getElementById("editEndDate").value =
+                        formatDate(cliente.membresia_actual.fecha_fin);
                     await loadEditMemberships();
                     const editMembershipSelect = document.getElementById(
                         "editClientMembershipType"
@@ -761,99 +760,125 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // RENOVAR
-            if (btn.classList.contains("btn-renew")) {
+                if (btn.classList.contains("btn-renew")) {
                 try {
-                    const resMem = await fetch(
-                        apiUrl("admin/membresias/list/json")
-                    );
+                    // === Obtener membresías ===
+                    const resMem = await fetch(apiUrl("admin/membresias/list/json"));
                     const membresias = await resMem.json();
 
-                    const inputOptions = {};
+                    const optionsMemb = {};
                     membresias.forEach((m) => {
-                        const duracionTexto = m.duracion
-                            ? `${m.duracion} ${
-                                  m.tipo_duracion === "meses" ? "mes" : "día"
-                              }${m.duracion > 1 ? "s" : ""}`
+                        const durTxt = m.duracion
+                            ? `${m.duracion} ${m.tipo_duracion === "meses" ? "mes" : "día"}${m.duracion > 1 ? "s" : ""}`
                             : "Sin duración";
-                        inputOptions[m.id.toString()] = `${
-                            m.nombre
-                        } - ${duracionTexto} - ${new Intl.NumberFormat(
+
+                        optionsMemb[m.id] = `${m.nombre} - ${durTxt} - ${new Intl.NumberFormat(
                             "es-CO",
-                            {
-                                style: "currency",
-                                currency: "COP",
-                                minimumFractionDigits: 0,
-                            }
+                            { style: "currency", currency: "COP", minimumFractionDigits: 0 }
                         ).format(m.precio)}`;
                     });
 
-                    const { value: membresia_id } = await Swal.fire({
+                    // === Modal SweetAlert Unificado ===
+                    const { value: formValues } = await Swal.fire({
                         title: "Renovar membresía",
-                        input: "select",
-                        inputOptions: inputOptions,
-                        inputPlaceholder: "Seleccione una membresía",
-                        showCancelButton: true,
-                        confirmButtonText: "Siguiente",
+                        html: `
+                <div style="margin-bottom: 15px; text-align:left;">
+                    <label><b>Membresía</b></label>
+                    <select id="swal-membresia" class="swal2-input" style="margin-top:6px; width:100%;">
+                        <option value="">Seleccione...</option>
+                        ${Object.entries(optionsMemb)
+                                .map(([id, text]) => `<option value="${id}">${text}</option>`)
+                                .join("")}
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 15px; text-align:left;">
+                    <label><b>Método de pago</b></label>
+                    <select id="swal-metodo" class="swal2-input" style="margin-top:6px; width:100%;">
+                        <option value="">Seleccione...</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 15px; text-align:left;">
+                    <label><b>Fecha inicio</b></label>
+                    <input type="date" id="swal-fecha-inicio" class="swal2-input" style="margin-top:6px; width:80%;">
+                </div>
+            `,
                         background: "#2d2d2d",
                         color: "#fff",
-                        didOpen: () => {
-                            const select =
-                                Swal.getPopup().querySelector("select");
-                            if (select) {
-                                select.style.backgroundColor = "#1a1a1a";
-                                select.style.color = "#fff";
-                                select.style.border = "1px solid #555";
-                                select.style.borderRadius = "6px";
-                                select.style.padding = "8px";
-                            }
-                        },
-                    });
-                    if (!membresia_id) return;
-
-                    const { value: metodo_pago } = await Swal.fire({
-                        title: "Método de pago",
-                        input: "select",
-                        inputOptions: {
-                            efectivo: "Efectivo",
-                            transferencia: "Transferencia",
-                        },
-                        inputPlaceholder: "Seleccione el método de pago",
+                        focusConfirm: false,
                         showCancelButton: true,
                         confirmButtonText: "Renovar",
-                        background: "#2d2d2d",
-                        color: "#fff",
-                        didOpen: () => {
-                            const select =
-                                Swal.getPopup().querySelector("select");
-                            if (select) {
-                                select.style.backgroundColor = "#1a1a1a";
-                                select.style.color = "#fff";
-                                select.style.border = "1px solid #555";
-                                select.style.borderRadius = "6px";
-                                select.style.padding = "8px";
-                            }
+                        cancelButtonText: "Cancelar",
+                        customClass: {
+                            popup: "swal-dark-popup",
+                            actions: "swal-actions-centered"
                         },
-                    });
-                    if (!metodo_pago) return;
+                        didOpen: () => {
+                            // Fecha por defecto
+                            document.getElementById("swal-fecha-inicio").value =
+                                new Date().toISOString().slice(0, 10);
 
-                    const formData = new FormData();
-                    formData.append("membresia_id", membresia_id);
-                    formData.append("metodo_pago", metodo_pago);
-                    formData.append("usuario_id", "{{ auth()->user()->id }}");
-                    const res = await fetch(
-                        apiUrl(`admin/clientes/json/${clientId}/renovar`),
-                        {
-                            method: "POST",
-                            headers: {
-                                "X-CSRF-TOKEN": document
-                                    .querySelector('meta[name="csrf-token"]')
-                                    .getAttribute("content"),
-                                Accept: "application/json",
-                            },
-                            body: formData,
+                            // Estilos de inputs
+                            document.querySelectorAll(".swal2-input").forEach((el) => {
+                                el.style.background = "#1b1b1b";
+                                el.style.color = "#fff";
+                                el.style.border = "1px solid #555";
+                                el.style.borderRadius = "6px";
+                            });
+
+                            // Estilo botones SweetAlert
+                            const confirmBtn = Swal.getConfirmButton();
+                            const cancelBtn = Swal.getCancelButton();
+
+                            confirmBtn.style.background = "#685aff";
+                            confirmBtn.style.padding = "10px 20px";
+                            confirmBtn.style.borderRadius = "6px";
+
+                            cancelBtn.style.background = "#6c757d";
+                            cancelBtn.style.padding = "10px 20px";
+                            cancelBtn.style.borderRadius = "6px";
+
+                            // Centrar botones
+                            Swal.getActions().style.justifyContent = "center";
+                            Swal.getActions().style.gap = "15px";
+                            Swal.getActions().style.marginTop = "20px";
+                        },
+                        preConfirm: () => {
+                            const membresia = document.getElementById("swal-membresia").value;
+                            const metodo = document.getElementById("swal-metodo").value;
+                            const fechaInicio = document.getElementById("swal-fecha-inicio").value;
+
+                            if (!membresia) return Swal.showValidationMessage("Debe seleccionar una membresía");
+                            if (!metodo) return Swal.showValidationMessage("Debe seleccionar un método de pago");
+                            if (!fechaInicio) return Swal.showValidationMessage("Debe seleccionar una fecha de inicio");
+
+                            return { membresia, metodo, fechaInicio };
                         }
-                    );
+                    });
+
+                    if (!formValues) return;
+
+                    // === Enviar al backend ===
+                    const formData = new FormData();
+                    formData.append("membresia_id", formValues.membresia);
+                    formData.append("metodo_pago", formValues.metodo);
+                    formData.append("fecha_inicio", formValues.fechaInicio);
+                    formData.append("usuario_id", "{{ auth()->user()->id }}");
+
+                    const res = await fetch(apiUrl(`admin/clientes/json/${clientId}/renovar`), {
+                        method: "POST",
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                            Accept: "application/json",
+                        },
+                        body: formData,
+                    });
+
                     const data = await res.json();
+
                     if (data.success) {
                         Swal.fire({
                             icon: "success",
@@ -865,9 +890,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                         loadClients();
                     } else {
-                        throw new Error(
-                            data.message || "No se pudo renovar la membresía"
-                        );
+                        throw new Error(data.message || "Error al renovar");
                     }
                 } catch (err) {
                     Swal.fire({

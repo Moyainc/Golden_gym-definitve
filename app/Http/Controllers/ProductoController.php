@@ -72,46 +72,47 @@ class ProductoController extends Controller
 
 
   // Crear un nuevo producto
-  public function store(Request $request)
-  {
+ public function store(Request $request)
+{
     try {
 
-      if ($request->has('precio')) {
-        // Elimina cualquier carácter que no sea dígito
-        $request->merge([
-          'precio' => preg_replace('/\D/', '', $request->precio)
+        if ($request->has('precio')) {
+            $request->merge([
+                'precio' => preg_replace('/\D/', '', $request->precio)
+            ]);
+        }
+
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255|unique:productos,nombre',
+            'categoria_id' => 'required|exists:categorias,id',
+            'stock' => 'required|integer|min:0',
+            'precio' => 'required|integer|min:0',
+            'estado' => 'required|in:Activo,Inactivo',
+        ], [
+            'nombre.unique' => "El producto '{$request->nombre}' ya está registrado.",
         ]);
-      }
 
-      $validated = $request->validate([
-        'nombre' => 'required|string|max:255|unique:productos,nombre,' . ($id->id ?? 'NULL'),
-        'categoria_id' => 'required|exists:categorias,id',
-        'stock' => 'required|integer|min:0',
-        'precio' => 'required|integer|min:0',
-        'estado' => 'required|in:Activo,Inactivo',
-      ], [
-        'nombre.unique' => "El producto '{$request->nombre}' ya está registrado.",
-      ]);
+        $producto = Producto::create($validated);
 
+        return response()->json([
+            'message' => 'Producto creado exitosamente',
+            'producto' => $producto
+        ], 201);
 
-      $producto = Producto::create($validated);
-
-      return response()->json([
-        'message' => 'Producto creado exitosamente',
-        'producto' => $producto
-      ], 201);
     } catch (ValidationException $e) {
-      // Retornar los errores de validación en formato que JS pueda usar
-      return response()->json([
-        'message' => implode(' ', $e->errors()['nombre'] ?? ['Datos inválidos']),
-        'errors' => $e->errors()
-      ], 422);
+
+        return response()->json([
+            'message' => implode(' ', $e->errors()['nombre'] ?? ['Datos inválidos']),
+            'errors' => $e->errors()
+        ], 422);
+
     } catch (\Exception $e) {
-      return response()->json([
-        'message' => 'Error al crear el producto. Intente nuevamente.'
-      ], 500);
+        return response()->json([
+            'message' => 'Error al crear el producto. Intente nuevamente.'
+        ], 500);
     }
-  }
+}
+
 
   // Actualizar un producto existente
   public function update(Request $request, Producto $id)

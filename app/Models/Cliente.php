@@ -28,4 +28,15 @@ class Cliente extends Model
     {
         return $this->hasMany(PagoMembresia::class);
     }
+    
+    public function setNombreCompletoAttribute($value)
+    {
+        $this->attributes['nombre_completo'] = mb_convert_case(
+            trim($value),
+            MB_CASE_TITLE,
+            'UTF-8'
+        );
+    }
+
+
 }

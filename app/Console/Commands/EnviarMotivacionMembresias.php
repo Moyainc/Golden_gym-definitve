@@ -36,7 +36,8 @@ class EnviarMotivacionMembresias extends Command
             // Solo enviar si hoy es el día 10
             if ($hoy->equalTo($dia10)) {
                 Mail::to($pago->cliente->correo)
-                    ->send(new \App\Mail\MotivacionMembresia($pago));
+                    ->queue(new \App\Mail\MotivacionMembresia($pago));
+
 
                 $this->info("✔ Correo de motivación enviado a {$pago->cliente->nombre_completo}");
             }

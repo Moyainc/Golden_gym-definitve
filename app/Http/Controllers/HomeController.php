@@ -126,7 +126,11 @@ class HomeController extends Controller
                 'foto' => $fotoPath,
             ]);
 
-            Mail::to($usuario->correo)->send(new BienvenidaUsuario($usuario));
+            try {
+                Mail::to($usuario->correo)->queue(new BienvenidaUsuario($usuario));
+            } catch (\Exception $mailError) {
+                Log::error("Error al enviar correo de bienvenida: " . $mailError->getMessage());
+            }
 
             return response()->json([
                 'success' => true,

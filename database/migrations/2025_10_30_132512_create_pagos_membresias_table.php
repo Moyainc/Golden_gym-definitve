@@ -12,8 +12,9 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('cliente_id')
+                ->nullable()
                 ->constrained('clientes')
-                ->onDelete('cascade');
+                ->onDelete('set null');
 
             $table->foreignId('membresia_id')
                 ->nullable()

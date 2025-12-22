@@ -189,9 +189,14 @@ class VentaController extends Controller
 
       // ✅ Enviar correo si la venta es mayor a 100.000 COP
       if ($venta->total > 100000) {
-        Mail::to($venta->cliente->correo)
-          ->send(new \App\Mail\Ventas($venta));
+        try {
+            Mail::to($venta->cliente->correo)
+                ->queue(new \App\Mail\Ventas($venta));
+        } catch (\Exception $e) {
+            Log::error('Error al enviar correo de venta (no mostrado al cliente): ' . $e->getMessage());
+        }
       }
+
 
       DB::commit();
 

@@ -18,7 +18,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pagos_membresias', function (Blueprint $table) {
-            $table->dropColumn(['ultimo_aviso_proxima', 'ultimo_aviso_vencida', 'estado_notificado']);
+            $table->dropColumn(['aviso_proximo', 'aviso_vencido', 'estado_notificado']);
         });
     }
 };
