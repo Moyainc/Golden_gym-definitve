@@ -8,6 +8,7 @@ use App\Models\PagoMembresia;
 use App\Models\PagoDiario;
 use App\Models\PagoGeneral;
 use App\Mail\BienvenidaCliente;
+use App\Mail\RenovacionMembresia;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -24,25 +25,21 @@ use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
-    /**
-     * Retorna el listado completo de clientes con su membresía actual
-     */
-    public function getClientes(Request $request)
+    
+   public function getClientes(Request $request)
     {
         $page = (int) $request->query('page', 1) ?: 1;
-        $perPage = (int) request()->query('per_page', 10) ?: 10;
-        $skip = ($page - 1) * $perPage;
+        $perPage = (int) $request->query('per_page', 10) ?: 10;
+        $estadoFiltro = $request->query('estado');
+        $search = $request->query('search'); // 👈 NUEVO
 
         $clientes = Cliente::with(['membresiaActual.membresia'])
             ->orderByDesc('id')
-            ->skip($skip)
-            ->take($perPage)
             ->get()
             ->map(function ($cliente) {
                 $pagoActual = $cliente->membresiaActual;
 
                 if ($pagoActual) {
-                    // Si está anulado, lo mostramos explícitamente
                     if ($pagoActual->estado === 'anulado') {
                         $cliente->estado = 'anulado';
                         $cliente->membresia_nombre = optional($pagoActual->membresia)->nombre ?? 'N/A';
@@ -50,14 +47,13 @@ class ClienteController extends Controller
                         $cliente->fecha_fin = null;
                         $cliente->ultimo_pago = 'N/A';
                     } else {
-                        // Si no está anulado, comportamiento normal
                         $cliente->estado = $this->calcularEstadoMembresia(
                             $pagoActual->fecha_inicio,
                             $pagoActual->fecha_fin
                         );
                         $cliente->membresia_nombre = optional($pagoActual->membresia)->nombre ?? 'N/A';
-                        $cliente->fecha_inicio = optional($pagoActual->fecha_inicio)->format('Y-m-d');
-                        $cliente->fecha_fin = optional($pagoActual->fecha_fin)->format('Y-m-d');
+                        $cliente->fecha_inicio = optional($pagoActual->fecha_inicio)?->format('Y-m-d');
+                        $cliente->fecha_fin = optional($pagoActual->fecha_fin)?->format('Y-m-d');
                         $cliente->ultimo_pago = $pagoActual->fecha_inicio
                             ? $pagoActual->fecha_inicio->format('d/m/Y')
                             : 'N/A';
@@ -73,9 +69,34 @@ class ClienteController extends Controller
                 return $cliente;
             });
 
+       
+        if (in_array($estadoFiltro, ['activa', 'proxima', 'vencida'])) {
+            $clientes = $clientes->filter(fn($c) => $c->estado === $estadoFiltro);
+        }
 
-        $total = Cliente::count();
+     
+        if ($search) {
+            $search = mb_strtolower($search);
+
+            $clientes = $clientes->filter(function ($c) use ($search) {
+                return str_contains(mb_strtolower($c->nombre_completo), $search)
+                    || ($c->correo && str_contains(mb_strtolower($c->correo), $search))
+                    || ($c->cedula && str_contains(mb_strtolower($c->cedula), $search))
+                    || ($c->estado && str_contains(mb_strtolower($c->estado), $search));
+            });
+        }
+
+        $total = $clientes->count();
         $totalPages = ceil($total / $perPage);
+
+        
+        if ($page > $totalPages && $totalPages > 0) {
+            $page = 1;
+        }
+
+        $clientes = $clientes
+            ->slice(($page - 1) * $perPage, $perPage)
+            ->values();
 
         return response()->json([
             'data' => $clientes,
@@ -110,6 +131,7 @@ class ClienteController extends Controller
             if ($request->hasFile('foto')) {
                 $fotoPath = $request->file('foto')->store('clientes/fotos', 'public');
             }
+        
 
             $cliente = Cliente::create([
                 'nombre_completo' => $request->nombre_completo,
@@ -122,8 +144,13 @@ class ClienteController extends Controller
             ]);
 
             $membresia = Membresia::findOrFail($request->membresia_id);
-            $fechaInicio = Carbon::now()->startOfDay();
-            $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
+            $fechaInicio = $request->fecha_inicio 
+                ? Carbon::parse($request->fecha_inicio)->startOfDay()
+                : Carbon::now()->startOfDay();
+
+            $fechaFin = $request->fecha_fin
+                ? Carbon::parse($request->fecha_fin)->startOfDay()
+    :           $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
             $pagoMembresia =     PagoMembresia::create([
@@ -136,7 +163,7 @@ class ClienteController extends Controller
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
                 'usuario_id' => $request->usuario_id ?? null,
             ]);
-            // Mail::to($cliente->correo)->send(new BienvenidaCliente($cliente, $pagoMembresia));
+            Mail::to($cliente->correo)->queue(new BienvenidaCliente($cliente, $pagoMembresia));
             // Registrar en pagos generales usando morph
             PagoGeneral::create([
                 'origen_id' => $pagoMembresia->id,            // apunta al pago de membresía
@@ -211,6 +238,28 @@ class ClienteController extends Controller
                 'eps' => $request->eps,
                 'numero_emergencia' => $request->numero_emergencia,
             ]);
+            
+            // === ACTUALIZAR FECHAS DE LA MEMBRESÍA (si vienen en el formulario) ===
+            if ($request->filled('fecha_inicio') && $request->filled('fecha_fin')) {
+
+                // Obtener último pago activo del cliente
+                $pago = PagoMembresia::where('cliente_id', $cliente->id)
+                    ->orderByDesc('id')
+                    ->first();
+
+                if ($pago) {
+                    $pago->fecha_inicio = Carbon::parse($request->fecha_inicio);
+                    $pago->fecha_fin = Carbon::parse($request->fecha_fin);
+
+                    // recalcular estado
+                    $pago->estado = $this->calcularEstadoMembresia(
+                        $pago->fecha_inicio,
+                        $pago->fecha_fin
+                    );
+
+                    $pago->save();
+                }
+            }
 
 
             return response()->json(['success' => true, 'cliente' => $cliente]);
@@ -228,13 +277,17 @@ class ClienteController extends Controller
         $request->validate([
             'membresia_id' => 'required|exists:membresias,id',
             'metodo_pago' => 'nullable|string|max:50',
+            'fecha_inicio' => 'required|date', // ← NUEVO
         ]);
 
         try {
             $cliente = Cliente::findOrFail($id);
             $membresia = Membresia::findOrFail($request->membresia_id);
 
-            $fechaInicio = Carbon::now()->startOfDay();
+            // Usar la fecha enviada
+            $fechaInicio = Carbon::parse($request->fecha_inicio)->startOfDay();
+
+            // Calcular fecha fin según la membresía
             $fechaFin = $this->calcularFechaFin($membresia, $fechaInicio);
             $estado = $this->calcularEstadoMembresia($fechaInicio, $fechaFin);
 
@@ -249,7 +302,7 @@ class ClienteController extends Controller
                 'metodo_pago' => $request->metodo_pago ?? 'efectivo',
                 'usuario_id' => Auth::user()?->id,
             ]);
-
+            Mail::to($cliente->correo)->queue(new RenovacionMembresia($cliente, $pagoMembresia));
             // Registrar también en pagos generales
             PagoGeneral::create([
                 'origen_id' => $pagoMembresia->id,
@@ -261,8 +314,6 @@ class ClienteController extends Controller
                 'fecha_pago' => Carbon::now(),
                 'estado' => 'Completada',
             ]);
-
-            // Mail::to($cliente->correo)->send(new \App\Mail\RenovacionMembresia($cliente, $pagoMembresia));
 
             return response()->json(['success' => true, 'message' => 'Membresía renovada correctamente']);
         } catch (\Exception $e) {
@@ -304,7 +355,7 @@ class ClienteController extends Controller
     /**
      * Exportar clientes a PDF
      */
-    public function exportPdf(Request $request)
+   public function exportPdf(Request $request)
     {
         $request->validate([
             'fecha_inicio' => 'required|date',
@@ -343,6 +394,7 @@ class ClienteController extends Controller
                         $cliente->membresia_nombre = 'Sin Membresía';
                         $cliente->fecha_inicio = 'N/A';
                         $cliente->fecha_fin = 'N/A';
+                        $cliente->metodo_pago = 'N/A';
                     } else {
                         $cliente->estado = $this->calcularEstadoMembresia(
                             $ultimoPago->fecha_inicio,
@@ -351,12 +403,14 @@ class ClienteController extends Controller
                         $cliente->membresia_nombre = $ultimoPago->membresia->nombre ?? 'N/A';
                         $cliente->fecha_inicio = $ultimoPago->fecha_inicio->format('d/m/Y');
                         $cliente->fecha_fin = $ultimoPago->fecha_fin->format('d/m/Y');
+                        $cliente->metodo_pago = $ultimoPago->metodo_pago ?? 'N/A';
                     }
                 } else {
                     $cliente->membresia_nombre = 'Sin Membresía';
                     $cliente->fecha_inicio = 'N/A';
                     $cliente->fecha_fin = 'N/A';
                     $cliente->estado = 'sin_membresia';
+                    $cliente->metodo_pago = 'N/A';
                 }
 
                 // ✅ Fecha de registro
@@ -395,7 +449,6 @@ class ClienteController extends Controller
                 'total_clientes' => $total_clientes,
                 'total_pagos_diarios' => $total_pagos_diarios,
                 'total_registros' => $total_registros,
-                'logo_url' => asset('images/logo-gym.png'),
             ];
 
             // === GENERAR PDF ===

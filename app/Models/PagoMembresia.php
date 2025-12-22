@@ -22,8 +22,8 @@ class PagoMembresia extends Model
         'metodo_pago',
         'usuario_id',
         'estado_notificado',
-        'ultimo_aviso_proxima',
-        'ultimo_aviso_vencida',
+        'aviso_proximo',
+        'aviso_vencido',
     ];
 
     protected $casts = [

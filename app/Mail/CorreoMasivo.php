@@ -27,12 +27,27 @@ class CorreoMasivo extends Mailable
     }
 
     public function build()
-    {
-        return $this->subject($this->asunto)
-            ->view('emails.correo_masivo')   // ← LA VISTA CORRECTA
-            ->with([
-                'mensaje'  => $this->mensaje,
-                'imagenes' => $this->imagenes,
-            ]);
+{
+    $email = $this->subject($this->asunto)
+                  ->view('emails.correo_masivo')
+                  ->with([
+                      'mensaje' => $this->mensaje,
+                      'imagenes' => [] // ya no las mostramos en el HTML
+                  ]);
+
+    // Adjuntar cada archivo
+    foreach ($this->imagenes as $imgPath) {
+
+        $absolute = storage_path("app/public/{$imgPath}");
+
+        if (file_exists($absolute)) {
+            $email->attach($absolute);
+        }
     }
+
+    return $email->with([
+        'mensaje'     => $this->mensaje,
+        'hayAdjuntos' => count($this->imagenes) > 0
+    ]);
+}
 }

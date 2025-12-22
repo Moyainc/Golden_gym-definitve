@@ -148,9 +148,10 @@ class MailMasivoController extends Controller
 
             if (!$email) continue;
 
-            Mail::to($email)->send(
+            Mail::to($email)->queue(
                 new CorreoMasivo($asunto, $mensaje, $imagenesAdjuntas)
             );
+
         }
 
         return back()->with('success', "Correo enviado a {$destinatarios->count()} destinatarios.");

@@ -6,24 +6,19 @@ use App\Models\Usuario;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class BienvenidaUsuario extends Mailable
+class BienvenidaUsuario extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
     public $usuario;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(Usuario $usuario)
     {
         $this->usuario = $usuario;
     }
 
-    /**
-     * Build the message.
-     */
     public function build()
     {
         return $this

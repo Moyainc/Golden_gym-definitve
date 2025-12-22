@@ -354,9 +354,10 @@ const initializePage = () => {
             <td>${prod.categoria?.nombre || "Sin categoría"}</td>
             <td>
                 ${prod.stock}
-                ${Number(prod.stock) === 0
-                    ? '<span class="badge bg-danger ms-2">Agotado</span>'
-                    : Number(prod.stock) <= 10
+                ${
+                    Number(prod.stock) === 0
+                        ? '<span class="badge bg-danger ms-2">Agotado</span>'
+                        : Number(prod.stock) <= 10
                         ? '<span class="badge bg-warning text-dark">Bajo</span>'
                         : ""
                 }
@@ -403,7 +404,7 @@ const initializePage = () => {
         (entries) => {
             entries.forEach((entry) => {
                 if (entry.isIntersecting && !loadingProducts && !lastPage) {
-                    loadProducts(true);
+                    loadProducts();
                 }
             });
         },
@@ -413,7 +414,7 @@ const initializePage = () => {
     observer.observe(document.getElementById("scrollSentinel"));
 
     const loadProducts = async (reset = false) => {
-        if (loadingProducts || lastPage) return;
+        if (loadingProducts) return;
         loadingProducts = true;
 
         if (reset) {
@@ -431,22 +432,25 @@ const initializePage = () => {
             );
             const data = await res.json();
 
-            if (data.data.length === 0 || currentPage > data.last_page) {
-                lastPage = true;
+            if (data.data.length === 0) {
+                if (currentPage === 1) {
+                    // Si es la primera página y no hay productos → tabla vacía
+                    renderProducts([]);
+                } else {
+                    lastPage = true;
+                }
             } else {
                 allProducts = [...allProducts, ...data.data];
-                renderProducts(allProducts);
-                currentPage++;
-            }
+                 renderProducts(allProducts);
+                    currentPage++;
+                }
+
         } catch (err) {
             console.error(err);
         } finally {
             loadingProducts = false;
         }
     };
-
-
-
 
     // -----------------------------
     // ELIMINAR PRODUCTOS
@@ -636,14 +640,10 @@ const initializePage = () => {
     // -----------------------------
     // Inicializar
     // -----------------------------
-    loadCategories();
-    loadProducts();
-};
-// ==============================
-//  EXPORTAR REPORTES INVENTARIO
-// ==============================
 
-document.addEventListener("DOMContentLoaded", () => {
+    // ==============================
+    //  EXPORTAR REPORTES INVENTARIO
+    // ==============================
 
     const form = document.getElementById("reportsInventarioForm");
     const exportPdfBtn = document.getElementById("exportPdfInventarioBtn");
@@ -679,8 +679,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-
-
         // Construir URL
         let url = "";
         if (tipo === "pdf") {
@@ -700,4 +698,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Eventos de exportación
     exportPdfBtn.addEventListener("click", () => exportarInventario("pdf"));
     exportExcelBtn.addEventListener("click", () => exportarInventario("excel"));
-});
+    loadCategories();
+    loadProducts(true);
+};

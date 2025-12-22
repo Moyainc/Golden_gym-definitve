@@ -7,8 +7,9 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Cliente;
 use App\Models\PagoMembresia;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class RenovacionMembresia extends Mailable
+class RenovacionMembresia extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
